@@ -1,0 +1,33 @@
+Package: epScan
+Title: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Hongyuan",
+           family = "Jia",
+           role = c("aut", "cre"),
+           email = "hongyuan.jia@bears-berkeley.sg",
+           comment = c(ORCID = "0000-0002-0075-8183")),
+    person(given = "Adrian",
+           family = "Chong",
+           role = c("aut"),
+           email = "bdgczma@nus.edu.sg",
+           comment = c(ORCID = "0000-0002-9486-4728"))
+    )
+Description: Include sensitivity analysis and Bayesian calibration application to eplusr R package
+URL: https://github.com/ideas-lab-nus/epScan
+BugReports: https://github.com/ideas-lab-nus/epScan
+License: MIT + file LICENSE
+Depends:
+    R (>= 3.2.0)
+Imports:
+    eplusr,
+    sensitivity,
+    rstan
+Suggests:
+    testthat,
+    covr,
+    pkgdown,
+    knitr,
+    rmarkdown
+Encoding: UTF-8
+LazyData: true
