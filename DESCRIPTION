@@ -20,6 +20,7 @@ License: MIT + file LICENSE
 Depends:
     R (>= 3.2.0)
 Imports:
+    data.table,
     eplusr,
     sensitivity,
     rstan
@@ -29,5 +30,10 @@ Suggests:
     pkgdown,
     knitr,
     rmarkdown
+Remotes: hongyuanjia/eplusr@feature/sensitivity
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1
+Collate: 
+    'utils.R'
+    'sensitivity.R'

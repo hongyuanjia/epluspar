@@ -33,6 +33,8 @@ knitr::opts_chunk$set(
 
 # Make sure the date is shown in English format not Chinese.
 invisible(Sys.setlocale(category = "LC_TIME", locale = "en_US.UTF-8"))
+
+library(epScan)
 ```
 
 # epScan
@@ -43,3 +45,53 @@ Include sensitivity analysis and Bayesian calibration application to eplusr R pa
 [![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
 [![CRAN Download Badge](https://cranlogs.r-pkg.org/badges/epScan)](https://cran.r-project.org/package=epScan)
+
+## Installation
+
+Currently, epScan is not on CRAN. You can install the development version from
+GitHub.
+
+```{r gh-installation, eval = FALSE}
+# install.packages("remotes")
+remotes::install_github("ideas-lab-nus/epScan")[^1]
+```
+
+# Get started
+
+```{r}
+# use an example file from EnergyPlus v8.8 for demonstration here
+path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "5Zone_Transformer.idf")
+path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
+
+# create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
+sen <- Sensitivity$new(path_idf, path_epw)
+
+# set parameter using similar syntax to `Idf$set()` in eplusr
+sen$param(
+    # Syntax: Object Name = list(Field = c(Min, Max, Levels))
+    GP01 = list(Thickness = c(min = 0.01, max = 1, levels = 5)),
+    `Supply Fan 1` = list(Fan_Total_Efficiency = c(0.1, 1.0, 5)),
+    # See `r` and `grid_jump` in `sensitivity::morris`
+    .rep = 12, .grid_jump = 4
+)
+
+# get samples
+sen$samples()
+
+# run simulations
+sen$run()
+
+# extract output
+# here is just am example
+eng <- sen$tabular_data(table_name = "site and source energy",
+    column_name = "energy per total building area",
+    row_name = "total site energy")[, as.numeric(value)]
+
+# calculate sensitivity
+result <- sen$evaluate(eng)
+
+# extract data
+attr(result, "data")
+
+plot(result)
+```
