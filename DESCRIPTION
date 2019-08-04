@@ -13,7 +13,7 @@ Authors@R: c(
            email = "bdgczma@nus.edu.sg",
            comment = c(ORCID = "0000-0002-9486-4728"))
     )
-Description: Include sensitivity analysis and Bayesian calibration application to eplusr R package
+Description: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
 URL: https://github.com/ideas-lab-nus/epScan
 BugReports: https://github.com/ideas-lab-nus/epScan
 License: MIT + file LICENSE

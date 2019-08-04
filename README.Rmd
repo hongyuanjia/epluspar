@@ -5,7 +5,8 @@ output:
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r setup, echo = FALSE}
+```{r setup, include = FALSE}
+library(epScan)
 library(knitr)
 
 # the default output hook
@@ -33,12 +34,10 @@ knitr::opts_chunk$set(
 
 # Make sure the date is shown in English format not Chinese.
 invisible(Sys.setlocale(category = "LC_TIME", locale = "en_US.UTF-8"))
-
-library(epScan)
 ```
 
 # epScan
-Include sensitivity analysis and Bayesian calibration application to eplusr R package
+Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
 
 [![Travis-CI Build Status](https://travis-ci.org/ideas-lab-nus/epScan.svg?branch=master)](https://travis-ci.org/ideas-lab-nus/epScan)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/ideas-lab-nus/epScan?branch=master&svg=true)](https://ci.appveyor.com/project/ideas-lab-nus/epScan)
@@ -53,12 +52,12 @@ GitHub.
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("remotes")
-remotes::install_github("ideas-lab-nus/epScan")[^1]
+remotes::install_github("ideas-lab-nus/epScan")
 ```
 
 # Get started
 
-```{r}
+```{r get-started, fig.path = "man/figures/"}
 # use an example file from EnergyPlus v8.8 for demonstration here
 path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "5Zone_Transformer.idf")
 path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
@@ -76,10 +75,11 @@ sen$param(
 )
 
 # get samples
+# returns a data.table with similar structure to `Idf$to_table()`.
 sen$samples()
 
-# run simulations
-sen$run()
+# run simulations in temporary directory
+sen$run(dir = tempdir())
 
 # extract output
 # here is just am example
@@ -88,10 +88,11 @@ eng <- sen$tabular_data(table_name = "site and source energy",
     row_name = "total site energy")[, as.numeric(value)]
 
 # calculate sensitivity
-result <- sen$evaluate(eng)
+(result <- sen$evaluate(eng))
 
 # extract data
 attr(result, "data")
 
+# plot
 plot(result)
 ```
