@@ -40,12 +40,18 @@ run_stan <- function() {
     #' ncol(xf) == ncol(xc)
     #' nrow(yf) == nrow(xf)
     #' nrow(yc) == nrow(xc) == nrow(tc)
-    #' @param y:
-    #' @param xf:
-    #' @param eta:
-    #' @param xc:
-    #' @param tc:
-    #' @param x_pred:
+    #' @param y: A matrix containing the observed output (measured data to calibrate against)
+    #' matrix(c(y_{11},...,y_{1n},...,y_{dn}), nrow = n, byrow = FALSE)
+    #' @param xf: A matrix containing the observed inputs for each corresponding y
+    #' matrix(c(xf_{11},...,xf_{1n},...,xf_{pn}), nrow = n, byrow = FALSE)
+    #' @param eta: A matrix containing the simulation output(s) based on y_labels
+    #' matrix(c(eta_{11},...,eta_{1m},...,eta_{dm}), nrow = m, byrow = FALSE)
+    #' @param xc: A matrix containing the observed inputs for each corresponding eta
+    #' matrix(c(xc_{11},...,xc_{1m},...,xc_{pm}), nrow = m, byrow = FALSE)
+    #' @param tc: A matrix containing the values of the calibration parameters for each corresponding eta
+    #' matrix(c(tc_{11},...,eta_{1m},...,eta_{qm}), nrow = m, byrow = FALSE)
+    #' @param x_pred: A matrix containing the x that would be used for prediction based on the 
+    #' calibrated calibration parameters (default = xf)
     #' @param subset: If `TRUE` subset data used for the calibration to reduce computation time
     #' @param iter: number of iterations for each MCMC chain
     #' @param chains: number of MCMC chains
