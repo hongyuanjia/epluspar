@@ -43,7 +43,7 @@ sen_param <- function (self, private, ..., .rep = 12L, .grid_jump = 4L) {
     assert(is_count(.rep))
     assert(is_count(.grid_jump))
 
-    l <- eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .default = FALSE)
+    l <- eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .null = FALSE)
 
     # match Idf data
     # TODO: `match_set_idf_data` should be generalized to be a helper for all
@@ -74,6 +74,9 @@ sen_param <- function (self, private, ..., .rep = 12L, .grid_jump = 4L) {
     if (!nrow(num)) {
         num_info <- data.table::data.table()
     } else {
+        # Add support for field values in `Schedule:Compact` class. See #3
+        num <- check_compactsch(num, private$m_idf)
+
         num_info <- num[, {
             id <- rleid[[1L]]
             range <- new_value_num[[1L]]
@@ -135,7 +138,7 @@ sen_param <- function (self, private, ..., .rep = 12L, .grid_jump = 4L) {
 
     # format input for `Idf$update()`
     input <- num[, list(value_rleid, id = object_id, name = object_name,
-        class = class_name, index = field_index, field = field_name)][
+        class = class_name, index = field_index, field = field_name, is_sch_value)][
         input, on = "value_rleid"][, value_rleid := NULL]
 
     data.table::setorder(input, "case")
@@ -143,6 +146,10 @@ sen_param <- function (self, private, ..., .rep = 12L, .grid_jump = 4L) {
 
     # store
     private$m_log$sample <- input
+
+    # if schedule value detected, change it to character
+    input <- data.table::copy(input)[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)]
+
     dt <- split(input, by = "case", keep.by = FALSE)
 
     # create models
