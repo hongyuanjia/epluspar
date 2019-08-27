@@ -32,8 +32,10 @@ Suggests:
     knitr,
     rmarkdown
 Remotes: hongyuanjia/eplusr
+SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>)
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
 RoxygenNote: 6.1.1
 Collate: 
     'utils.R'

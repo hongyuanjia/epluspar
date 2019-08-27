@@ -9,20 +9,18 @@
 sensi_job(idf, epw)
 }
 \description{
-`sensi_job()` takes an IDF and EPW as input and returns a `SensitivityJob`,
+\code{sensi_job()} takes an IDF and EPW as input and returns a \code{SensitivityJob},
 which provides a prototype of conducting sensitivity analysis of EnergyPlus
-simulations using [Morris][sensitivity::morris] method.
+simulations using \link[sensitivity:morris]{Morris} method.
 }
 \details{
-`SensitivityJob` inherits from [`ParametricJob`][eplusr::param_job()] class,
+\code{SensitivityJob} inherits from \code{\link[eplusr:param_job]{ParametricJob}} class,
 which means that all methods provided by
-[`ParametricJob`][eplusr::param_job()] class are also available for
-`SensitivityJob` class.
+\code{\link[eplusr:param_job]{ParametricJob}} class are also available for
+\code{SensitivityJob} class.
 }
 \section{Usage}{
-
-```
-sensi <- sensi_job(idf, epw)
+\preformatted{sensi <- sensi_job(idf, epw)
 sensi$version()
 sensi$seed()
 sensi$weather()
@@ -30,7 +28,7 @@ sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
 sensi$apply_measure(measure, ..., .names = NULL)
 sensi$samples()
 sensi$evaluate(results)
-param$models()
+sensi$models()
 sensi$save(dir = NULL, separate = TRUE, copy_external = FALSE)
 sensi$run(dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait)
 sensi$kill()
@@ -46,93 +44,86 @@ sensi$report_data(which = NULL, key_value = NULL, name = NULL, year = NULL, tz =
 sensi$tabular_data(which, report_name = NULL, report_for = NULL, table_name = NULL,
                    column_name = NULL, row_name = NULL)
 sensi$print()
-```
+}
 }
 
 \section{Create}{
+\preformatted{sensi <- sensi_job(idf, epw)
+}
 
-```
-sensi <- sensi_job(idf, epw)
-```
-
-**Arguments**
-
-* `idf`: Path to EnergyPlus IDF file or an `Idf` object.
-* `epw`: Path to EnergyPlus EPW file or an `Epw` object. `epw` can also be
-  `NULL` which will force design-day-only simulation when
-  [`$run()`][ParametricJob] method is called. Note this needs at least one
-  `Sizing:DesignDay` object exists in the [Idf].
+\strong{Arguments}
+\itemize{
+\item \code{idf}: Path to EnergyPlus IDF file or an \code{Idf} object.
+\item \code{epw}: Path to EnergyPlus EPW file or an \code{Epw} object. \code{epw} can also be
+\code{NULL} which will force design-day-only simulation when
+\code{\link[=ParametricJob]{$run()}} method is called. Note this needs at least one
+\code{Sizing:DesignDay} object exists in the \link{Idf}.
+}
 }
 
 \section{Set Parameters}{
-
-```
-sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
+\preformatted{sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
 sensi$apply_measure (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
 sensi$samples()
 sensi$evaluate(results)
-```
+}
 
-There are 2 ways to set sensitivity parameters in `SensitivityJob` class,
-i.e. `$param()` and `$apply_measure()`.
+There are 2 ways to set sensitivity parameters in \code{SensitivityJob} class,
+i.e. \code{$param()} and \code{$apply_measure()}.
 
-`$param()` takes parameter definitions in list format, which is similar to
-`$set()` in [eplusr::Idf] class except that each field is not assigned with a
+\code{$param()} takes parameter definitions in list format, which is similar to
+\code{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
 single value, but a numeric vector of length 3, indicating the minimum,
-maximum and number of levels of the parameter. Every list in `$param()`
+maximum and number of levels of the parameter. Every list in \code{$param()}
 should be named with a valid object name. Object ID can also be used but have
-to be combined with prevailing two periods `..`, e.g. `..10` indicates the
-object with ID `10`. There is a special syntax `class := list(field = value)`
-in `$param()`. Note the use of `:=` instead of `=`. The main difference is
-that, unlike `=`, the left hand side of `:=` should be a valid class name in
-current `Idf` object.  It will set the field of all objects in specified
+to be combined with prevailing two periods \code{..}, e.g. \code{..10} indicates the
+object with ID \code{10}. There is a special syntax \code{class := list(field = value)}
+in \code{$param()}. Note the use of \code{:=} instead of \code{=}. The main difference is
+that, unlike \code{=}, the left hand side of \code{:=} should be a valid class name in
+current \code{Idf} object.  It will set the field of all objects in specified
 class to specified value.
 
 For example, the code block below defines 3 parameters:
-
-* Field `Fan Total Efficiency` in object named `Supply Fan 1` in class
-  `Fan:VariableVolume` class, with minimum, maximum and number of levels
-  being 0.1, 1.0 and 5, respectively.
-* Field `Thickness` in all objects in class `Material`, with minimum, maximum
-  and number of levels being 0.01, 1.0 and 5, respectively.
-* Field `Conductivity` in all objects in class `Material`, with minimum,
-  maximum and number of levels being 0.1, 0.6 and 10, respectively.
-
-```
-sensi$param(
+\itemize{
+\item Field \code{Fan Total Efficiency} in object named \code{Supply Fan 1} in class
+\code{Fan:VariableVolume} class, with minimum, maximum and number of levels
+being 0.1, 1.0 and 5, respectively.
+\item Field \code{Thickness} in all objects in class \code{Material}, with minimum, maximum
+and number of levels being 0.01, 1.0 and 5, respectively.
+\item Field \code{Conductivity} in all objects in class \code{Material}, with minimum,
+maximum and number of levels being 0.1, 0.6 and 10, respectively.
+}\preformatted{sensi$param(
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0, levels = 5)),
     Material := list(Thickness = c(0.01, 1, 5), Conductivity = c(0.1, 0.6, 10))
 )
-```
+}
 
-**Arguments**
+\strong{Arguments}
+\itemize{
+\item \code{...}: Lists of paramter definitions. Each list should be named with a valid
+object name or a valid object ID denoted in style \code{..1}, \code{..2} and etc. For
+specifying the fields for all objects in a class, the class name instead of
+the object name should be used, and a special notation \code{:=} should be used
+instead of \code{=}, e.g. \code{class := list(field = value)}.
+\item \code{.r}: An positive integer specifying the number of elementary effect
+computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::morris}. Default: \code{12}.
+\item \code{.grid_jump} : An integer or a vector of integers specifying the number of
+levels that are increased/decreased for computing the elementary effects.
+Default: \code{1L}. For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+\item \code{.names}: A character vector of the parameter names. If \code{NULL},
+the parameter will be named in format \code{theta + number}. Default: \code{NULL}.
+}
 
-* `...`: Lists of paramter definitions. Each list should be named with a valid
-  object name or a valid object ID denoted in style `..1`, `..2` and etc. For
-  specifying the fields for all objects in a class, the class name instead of
-  the object name should be used, and a special notation `:=` should be used
-  instead of `=`, e.g. `class := list(field = value)`.
-* `.r`: An positive integer specifying the number of elementary effect
-  computed per factor. For details, see [Sensitivity::morris]. Default: `12`.
-* `.grid_jump` : An integer or a vector of integers specifying the number of
-  levels that are increased/decreased for computing the elementary effects.
-  Default: `1L`. For details, see [Sensitivity::morris].
-* `.names`: A character vector of the parameter names. If `NULL`,
-  the parameter will be named in format `theta + number`. Default: `NULL`.
-
-`$apply_measure()` works in a similar way as the `$apply_measure` in
-[eplusr::ParametricJob] class, with only exception that each argument
-supplied in `...` should be a numeric vector of length 3, indicating the
+\code{$apply_measure()} works in a similar way as the \code{$apply_measure} in
+\link[eplusr:ParametricJob]{eplusr::ParametricJob} class, with only exception that each argument
+supplied in \code{...} should be a numeric vector of length 3, indicating the
 minimum, maximum and number of levels of the parameter.
-Basically `$apply_measure()` allows to apply a measure to an [Idf].
-A measure here is just a function that takes an [Idf] object and other
-arguments as input, and returns a modified [Idf] object as output. The names
+Basically \code{$apply_measure()} allows to apply a measure to an \link{Idf}.
+A measure here is just a function that takes an \link{Idf} object and other
+arguments as input, and returns a modified \link{Idf} object as output. The names
 of function parameter will be used as the names of sensitivity parameter. For
 example, the equivalent version of specifying parameters described above
-using `$apply_measure()` can be:
-
-```
-measure <- function (idf, efficiency, thickness, conducitivy) {
+using \code{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy) {
     idf$set(
         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
         Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -145,44 +136,43 @@ sensi$apply_measure(measure,
     efficiency = c(min = 0.1, max = 1.0, levels = 5),
     thickness = c(0.01, 1, 5), conductivity = c(0.1, 0.6, 10)
 )
-```
-
-**Arguments**
-
-* `measure`: A function that takes an `Idf` and other arguments as input and
-    returns an `Idf` object as output.
-* `...`: Arguments **except first `Idf` argument** that are passed to that
-  `measure`.
-* `.r`: An positive integer specifying the number of elementary effect
-  computed per factor. For details, see [Sensitivity::morris].
-* `.grid_jump` : An integer or a vector of integers specifying the number of
-  levels that are increased/decreased for computing the elementary effects.
-  For details, see [Sensitivity::morris].
-* `.names`: A character vector of the parameter names. If `NULL`,
-  the parameter names will be the same as function parameters of `measure`.
-
-All models created using `$param()` and `$apply_measure()` will be named in
-the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
-paramter names will be abbreviated using [abbreviate()] with `minlength`
-being `5L` and `use.classes` being `TRUE`. If samples contain duplications,
-[make.unique()] will be called to make sure every model has a unique name.
-
-`$samples()` returns a [data.table][data.table::data.table()] which contains
-the sampled value for each parameter using [Morris][sensitivity::morris]
-method. The returned data.table has `1 + n` columns, where `n` is the
-parameter number, while `1` indicates an extra column named `case` giving the
-index of each sample.
-
-`$evaluate()` takes a numeric vector with the same length as total sample
-number and returns the a [sensitivity::morris()] object. The statistics of
-interest (mu, mu* and sigma) are stored as an attribute named `data` and can
-be retrieved using `atrr(sensi$evaluate(), "data")`.
 }
 
-\section{Inherited Methods from `ParametricJob`}{
+\strong{Arguments}
+\itemize{
+\item \code{measure}: A function that takes an \code{Idf} and other arguments as input and
+returns an \code{Idf} object as output.
+\item \code{...}: Arguments \strong{except first \code{Idf} argument} that are passed to that
+\code{measure}.
+\item \code{.r}: An positive integer specifying the number of elementary effect
+computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+\item \code{.grid_jump} : An integer or a vector of integers specifying the number of
+levels that are increased/decreased for computing the elementary effects.
+For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+\item \code{.names}: A character vector of the parameter names. If \code{NULL},
+the parameter names will be the same as function parameters of \code{measure}.
+}
 
-```
-sensi$version()
+All models created using \code{$param()} and \code{$apply_measure()} will be named in
+the same pattern, i.e. \code{Case_ParameterName(ParamterValue)...}. Note that only
+paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength}
+being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain duplications,
+\code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
+
+\code{$samples()} returns a \link[data.table:data.table]{data.table} which contains
+the sampled value for each parameter using \link[Sensitivity:morris]{Morris}
+method. The returned data.table has \code{1 + n} columns, where \code{n} is the
+parameter number, while \code{1} indicates an extra column named \code{case} giving the
+index of each sample.
+
+\code{$evaluate()} takes a numeric vector with the same length as total sample
+number and returns the a \code{\link[sensitivity:morris]{sensitivity::morris()}} object. The statistics of
+interest (mu, mu* and sigma) are stored as an attribute named \code{data} and can
+be retrieved using \code{atrr(sensi$evaluate(), "data")}.
+}
+
+\section{Inherited Methods from \code{ParametricJob}}{
+\preformatted{sensi$version()
 sensi$seed()
 sensi$weather()
 param$models()
@@ -201,11 +191,11 @@ sensi$report_data(which = NULL, key_value = NULL, name = NULL, year = NULL, tz =
 sensi$tabular_data(which, report_name = NULL, report_for = NULL, table_name = NULL,
                    column_name = NULL, row_name = NULL)
 sensi$print()
-```
+}
 
 All methods listed above are inherited from eplusr's
-[`ParametricJob`][eplusr::param_job()]. For detailed documentation on each
-methods, please see [eplusr's documentation][eplusr::ParametricJob].
+\code{\link[eplusr:param_job]{ParametricJob}}. For detailed documentation on each
+methods, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
 }
 
 \examples{

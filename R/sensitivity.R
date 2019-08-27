@@ -25,7 +25,7 @@ NULL
 #' sensi$apply_measure(measure, ..., .names = NULL)
 #' sensi$samples()
 #' sensi$evaluate(results)
-#' param$models()
+#' sensi$models()
 #' sensi$save(dir = NULL, separate = TRUE, copy_external = FALSE)
 #' sensi$run(dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait)
 #' sensi$kill()
