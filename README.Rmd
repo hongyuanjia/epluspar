@@ -57,27 +57,75 @@ remotes::install_github("ideas-lab-nus/epScan")
 
 # Get started
 
-```{r get-started, fig.path = "man/figures/"}
+## Sensitivity Analysis
+
+Create a `SensitivityJob` object:
+
+```{r}
 # use an example file from EnergyPlus v8.8 for demonstration here
 path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "5Zone_Transformer.idf")
 path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
 
 # create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
-sen <- Sensitivity$new(path_idf, path_epw)
+sen <- sensi_job(path_idf, path_epw)
+```
 
+Set sensitivity parameters using `$param()` or `$apply_measure()`.
+
+* Using `$param()`
+
+```{r, eval = FALSE}
 # set parameter using similar syntax to `Idf$set()` in eplusr
 sen$param(
-    # Syntax: Object Name = list(Field = c(Min, Max, Levels))
-    GP01 = list(Thickness = c(min = 0.01, max = 1, levels = 5)),
+    # For adding a single object field as parameter
+    # Syntax: Object = list(Field = c(Min, Max, Levels))
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(0.1, 1.0, 5)),
+
+    # For adding a class field as parameter
+    Material := list(
+        Thickness = c(min = 0.01, max = 0.08, levels = 5),
+        Conductivity = c(min = 0.01, max = 0.6, levels = 6)
+    ),
+
+    # use `.names` to give names to each parameter
+    .names = c("thickness", "conducitivy", "efficiency"),
+
     # See `r` and `grid_jump` in `sensitivity::morris`
-    .rep = 12, .grid_jump = 4
+    .r = 8, .grid_jump = 1
 )
+```
 
-# get samples
-# returns a data.table with similar structure to `Idf$to_table()`.
+* Using `$apply_measure()`
+
+```{r}
+# first define a "measure"
+my_actions <- function (idf, efficiency, thickness, conducitivy) {
+    idf$set(
+        `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        Material := list(Thickness = thickness, Conductivity = conducitivy)
+    )
+
+    idf
+}
+
+# then apply that measure with parameter space definitions as function arguments
+sen$apply_measure(my_actions,
+    efficiency = c(0.1, 1.0, 5),
+    thickness = c(0.01, 0.08, 5),
+    conducitivy = c(0.1, 0.6, 6),
+    .r = 8, .grid_jump = 1
+)
+```
+
+Get samples
+
+```{r}
 sen$samples()
+```
 
+Run simulations and calculate statistic indicators
+
+```{r}
 # run simulations in temporary directory
 sen$run(dir = tempdir())
 
@@ -92,7 +140,11 @@ eng <- sen$tabular_data(table_name = "site and source energy",
 
 # extract data
 attr(result, "data")
+```
 
+Plot
+
+```{r get-started, fig.path = "man/figures/"}
 # plot
 plot(result)
 ```
