@@ -23,6 +23,7 @@ Imports:
     data.table,
     eplusr,
     sensitivity,
+    purrr,
     rstan
 Suggests:
     testthat,
