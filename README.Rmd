@@ -88,7 +88,7 @@ sen$param(
     ),
 
     # use `.names` to give names to each parameter
-    .names = c("thickness", "conducitivy", "efficiency"),
+    .names = c("efficiency", "thickness", "conducitivy"),
 
     # See `r` and `grid_jump` in `sensitivity::morris`
     .r = 8, .grid_jump = 1
