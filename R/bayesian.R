@@ -870,7 +870,7 @@ bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, 
     par <- validate_par_space(l, private$m_idf, "bc")
 
     # get sample value
-    sam <- lhs_samples(par, obj_val$value, par$dot$dot_nm, .num_sim)
+    sam <- lhs_samples(par, obj_val$value, .names, .num_sim)
     private$m_log$sample <- sam
 
     # only create models when input and output have been created
@@ -908,7 +908,7 @@ bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L
     # check input format
     par <- validate_par_space(l, type = "bc")
 
-    sam <- lhs_samples(par, NULL, .names, .num_sim)
+    sam <- lhs_samples(par, NULL, par$dot$dot_nm, .num_sim)
 
     # store
     private$m_log$sample <- sam
@@ -1736,26 +1736,26 @@ lhs_samples <- function (par, value, names = NULL, num) {
     # get case name
     nms <- case_names(val[, -"case"])
 
-    # format val for `Idf$update()`
-    val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-        index = field_index, field = field_name, is_sch_value, class_id
-    )][val_m, on = c("value_rleid" = "index_par")]
-    # change value column to list
-    set(val_m, NULL, "value", as.list(val_m$value))
-    setnames(val_m, "value_rleid", "index_par")
-
-    # if schedule value detected, change it to character
-    val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
-        , is_sch_value := NULL]
-
-    # this is necessary to get the right order of val
-    data.table::setorder(val_m, "case")
-    data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-        "name", "index", "field", "value"
-    ))
-
     # combine
     if (!is.null(value)) {
+        # format val for `Idf$update()`
+        val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
+            index = field_index, field = field_name, is_sch_value, class_id
+        )][val_m, on = c("value_rleid" = "index_par")]
+        # change value column to list
+        set(val_m, NULL, "value", as.list(val_m$value))
+        setnames(val_m, "value_rleid", "index_par")
+
+        # if schedule value detected, change it to character
+        val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
+            , is_sch_value := NULL]
+
+        # this is necessary to get the right order of val
+        data.table::setorder(val_m, "case")
+        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
+            "name", "index", "field", "value"
+        ))
+
         # handle grouped parameters
         grp <- par$dot[, list(grouped = class || vapply(dot_nm, length, 1L) > 1L), by = c("rleid")][
             grouped == TRUE

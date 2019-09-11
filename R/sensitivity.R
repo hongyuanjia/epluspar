@@ -383,7 +383,6 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     self
 }
 # }}}
-
 # sen_apply_measure {{{
 sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L) {
     # measure name
@@ -428,56 +427,12 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     self
 }
 # }}}
-
-# sen_assert_has_sampled {{{
-sen_assert_has_sampled <- function (self, private, stop = FALSE) {
-    if (is.null(private$m_morris)) {
-        if (stop) {
-            abort("error_sa_not_ready", paste0("No sensitivity samples are generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
-                "perform Morris sampling."
-            ))
-        } else {
-            message("No sensitivity samples are generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
-                "perform Morris sampling."
-            )
-            return(FALSE)
-        }
-    }
-    TRUE
-}
-# }}}
-
 # sen_samples {{{
 sen_samples <- function (self, private) {
     sen_assert_has_sampled(self, private, stop = FALSE)
     private$m_log$sample$sample
 }
 # }}}
-
-# sen_assert_can_evaluate {{{
-sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
-    if (stop) {
-        fun <- function (...) abort("error_sa_not_ready", paste0(...))
-    } else {
-        fun <- message
-    }
-
-    if (is.null(private$m_param)) {
-        fun("No models have been created. Please use $param() or $apply_measure() ",
-            "to create parametric models after parameters are set."
-        )
-        return(FALSE)
-    }
-
-    # use $output_dir() to perform other checking
-    self$eplus_output_dir()
-
-    TRUE
-}
-# }}}
-
 # sen_evaluate {{{
 sen_evaluate <- function (self, private, results) {
     sen_assert_can_evaluate(self, private)
@@ -502,6 +457,46 @@ sen_evaluate <- function (self, private, results) {
 }
 # }}}
 
+# sen_assert_has_sampled {{{
+sen_assert_has_sampled <- function (self, private, stop = FALSE) {
+    if (is.null(private$m_morris)) {
+        if (stop) {
+            abort("error_sa_not_ready", paste0("No sensitivity samples are generated. ",
+                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "perform Morris sampling."
+            ))
+        } else {
+            message("No sensitivity samples are generated. ",
+                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "perform Morris sampling."
+            )
+            return(FALSE)
+        }
+    }
+    TRUE
+}
+# }}}
+# sen_assert_can_evaluate {{{
+sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
+    if (stop) {
+        fun <- function (...) abort("error_sa_not_ready", paste0(...))
+    } else {
+        fun <- message
+    }
+
+    if (is.null(private$m_param)) {
+        fun("No models have been created. Please use $param() or $apply_measure() ",
+            "to create parametric models after parameters are set."
+        )
+        return(FALSE)
+    }
+
+    # use $output_dir() to perform other checking
+    self$output_dir()
+
+    TRUE
+}
+# }}}
 # case_names {{{
 case_names <- function (sample, minlength = 5L) {
     case_names <- do.call(paste,
@@ -517,7 +512,6 @@ case_names <- function (sample, minlength = 5L) {
     paste0(seq_along(case_names), "_", substring(case_names, 1L, 94L))
 }
 # }}}
-
 # par_names {{{
 par_names <- function (par, names = NULL, type = c("sa", "bc")) {
     if (is.null(names)) {
@@ -533,7 +527,6 @@ par_names <- function (par, names = NULL, type = c("sa", "bc")) {
     }
 }
 # }}}
-
 # morris_samples {{{
 morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
     fctr <- par_names(par, names)
@@ -565,24 +558,24 @@ morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
         on = "name_par", index_par := i.index_par
     ]
 
-    # format val for `Idf$update()`
-    val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-        index = field_index, field = field_name, is_sch_value, class_id
-    )][val_m, on = c("value_rleid" = "index_par")]
-    setnames(val_m, "value_rleid", "index_par")
-
-    # if schedule value detected, change it to character
-    val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
-        , is_sch_value := NULL]
-
-    # this is necessary to get the right order of val
-    data.table::setorder(val_m, "case")
-    data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-        "name", "index", "field", "value"
-    ))
-
     # combine
     if (!is.null(value)) {
+        # format val for `Idf$update()`
+        val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
+            index = field_index, field = field_name, is_sch_value, class_id
+        )][val_m, on = c("value_rleid" = "index_par")]
+        setnames(val_m, "value_rleid", "index_par")
+
+        # if schedule value detected, change it to character
+        val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
+            , is_sch_value := NULL]
+
+        # this is necessary to get the right order of val
+        data.table::setorder(val_m, "case")
+        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
+            "name", "index", "field", "value"
+        ))
+
         val_m <- value[, list(id = object_id, index = field_index, class_id)][
             val_m, on = c("class_id", "index"), allow.cartesian = TRUE][, class_id := NULL]
         data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
@@ -593,7 +586,6 @@ morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
     list(names = nms, morris = mo, sample = val, value = val_m)
 }
 # }}}
-
 # morris_data {{{
 morris_data <- function (morris) {
     stopifnot(inherits(morris, "morris"))
@@ -608,7 +600,6 @@ morris_data <- function (morris) {
     )
 }
 # }}}
-
 # validate_par_space {{{
 validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
     type <- match.arg(type)
@@ -700,7 +691,6 @@ validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
     list(dot = input$dot, num = list(data = num, meta = num_info), chr = list(data = chr, meta = chr_info))
 }
 # }}}
-
 # create_par_models {{{
 create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, type = c("sa", "bc")) {
     type <- match.arg(type)
@@ -720,7 +710,9 @@ create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, typ
             idf
         })
     } else {
-        private$m_param <- purrr::pmap(sam$sample[, -"case"], measure_wrapper, idf = private$m_idf)
+        private$m_param <- purrr::pmap(private$m_log$sample$sample[, -"case"],
+            private$m_log$measure_wrapper, idf = private$m_idf
+        )
     }
 
     # assign name
