@@ -311,7 +311,7 @@ sensi_job <- function (idf, epw) {
 
 # Sensitivity {{{
 Sensitivity <- R6::R6Class(classname = "SensitivityJob",
-    inherit = eplusr:::Parametric, cloneable = FALSE,
+    inherit = eplusr:::Parametric, cloneable = FALSE, lock_class = FALSE,
     public = list(
         # PUBLIC FUNCTIONS {{{
         param = function (..., .names = NULL, .r = 12L, .grid_jump = 4L)
