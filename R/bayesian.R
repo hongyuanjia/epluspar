@@ -470,7 +470,7 @@ sampleQuality <- function(sample, population, k) {
 #'
 #' @section Run Bayesian Calibration Using Stan:
 #' ```
-#' bc$stan_run(iter = 2000L, chains = 4L, echo = wait, ...)
+#' bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
 #' ```
 #'
 #' `$stan_run()` runs Bayesian calibration using Stan.
@@ -665,7 +665,7 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
         eplus_status = function ()
             super$status(),
 
-        stan_run = function (iter = 2000L, chains = 4L, echo = wait, ...)
+        stan_run = function (iter = 2000L, chains = 4L, echo = TRUE, ...)
             bc_stan_run(super, self, private, iter, chains, echo, ...),
 
         stan_kill = function ()
@@ -1092,7 +1092,7 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
 }
 # }}}
 # bc_stan_run {{{
-bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo = wait, ...) {
+bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo = TRUE, ...) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
     # data {{{
@@ -1110,9 +1110,9 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
 
     # newly measured input for prediction
     if (is.null(private$m_log$data_field$new_input)) {
-        x_pred <- xc
+        xpred <- xc
     } else {
-        x_pred <- private$m_log$data_field$new_input
+        xpred <- private$m_log$data_field$new_input
     }
     # }}}
 
@@ -1124,7 +1124,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     # number of measured parameter observations
     n <- nrow(xf)
     # number of newly design points for predictions
-    n_pred <- nrow(x_pred)
+    n_pred <- nrow(xpred)
     # number of simulated observations
     m <- nrow(xc)
     # number of calibration parameters
