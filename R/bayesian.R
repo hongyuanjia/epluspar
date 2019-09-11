@@ -1760,10 +1760,18 @@ lhs_samples <- function (par, value, names = NULL, num) {
 
     # combine
     if (!is.null(value)) {
-        # get parameter index
-        target <- value[, list(id = object_id, index = field_index,
-            index_par = rleidv(value, c("input_rleid", "input_object_rleid")))
+        # handle grouped parameters
+        grp <- par$dot[, list(grouped = class || vapply(dot_nm, length, 1L) > 1L), by = c("rleid")][
+            grouped == TRUE
         ]
+
+        # get parameter index
+        target <- value[, list(id = object_id, input_rleid, input_object_rleid)]
+        target[J(grp$rleid), on = "input_rleid", input_object_rleid := 1L]
+        set(target, NULL, "index_par", rleidv(target, c("input_rleid", "input_object_rleid")))
+        set(target, NULL, c("input_rleid", "input_object_rleid"), NULL)
+
+        # merge
         val_m <- target[val_m, on = c("index_par"), allow.cartesian = TRUE]
         data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
             "id", "name", "index", "field", "value"
