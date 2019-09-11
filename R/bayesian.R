@@ -1498,12 +1498,15 @@ bc_match_input_output_dt <- function (super, self, private, type, append, report
     setnames(dict_var, "idx", "index")
     setnames(dict_mtr, "idx", "index")
 
-    bc_match_input_output_dict(super, self, private, type, append, reporting_frequency, dict_var)
-    bc_match_input_output_dict(super, self, private, type, append = TRUE, reporting_frequency, dict_mtr)
+    if (nrow(dict_var)) {
+        bc_match_input_output_dict(super, self, private, type, append, reporting_frequency, dict_var)
+        bc_match_input_output_dict(super, self, private, type, append = TRUE, reporting_frequency, dict_mtr)
+    } else {
+        bc_match_input_output_dict(super, self, private, type, append, reporting_frequency, dict_mtr)
+    }
 
     # retain the original order
-    private[[paste0("m_", type)]] <- private[[paste0("m_", type)]][c(dict_var$index, dict_mtr$index)][, index := .I]
-    private[[paste0("m_", type)]]
+    (private[[paste0("m_", type)]] <- private[[paste0("m_", type)]][c(dict_var$index, dict_mtr$index)][, index := .I])
 }
 # }}}
 # bc_clean_existing_input_output {{{
