@@ -41,7 +41,7 @@ sampleQuality <- function(sample, population, k) {
 #' bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
 #' bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
 #' bc$param(..., .names = NULL, .num_sim = 30L)
-#' bc$apply_measure(measure, ..., .names = NULL, .num_sim = 30L)
+#' bc$apply_measure(measure, ..., .num_sim = 30L)
 #' bc$samples()
 #' bc$models()
 #' bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
@@ -188,7 +188,7 @@ sampleQuality <- function(sample, population, k) {
 #' @section Set Parameters:
 #' ```
 #' bc$param(..., .names = NULL, .num_sim = 30L)
-#' bc$apply_measure(measure, ..., .names = NULL, .num_sim = 30L)
+#' bc$apply_measure(measure, ..., .num_sim = 30L)
 #' bc$samples()
 #' bc$models()
 #' ```
@@ -288,8 +288,6 @@ sampleQuality <- function(sample, population, k) {
 #' * `.num_sim`: An positive integer specifying the number of simulations to run
 #'   for each value of calibration parameter value. (NOT CORRECT). Default:
 #'   `30L`.
-#' * `.names`: A character vector of the parameter names. If `NULL`,
-#'   the parameter names will be the same as function parameters of `measure`.
 #'
 #' All models created using `$param()` and `$apply_measure()` will be named in
 #' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
@@ -635,8 +633,8 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
         param = function (..., .names = NULL, .num_sim = 30L)
             bc_param(super, self, private, ..., .names = .names, .num_sim = .num_sim),
 
-        apply_measure = function (measure, ..., .names = NULL, .num_sim = 30L)
-            bc_apply_measure(super, self, private, ..., .names = .names, .num_sum = .num_sum),
+        apply_measure = function (measure, ..., .num_sim = 30L)
+            bc_apply_measure(super, self, private, ..., .num_sum = .num_sum),
 
         samples = function ()
             bc_samples(super, self, private),
@@ -872,7 +870,7 @@ bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, 
     par <- validate_par_space(l, private$m_idf, "bc")
 
     # get sample value
-    sam <- lhs_samples(par, obj_val$value, .names, .num_sim)
+    sam <- lhs_samples(par, obj_val$value, par$dot$dot_nm, .num_sim)
     private$m_log$sample <- sam
 
     # only create models when input and output have been created
@@ -891,7 +889,7 @@ bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, 
 }
 # }}}
 # bc_apply_measure {{{
-bc_apply_measure <- function (super, self, private, measure, ..., .names = NULL, .num_sim = 30L) {
+bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L) {
     # measure name
     mea_nm <- deparse(substitute(measure, parent.frame()))
 

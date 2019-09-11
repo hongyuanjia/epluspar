@@ -22,7 +22,7 @@ NULL
 #' sensi$seed()
 #' sensi$weather()
 #' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-#' sensi$apply_measure(measure, ..., .names = NULL)
+#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 #' sensi$samples()
 #' sensi$evaluate(results)
 #' sensi$models()
@@ -58,7 +58,7 @@ NULL
 #' @section Set Parameters:
 #' ```
 #' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-#' sensi$apply_measure (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
+#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 #' sensi$samples()
 #' sensi$models()
 #' sensi$evaluate(results)
@@ -149,8 +149,6 @@ NULL
 #' * `.grid_jump` : An integer or a vector of integers specifying the number of
 #'   levels that are increased/decreased for computing the elementary effects.
 #'   For details, see [Sensitivity::morris].
-#' * `.names`: A character vector of the parameter names. If `NULL`,
-#'   the parameter names will be the same as function parameters of `measure`.
 #'
 #' All models created using `$param()` and `$apply_measure()` will be named in
 #' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that
@@ -320,8 +318,8 @@ Sensitivity <- R6::R6Class(classname = "SensitivityJob",
         param = function (..., .names = NULL, .r = 12L, .grid_jump = 4L)
             sen_param(self, private, ..., .r = .r, .grid_jump = .grid_jump, .names = .names),
 
-        apply_measure = function (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
-            sen_apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump, .names = .names),
+        apply_measure = function (measure, ..., .r = 12L, .grid_jump = 4L)
+            sen_apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump),
 
         samples = function ()
             sen_samples(self, private),
@@ -387,7 +385,7 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
 # }}}
 
 # sen_apply_measure {{{
-sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L, .names = NULL) {
+sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L) {
     # measure name
     mea_nm <- deparse(substitute(measure, parent.frame()))
 
@@ -406,7 +404,7 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     # check input format
     par <- validate_par_space(l, type = "sa")
 
-    sam <- morris_samples(par, NULL, .names, .r, .grid_jump)
+    sam <- morris_samples(par, NULL, par$dot$dot_nm, .r, .grid_jump)
 
     # store morris object
     private$m_morris <- sam$morris

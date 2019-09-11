@@ -23,7 +23,7 @@ bc$read_mdd(update = FALSE)
 bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
 bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
 bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .names = NULL, .num_sim = 30L)
+bc$apply_measure(measure, ..., .num_sim = 30L)
 bc$samples()
 bc$models()
 bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
@@ -172,7 +172,7 @@ parameters. Default: \code{FALSE}.
 
 \section{Set Parameters}{
 \preformatted{bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .names = NULL, .num_sim = 30L)
+bc$apply_measure(measure, ..., .num_sim = 30L)
 bc$samples()
 bc$models()
 }
@@ -268,8 +268,6 @@ returns an \code{Idf} object as output.
 \item \code{.num_sim}: An positive integer specifying the number of simulations to run
 for each value of calibration parameter value. (NOT CORRECT). Default:
 \code{30L}.
-\item \code{.names}: A character vector of the parameter names. If \code{NULL},
-the parameter names will be the same as function parameters of \code{measure}.
 }
 
 All models created using \code{$param()} and \code{$apply_measure()} will be named in

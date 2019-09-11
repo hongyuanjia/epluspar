@@ -25,7 +25,7 @@ sensi$version()
 sensi$seed()
 sensi$weather()
 sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure(measure, ..., .names = NULL)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 sensi$samples()
 sensi$evaluate(results)
 sensi$models()
@@ -63,7 +63,7 @@ sensi$print()
 
 \section{Set Parameters}{
 \preformatted{sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 sensi$samples()
 sensi$models()
 sensi$evaluate(results)
@@ -150,8 +150,6 @@ computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::mor
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
 levels that are increased/decreased for computing the elementary effects.
 For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
-\item \code{.names}: A character vector of the parameter names. If \code{NULL},
-the parameter names will be the same as function parameters of \code{measure}.
 }
 
 All models created using \code{$param()} and \code{$apply_measure()} will be named in
