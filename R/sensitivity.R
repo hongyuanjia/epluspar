@@ -364,91 +364,20 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
 
     # handle whole-class case
     l$value <- data.table::rbindlist(list(
-        obj_val$value[J(l$dot[class == TRUE, dot_nm]), on = "class_name", .SD[1L], by = c("class_id", "field_index")],
-        obj_val$value[!J(l$dot[class == TRUE, dot_nm]), on = "class_name"]
+        obj_val$value[J(l$dot[class == TRUE, rleid]), on = "input_rleid", .SD[1L], by = c("class_id", "field_index")],
+        obj_val$value[!J(l$dot[class == TRUE, rleid]), on = "input_rleid"]
     ), use.names = TRUE)
 
     # validate input
     par <- validate_par_space(l, private$m_idf, "sa")
 
-    if (is.null(.names)) {
-        fctr <- paste0("theta", seq_len(nrow(par$num$meta)))
-    } else {
-        assert(length(.names) == nrow(par$num$meta), msg = paste0(
-            "`.name` should have the same length as number of input parameters, which is ",
-            sQuote(nrow(par$num$meta)), "."
-        ))
-        fctr <- as.character(.names)
-    }
+    # sample
+    sam <- morris_samples(par, obj_val$value, .names, .r, .grid_jump)
 
-    # use sensitivity::morris to generate input
-    mo <- sensitivity::morris(model = NULL, factors = fctr, r = .r,
-        design = list(type = "oat", levels = par$num$meta$levels, grid.jump = .grid_jump),
-        binf = par$num$meta$min, bsup = par$num$meta$max, scale = FALSE
-    )
-    # store morris object
-    private$m_morris <- mo
+    private$m_morris <- sam$morris
+    private$m_log$sample <- sam[names(sam) != "morris"]
 
-    # get parameter value
-    val <- data.table::as.data.table(mo$X)
-
-    # number the case
-    val[, case := .I]
-    data.table::setcolorder(val, "case")
-
-    # store
-    private$m_log$sample <- val
-
-    # assign model names
-    model_names <- do.call(paste,
-        c(
-            mapply(function (name, value) paste0(name, "(", value, ")"),
-                # only use first 5 character to keep it short
-                name = abbreviate(names(val), 5, use.classes = FALSE),
-                value = val, SIMPLIFY = FALSE
-            ),
-            sep = "_"
-        )
-    )
-    # add case prefix
-    model_names <- paste0(seq_along(model_names), "_", model_names)
-
-    data.table::setnames(val, as.character(c("case", par$num$meta$value_rleid)))
-    val <- data.table::melt.data.table(val, id.vars = "case",
-        variable.name = "value_rleid", value.name = "value",
-        variable.factor = FALSE
-    )[, `:=`(value_rleid = as.integer(value_rleid), value = as.list(value))]
-
-    # format val for `Idf$update()`
-    par$num$data <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-        index = field_index, field = field_name, is_sch_value, class_id
-    )]
-    val <- par$num$data[val, on = "value_rleid"][, value_rleid := NULL]
-
-    # if schedule value detected, change it to character
-    val[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)]
-
-    # this is necessary to get the right order of val
-    data.table::setorder(val, "case")
-
-    # combine
-    val <- obj_val$value[, list(id = object_id, class_id, index = field_index)][
-        val, on = c("class_id", "index"), allow.cartesian = TRUE]
-
-    data.table::setcolorder(val, "case")
-
-    # store
-    private$m_log$sample <- data.table::set(val, NULL, c("is_sch_value", "class_id"), NULL)
-
-    dt <- split(val, by = "case", keep.by = FALSE)
-
-    # create models
-    private$m_param <- lapply(dt, function (upd) {
-        idf <- private$m_idf$clone()
-        idf$update(upd)
-        idf
-    })
-    data.table::setattr(private$m_param, "names", model_names)
+    create_par_models(self, private, type = "sa")
 
     self
 }
@@ -474,47 +403,13 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     # check input format
     par <- validate_par_space(l, type = "sa")
 
-    if (is.null(.names)) {
-        fctr <- par$dot$dot_nm
-    } else {
-        assert(length(.names) == nrow(par$num$meta), msg = paste0(
-            "`.name` should have the same length as number of input parameters, which is ",
-            sQuote(nrow(par$num$meta)), "."
-        ))
-        fctr <- as.character(.names)
-    }
+    sam <- morris_samples(par, NULL, .names, .r, .grid_jump)
 
-    # use sensitivity::morris to generate input
-    mo <- sensitivity::morris(model = NULL, factors = fctr, r = .r,
-        design = list(type = "oat", levels = par$num$meta$levels, grid.jump = .grid_jump),
-        binf = par$num$meta$min, bsup = par$num$meta$max, scale = FALSE
-    )
     # store morris object
-    private$m_morris <- mo
-
-    # get parameter value
-    val <- data.table::as.data.table(mo$X)
-
-    # assign model names
-    model_names <- do.call(paste,
-        c(
-            mapply(function (name, value) paste0(name, "(", value, ")"),
-                # only use first 5 character to keep it short
-                name = abbreviate(names(val), 5, use.classes = FALSE),
-                value = val, SIMPLIFY = FALSE
-            ),
-            sep = "_"
-        )
-    )
-    # add case prefix
-    model_names <- paste0(seq_along(model_names), "_", model_names)
-
-    # number the case
-    val[, case := .I]
-    data.table::setcolorder(val, "case")
+    private$m_morris <- sam$morris
 
     # store
-    private$m_log$sample <- val
+    private$m_log$sample <- sam[names(sam) != "morris"]
 
     measure_wrapper <- function (idf, ...) {
         assert(eplusr::is_idf(idf), msg = paste0("Measure should take an `Idf` object as input, not `", class(idf)[[1]], "`."))
@@ -524,51 +419,180 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
         idf
     }
 
+    private$m_log$measure_wrapper <- measure_wrapper
     private$m_log$measure_name <- mea_nm
 
-    out <- purrr::pmap(val[, -"case"], measure_wrapper, idf = private$m_idf)
-
-    data.table::setattr(out, "names", model_names)
-
-    private$m_param <- out
-
-    # log unique ids
-    private$m_log$uuid <- vapply(private$m_param, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
+    create_par_models(self, private, type = "sa")
 
     self
 }
 # }}}
 
+# sen_assert_has_sampled {{{
+sen_assert_has_sampled <- function (self, private, stop = FALSE) {
+    if (is.null(private$m_morris)) {
+        if (stop) {
+            abort("error_sa_not_ready", paste0("No sensitivity samples are generated. ",
+                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "perform Morris sampling."
+            ))
+        } else {
+            message("No sensitivity samples are generated. ",
+                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "perform Morris sampling."
+            )
+            return(FALSE)
+        }
+    }
+    TRUE
+}
+# }}}
+
 # sen_samples {{{
 sen_samples <- function (self, private) {
-    private$m_log$sample
+    sen_assert_has_sampled(self, private, stop = FALSE)
+    private$m_log$sample$sample
+}
+# }}}
+
+# sen_assert_can_evaluate {{{
+sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
+    if (stop) {
+        fun <- function (...) abort("error_sa_not_ready", paste0(...))
+    } else {
+        fun <- message
+    }
+
+    if (is.null(private$m_param)) {
+        fun("No models have been created. Please use $param() or $apply_measure() ",
+            "to create parametric models after parameters are set."
+        )
+        return(FALSE)
+    }
+
+    # use $output_dir() to perform other checking
+    self$eplus_output_dir()
+
+    TRUE
 }
 # }}}
 
 # sen_evaluate {{{
 sen_evaluate <- function (self, private, results) {
+    sen_assert_can_evaluate(self, private)
+
     if (!is.data.frame(results)) {
         assert(is.numeric(results), no_na(results))
     } else {
         type <- vapply(results, typeof, character(1L))
 
         if (any(!type %in% c("integer", "double"))) {
-            stop("Non-numeric columns found in results: ",
-                paste0(sQuote(names(results)[!type %in% c("integer", "double")]), collapse = ", ")
+            abort("error_sa_invalid_results", paste0("Non-numeric columns found in results: ",
+                paste0(sQuote(names(results)[!type %in% c("integer", "double")]), collapse = ", "))
             )
         }
     }
 
     private$m_morris <- sensitivity::tell(private$m_morris, results)
 
-    attr(private$m_morris, "data") <- sen_morris_data(private$m_morris)
+    attr(private$m_morris, "data") <- morris_data(private$m_morris)
 
     private$m_morris
 }
 # }}}
 
-# sen_morris_data {{{
-sen_morris_data <- function (morris) {
+# case_names {{{
+case_names <- function (sample, minlength = 5L) {
+    case_names <- do.call(paste,
+        c(
+            mapply(function (name, value) paste0(name, "(", prettyNum(value), ")"),
+                # only use first 5 character to keep it short
+                name = abbreviate(names(sample), minlength, use.classes = FALSE),
+                value = sample, SIMPLIFY = FALSE
+            ),
+            sep = "_"
+        )
+    )
+    paste0(seq_along(case_names), "_", substring(case_names, 1L, 94L))
+}
+# }}}
+
+# par_names {{{
+par_names <- function (par, names = NULL) {
+    if (is.null(names)) {
+        paste0("theta", seq_len(nrow(par$num$meta)))
+    } else {
+        assert(length(names) == nrow(par$num$meta), msg = paste0(
+            "`.name` should have the same length as number of input parameters, which is ",
+            nrow(par$num$meta), "."
+        ))
+        as.character(names)
+    }
+}
+# }}}
+
+# morris_samples {{{
+morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
+    fctr <- par_names(par, names)
+
+    # use sensitivity::morris to generate input
+    mo <- sensitivity::morris(model = NULL, factors = fctr, r = r,
+        design = list(type = "oat", levels = par$num$meta$levels, grid.jump = grid_jump),
+        binf = par$num$meta$min, bsup = par$num$meta$max, scale = FALSE
+    )
+
+    # get parameter value
+    val <- data.table::as.data.table(mo$X)
+
+    # get case name
+    nms <- case_names(val)
+
+    # number the case
+    val[, case := .I]
+    data.table::setcolorder(val, "case")
+
+    # melt
+    val_m <- data.table::melt.data.table(val, id.vars = "case",
+        variable.name = "name_par", value.name = "value",
+        variable.factor = FALSE
+    )[, `:=`(value = as.list(value))]
+
+    # add parameter index
+    val_m[data.table(index_par = seq_along(fctr), name_par = fctr),
+        on = "name_par", index_par := i.index_par
+    ]
+
+    # format val for `Idf$update()`
+    val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
+        index = field_index, field = field_name, is_sch_value, class_id
+    )][val_m, on = c("value_rleid" = "index_par")]
+    setnames(val_m, "value_rleid", "index_par")
+
+    # if schedule value detected, change it to character
+    val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
+        , is_sch_value := NULL]
+
+    # this is necessary to get the right order of val
+    data.table::setorder(val_m, "case")
+    data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
+        "name", "index", "field", "value"
+    ))
+
+    # combine
+    if (!is.null(value)) {
+        val_m <- value[, list(id = object_id, index = field_index, class_id)][
+            val_m, on = c("class_id", "index"), allow.cartesian = TRUE][, class_id := NULL]
+        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
+            "id", "name", "index", "field", "value"
+        ))
+    }
+
+    list(names = nms, morris = mo, sample = val, value = val_m)
+}
+# }}}
+
+# morris_data {{{
+morris_data <- function (morris) {
     stopifnot(inherits(morris, "morris"))
 
     mu <- apply(morris$ee, 2, mean)
@@ -672,5 +696,37 @@ validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
     # }}}
 
     list(dot = input$dot, num = list(data = num, meta = num_info), chr = list(data = chr, meta = chr_info))
+}
+# }}}
+
+# create_par_models {{{
+create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, type = c("sa", "bc")) {
+    type <- match.arg(type)
+
+    if (type == "sa") {
+        if (!sen_assert_has_sampled(self, private)) return(invisible())
+    } else if (type == "bc"){
+        if (!bc_assert_can_model(self, private)) return(invisible())
+    }
+
+    # check if parameter is created using $apply_measure() or not
+    if (is.null(private$m_log$measure_name)) {
+        dt <- split(private$m_log$sample$value, by = "case", keep.by = FALSE)
+        private$m_param <- lapply(dt, function (upd) {
+            idf <- private$m_idf$clone()
+            idf$update(upd)
+            idf
+        })
+    } else {
+        private$m_param <- purrr::pmap(sam$sample[, -"case"], measure_wrapper, idf = private$m_idf)
+    }
+
+    # assign name
+    setattr(private$m_param, "names", private$m_log$sample$names)
+
+    # log unique ids
+    private$m_log$uuid <- vapply(private$m_param, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
+
+    private$m_param
 }
 # }}}
