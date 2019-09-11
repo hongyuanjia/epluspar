@@ -18,13 +18,22 @@ URL: https://github.com/ideas-lab-nus/epScan
 BugReports: https://github.com/ideas-lab-nus/epScan
 License: MIT + file LICENSE
 Depends:
-    R (>= 3.2.0)
+    R (>= 3.4.0)
 Imports:
     data.table,
     eplusr,
-    sensitivity,
+    methods,
     purrr,
-    rstan
+    Rcpp (>= 0.12.0),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.0.0.9000),
+    sensitivity
+LinkingTo:
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
 Suggests:
     testthat,
     covr,
@@ -32,11 +41,15 @@ Suggests:
     knitr,
     rmarkdown
 Remotes: hongyuanjia/eplusr
-SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>)
+SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>); GNU make
 Encoding: UTF-8
 LazyData: true
+Biarch: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
 RoxygenNote: 6.1.1
-Collate: 
+Collate:
+    'bayesian.R'
+    'epScan.R'
     'utils.R'
     'sensitivity.R'
+    'stanmodels.R'

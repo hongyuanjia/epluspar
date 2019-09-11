@@ -25,7 +25,7 @@ sensi$version()
 sensi$seed()
 sensi$weather()
 sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure(measure, ..., .names = NULL)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 sensi$samples()
 sensi$evaluate(results)
 sensi$models()
@@ -63,8 +63,9 @@ sensi$print()
 
 \section{Set Parameters}{
 \preformatted{sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
 sensi$samples()
+sensi$models()
 sensi$evaluate(results)
 }
 
@@ -149,12 +150,10 @@ computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::mor
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
 levels that are increased/decreased for computing the elementary effects.
 For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
-\item \code{.names}: A character vector of the parameter names. If \code{NULL},
-the parameter names will be the same as function parameters of \code{measure}.
 }
 
 All models created using \code{$param()} and \code{$apply_measure()} will be named in
-the same pattern, i.e. \code{Case_ParameterName(ParamterValue)...}. Note that only
+the same pattern, i.e. \code{Case_ParameterName(ParamterValue)...}. Note that
 paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength}
 being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain duplications,
 \code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
@@ -164,6 +163,11 @@ the sampled value for each parameter using \link[Sensitivity:morris]{Morris}
 method. The returned data.table has \code{1 + n} columns, where \code{n} is the
 parameter number, while \code{1} indicates an extra column named \code{case} giving the
 index of each sample.
+
+\code{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
+using sensitivity parameter values genereated using Morris method. This means
+that parametric models can only be created after sensitivity parameters have
+been set using \code{$param()} or \code{$apply_measure()}.
 
 \code{$evaluate()} takes a numeric vector with the same length as total sample
 number and returns the a \code{\link[sensitivity:morris]{sensitivity::morris()}} object. The statistics of
@@ -175,7 +179,6 @@ be retrieved using \code{atrr(sensi$evaluate(), "data")}.
 \preformatted{sensi$version()
 sensi$seed()
 sensi$weather()
-param$models()
 sensi$save(dir = NULL, separate = TRUE, copy_external = FALSE)
 sensi$run(dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait)
 sensi$kill()
@@ -194,14 +197,12 @@ sensi$print()
 }
 
 All methods listed above are inherited from eplusr's
-\code{\link[eplusr:param_job]{ParametricJob}}. For detailed documentation on each
-methods, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
+\code{\link[eplusr:ParametricJob]{ParametricJob}}. For detailed documentation on each
+method, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
 }
 
 \examples{
 \dontrun{
-library(eplusr)
-
 if (is_avail_eplus(8.8)) {
     idf_name <- "5Zone_Transformer.idf"
     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"

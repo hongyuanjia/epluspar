@@ -4,3 +4,8 @@
 try.R
 inst/doc
 .lintr
+src/*.o
+src/*.cc
+src/*.hpp
+src/*.so
+src/*.dll

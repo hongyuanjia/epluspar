@@ -8,8 +8,6 @@ models.
 
 [![Travis-CI Build
 Status](https://travis-ci.org/ideas-lab-nus/epScan.svg?branch=master)](https://travis-ci.org/ideas-lab-nus/epScan)
-[![AppVeyor Build
-Status](https://ci.appveyor.com/api/projects/status/github/ideas-lab-nus/epScan?branch=master&svg=true)](https://ci.appveyor.com/project/ideas-lab-nus/epScan)
 [![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
 [![CRAN Download
@@ -102,39 +100,20 @@ sen$apply_measure(my_actions,
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: `my_actions`
 #> Parametric Models [32]: 
-#> [01]: `1_effic(0.775)_thick(0.08)_condu(0.4)`
-#> [02]: `2_effic(0.55)_thick(0.08)_condu(0.4)`
-#> [03]: `3_effic(0.55)_thick(0.08)_condu(0.3)`
-#> [04]: `4_effic(0.55)_thick(0.0625)_condu(0.3)`
-#> [05]: `5_effic(0.55)_thick(0.0275)_condu(0.4)`
-#> [06]: `6_effic(0.775)_thick(0.0275)_condu(0.4)`
-#> [07]: `7_effic(0.775)_thick(0.045)_condu(0.4)`
-#> [08]: `8_effic(0.775)_thick(0.045)_condu(0.5)`
-#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.5)`
-#> [10]: `10_effic(0.1)_thick(0.045)_condu(0.5)`
-#> [11]: `11_effic(0.1)_thick(0.045)_condu(0.4)`
-#> [12]: `12_effic(0.325)_thick(0.045)_condu(0.4)`
-#> [13]: `13_effic(0.55)_thick(0.0275)_condu(0.3)`
-#> [14]: `14_effic(0.55)_thick(0.0275)_condu(0.2)`
-#> [15]: `15_effic(0.325)_thick(0.0275)_condu(0.2)`
-#> [16]: `16_effic(0.325)_thick(0.045)_condu(0.2)`
-#> [17]: `17_effic(0.325)_thick(0.045)_condu(0.3)`
-#> [18]: `18_effic(0.325)_thick(0.0625)_condu(0.3)`
-#> [19]: `19_effic(0.1)_thick(0.0625)_condu(0.3)`
-#> [20]: `20_effic(0.1)_thick(0.0625)_condu(0.2)`
-#> [21]: `21_effic(0.775)_thick(0.0275)_condu(0.1)`
-#> [22]: `22_effic(0.55)_thick(0.0275)_condu(0.1)`
-#> [23]: `23_effic(0.55)_thick(0.0275)_condu(0.2)`
-#> [24]: `24_effic(0.55)_thick(0.045)_condu(0.2)`
-#> [25]: `25_effic(0.775)_thick(0.08)_condu(0.5)`
-#> [26]: `26_effic(0.775)_thick(0.0625)_condu(0.5)`
-#> [27]: `27_effic(0.775)_thick(0.0625)_condu(0.6)`
-#> [28]: `28_effic(1)_thick(0.0625)_condu(0.6)`
-#> [29]: `29_effic(0.775)_thick(0.08)_condu(0.6)`
-#> [30]: `30_effic(0.775)_thick(0.0625)_condu(0.6)`
-#> [31]: `31_effic(0.55)_thick(0.0625)_condu(0.6)`
-#> [32]: `32_effic(0.55)_thick(0.0625)_condu(0.5)`
-#> << Job has not been run before >>
+#> [01]: `1_effic(0.325)_thick(0.01)_condu(0.2)`
+#> [02]: `2_effic(0.325)_thick(0.01)_condu(0.1)`
+#> [03]: `3_effic(0.325)_thick(0.0275)_condu(0.1)`
+#> [04]: `4_effic(0.55)_thick(0.0275)_condu(0.1)`
+#> [05]: `5_effic(0.325)_thick(0.045)_condu(0.3)`
+#> [06]: `6_effic(0.325)_thick(0.045)_condu(0.4)`
+#> [07]: `7_effic(0.325)_thick(0.0625)_condu(0.4)`
+#> [08]: `8_effic(0.55)_thick(0.0625)_condu(0.4)`
+#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.2)`
+#> [10]: `10_effic(0.1)_thick(0.08)_condu(0.2)`
+#> [11]: `11_effic(0.325)_thick(0.08)_condu(0.2)`
+#> [12]: `12_effic(0.325)_thick(0.08)_condu(0.1)`
+#> [13]: `13_effic(1)_thick(0.0625)_condu(0.2)`
+....
 ```
 
 Get samples
@@ -142,105 +121,33 @@ Get samples
 ``` r
 sen$samples()
 #>     case efficiency thickness conducitivy
-#>  1:    1      0.775    0.0800         0.4
-#>  2:    2      0.550    0.0800         0.4
-#>  3:    3      0.550    0.0800         0.3
-#>  4:    4      0.550    0.0625         0.3
-#>  5:    5      0.550    0.0275         0.4
-#>  6:    6      0.775    0.0275         0.4
-#>  7:    7      0.775    0.0450         0.4
-#>  8:    8      0.775    0.0450         0.5
-#>  9:    9      0.100    0.0625         0.5
-#> 10:   10      0.100    0.0450         0.5
-#> 11:   11      0.100    0.0450         0.4
-#> 12:   12      0.325    0.0450         0.4
-#> 13:   13      0.550    0.0275         0.3
-#> 14:   14      0.550    0.0275         0.2
-#> 15:   15      0.325    0.0275         0.2
-#> 16:   16      0.325    0.0450         0.2
-#> 17:   17      0.325    0.0450         0.3
-#> 18:   18      0.325    0.0625         0.3
-#> 19:   19      0.100    0.0625         0.3
-#> 20:   20      0.100    0.0625         0.2
-#> 21:   21      0.775    0.0275         0.1
-#> 22:   22      0.550    0.0275         0.1
-#> 23:   23      0.550    0.0275         0.2
-#> 24:   24      0.550    0.0450         0.2
-#> 25:   25      0.775    0.0800         0.5
-#> 26:   26      0.775    0.0625         0.5
-#> 27:   27      0.775    0.0625         0.6
-#> 28:   28      1.000    0.0625         0.6
-#> 29:   29      0.775    0.0800         0.6
-#> 30:   30      0.775    0.0625         0.6
-#> 31:   31      0.550    0.0625         0.6
-#> 32:   32      0.550    0.0625         0.5
-#>     case efficiency thickness conducitivy
+#>  1:    1      0.325    0.0100         0.2
+#>  2:    2      0.325    0.0100         0.1
+#>  3:    3      0.325    0.0275         0.1
+#>  4:    4      0.550    0.0275         0.1
+#>  5:    5      0.325    0.0450         0.3
+#>  6:    6      0.325    0.0450         0.4
+#>  7:    7      0.325    0.0625         0.4
+#>  8:    8      0.550    0.0625         0.4
+#>  9:    9      0.100    0.0625         0.2
+#> 10:   10      0.100    0.0800         0.2
+#> 11:   11      0.325    0.0800         0.2
+#> 12:   12      0.325    0.0800         0.1
+#> 13:   13      1.000    0.0625         0.2
+#> 14:   14      0.775    0.0625         0.2
+#> 15:   15      0.775    0.0625         0.1
+#> 16:   16      0.775    0.0800         0.1
+#> 17:   17      0.775    0.0450         0.4
+#> 18:   18      0.550    0.0450         0.4
+#> 19:   19      0.550    0.0450         0.3
+....
 ```
 
 Run simulations and calculate statistic indicators
 
 ``` r
 # run simulations in temporary directory
-sen$run(dir = tempdir())
-#> 01|RUNNING    --> [IDF]`1_effic(0.775)_thick(0.08)_condu(0.4).idf` + [...
-#> 02|RUNNING    --> [IDF]`2_effic(0.55)_thick(0.08)_condu(0.4).idf` + [E...
-#> 03|RUNNING    --> [IDF]`3_effic(0.55)_thick(0.08)_condu(0.3).idf` + [E...
-#> 04|RUNNING    --> [IDF]`4_effic(0.55)_thick(0.0625)_condu(0.3).idf` + ...
-#> 05|RUNNING    --> [IDF]`5_effic(0.55)_thick(0.0275)_condu(0.4).idf` + ...
-#> 06|RUNNING    --> [IDF]`6_effic(0.775)_thick(0.0275)_condu(0.4).idf` +...
-#> 07|RUNNING    --> [IDF]`7_effic(0.775)_thick(0.045)_condu(0.4).idf` + ...
-#> 08|RUNNING    --> [IDF]`8_effic(0.775)_thick(0.045)_condu(0.5).idf` + ...
-#> 01|COMPLETED  --> [IDF]`1_effic(0.775)_thick(0.08)_condu(0.4).idf` + [...
-#> 09|RUNNING    --> [IDF]`9_effic(0.1)_thick(0.0625)_condu(0.5).idf` + [...
-#> 02|COMPLETED  --> [IDF]`2_effic(0.55)_thick(0.08)_condu(0.4).idf` + [E...
-#> 10|RUNNING    --> [IDF]`10_effic(0.1)_thick(0.045)_condu(0.5).idf` + [...
-#> 03|COMPLETED  --> [IDF]`3_effic(0.55)_thick(0.08)_condu(0.3).idf` + [E...
-#> 11|RUNNING    --> [IDF]`11_effic(0.1)_thick(0.045)_condu(0.4).idf` + [...
-#> 06|COMPLETED  --> [IDF]`6_effic(0.775)_thick(0.0275)_condu(0.4).idf` +...
-#> 12|RUNNING    --> [IDF]`12_effic(0.325)_thick(0.045)_condu(0.4).idf` +...
-#> 07|COMPLETED  --> [IDF]`7_effic(0.775)_thick(0.045)_condu(0.4).idf` + ...
-#> 13|RUNNING    --> [IDF]`13_effic(0.55)_thick(0.0275)_condu(0.3).idf` +...
-#> 14|RUNNING    --> [IDF]`14_effic(0.55)_thick(0.0275)_condu(0.2).idf` +...
-#> 08|COMPLETED  --> [IDF]`8_effic(0.775)_thick(0.045)_condu(0.5).idf` + ...
-#> 15|RUNNING    --> [IDF]`15_effic(0.325)_thick(0.0275)_condu(0.2).idf` ...
-#> 16|RUNNING    --> [IDF]`16_effic(0.325)_thick(0.045)_condu(0.2).idf` +...
-#> 09|COMPLETED  --> [IDF]`9_effic(0.1)_thick(0.0625)_condu(0.5).idf` + [...
-#> 17|RUNNING    --> [IDF]`17_effic(0.325)_thick(0.045)_condu(0.3).idf` +...
-#> 10|COMPLETED  --> [IDF]`10_effic(0.1)_thick(0.045)_condu(0.5).idf` + [...
-#> 18|RUNNING    --> [IDF]`18_effic(0.325)_thick(0.0625)_condu(0.3).idf` ...
-#> 12|COMPLETED  --> [IDF]`12_effic(0.325)_thick(0.045)_condu(0.4).idf` +...
-#> 19|RUNNING    --> [IDF]`19_effic(0.1)_thick(0.0625)_condu(0.3).idf` + ...
-#> 20|RUNNING    --> [IDF]`20_effic(0.1)_thick(0.0625)_condu(0.2).idf` + ...
-#> 13|COMPLETED  --> [IDF]`13_effic(0.55)_thick(0.0275)_condu(0.3).idf` +...
-#> 21|RUNNING    --> [IDF]`21_effic(0.775)_thick(0.0275)_condu(0.1).idf` ...
-#> 15|COMPLETED  --> [IDF]`15_effic(0.325)_thick(0.0275)_condu(0.2).idf` ...
-#> 22|RUNNING    --> [IDF]`22_effic(0.55)_thick(0.0275)_condu(0.1).idf` +...
-#> 16|COMPLETED  --> [IDF]`16_effic(0.325)_thick(0.045)_condu(0.2).idf` +...
-#> 23|RUNNING    --> [IDF]`23_effic(0.55)_thick(0.0275)_condu(0.2).idf` +...
-#> 24|RUNNING    --> [IDF]`24_effic(0.55)_thick(0.045)_condu(0.2).idf` + ...
-#> 17|COMPLETED  --> [IDF]`17_effic(0.325)_thick(0.045)_condu(0.3).idf` +...
-#> 25|RUNNING    --> [IDF]`25_effic(0.775)_thick(0.08)_condu(0.5).idf` + ...
-#> 18|COMPLETED  --> [IDF]`18_effic(0.325)_thick(0.0625)_condu(0.3).idf` ...
-#> 26|RUNNING    --> [IDF]`26_effic(0.775)_thick(0.0625)_condu(0.5).idf` ...
-#> 19|COMPLETED  --> [IDF]`19_effic(0.1)_thick(0.0625)_condu(0.3).idf` + ...
-#> 27|RUNNING    --> [IDF]`27_effic(0.775)_thick(0.0625)_condu(0.6).idf` ...
-#> 20|COMPLETED  --> [IDF]`20_effic(0.1)_thick(0.0625)_condu(0.2).idf` + ...
-#> 28|RUNNING    --> [IDF]`28_effic(1)_thick(0.0625)_condu(0.6).idf` + [E...
-#> 22|COMPLETED  --> [IDF]`22_effic(0.55)_thick(0.0275)_condu(0.1).idf` +...
-#> 29|RUNNING    --> [IDF]`29_effic(0.775)_thick(0.08)_condu(0.6).idf` + ...
-#> 23|COMPLETED  --> [IDF]`23_effic(0.55)_thick(0.0275)_condu(0.2).idf` +...
-#> 30|RUNNING    --> [IDF]`30_effic(0.775)_thick(0.0625)_condu(0.6).idf` ...
-#> 24|COMPLETED  --> [IDF]`24_effic(0.55)_thick(0.045)_condu(0.2).idf` + ...
-#> 31|RUNNING    --> [IDF]`31_effic(0.55)_thick(0.0625)_condu(0.6).idf` +...
-#> 25|COMPLETED  --> [IDF]`25_effic(0.775)_thick(0.08)_condu(0.5).idf` + ...
-#> 32|RUNNING    --> [IDF]`32_effic(0.55)_thick(0.0625)_condu(0.5).idf` +...
-#> 26|COMPLETED  --> [IDF]`26_effic(0.775)_thick(0.0625)_condu(0.5).idf` ...
-#> 27|COMPLETED  --> [IDF]`27_effic(0.775)_thick(0.0625)_condu(0.6).idf` ...
-#> 28|COMPLETED  --> [IDF]`28_effic(1)_thick(0.0625)_condu(0.6).idf` + [E...
-#> 29|COMPLETED  --> [IDF]`29_effic(0.775)_thick(0.08)_condu(0.6).idf` + ...
-#> 30|COMPLETED  --> [IDF]`30_effic(0.775)_thick(0.0625)_condu(0.6).idf` ...
-#> 31|COMPLETED  --> [IDF]`31_effic(0.55)_thick(0.0625)_condu(0.6).idf` +...
-#> 32|COMPLETED  --> [IDF]`32_effic(0.55)_thick(0.0625)_condu(0.5).idf` +...
+sen$run(dir = tempdir(), echo = FALSE)
 #> ── EnergPlus Parametric Job ───────────────────────────────────────────────
 #> Seed Model: `/usr/local/EnergyPlus-8-8-0/ExampleFiles/5Zone_Transforme...
 #> Weather: `/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francisco...
@@ -248,39 +155,20 @@ sen$run(dir = tempdir())
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: `my_actions`
 #> Parametric Models [32]: 
-#> [01]: `1_effic(0.775)_thick(0.08)_condu(0.4)`    <-- SUCCEEDED
-#> [02]: `2_effic(0.55)_thick(0.08)_condu(0.4)`     <-- SUCCEEDED
-#> [03]: `3_effic(0.55)_thick(0.08)_condu(0.3)`     <-- SUCCEEDED
-#> [04]: `4_effic(0.55)_thick(0.0625)_condu(0.3)`   <-- SUCCEEDED
-#> [05]: `5_effic(0.55)_thick(0.0275)_condu(0.4)`   <-- SUCCEEDED
-#> [06]: `6_effic(0.775)_thick(0.0275)_condu(0.4)`  <-- SUCCEEDED
-#> [07]: `7_effic(0.775)_thick(0.045)_condu(0.4)`   <-- SUCCEEDED
-#> [08]: `8_effic(0.775)_thick(0.045)_condu(0.5)`   <-- SUCCEEDED
-#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.5)`    <-- SUCCEEDED
-#> [10]: `10_effic(0.1)_thick(0.045)_condu(0.5)`    <-- SUCCEEDED
-#> [11]: `11_effic(0.1)_thick(0.045)_condu(0.4)`    <-- SUCCEEDED
-#> [12]: `12_effic(0.325)_thick(0.045)_condu(0.4)`  <-- SUCCEEDED
-#> [13]: `13_effic(0.55)_thick(0.0275)_condu(0.3)`  <-- SUCCEEDED
-#> [14]: `14_effic(0.55)_thick(0.0275)_condu(0.2)`  <-- SUCCEEDED
-#> [15]: `15_effic(0.325)_thick(0.0275)_condu(0.2)` <-- SUCCEEDED
-#> [16]: `16_effic(0.325)_thick(0.045)_condu(0.2)`  <-- SUCCEEDED
-#> [17]: `17_effic(0.325)_thick(0.045)_condu(0.3)`  <-- SUCCEEDED
-#> [18]: `18_effic(0.325)_thick(0.0625)_condu(0.3)` <-- SUCCEEDED
-#> [19]: `19_effic(0.1)_thick(0.0625)_condu(0.3)`   <-- SUCCEEDED
-#> [20]: `20_effic(0.1)_thick(0.0625)_condu(0.2)`   <-- SUCCEEDED
-#> [21]: `21_effic(0.775)_thick(0.0275)_condu(0.1)` <-- SUCCEEDED
-#> [22]: `22_effic(0.55)_thick(0.0275)_condu(0.1)`  <-- SUCCEEDED
-#> [23]: `23_effic(0.55)_thick(0.0275)_condu(0.2)`  <-- SUCCEEDED
-#> [24]: `24_effic(0.55)_thick(0.045)_condu(0.2)`   <-- SUCCEEDED
-#> [25]: `25_effic(0.775)_thick(0.08)_condu(0.5)`   <-- SUCCEEDED
-#> [26]: `26_effic(0.775)_thick(0.0625)_condu(0.5)` <-- SUCCEEDED
-#> [27]: `27_effic(0.775)_thick(0.0625)_condu(0.6)` <-- SUCCEEDED
-#> [28]: `28_effic(1)_thick(0.0625)_condu(0.6)`     <-- SUCCEEDED
-#> [29]: `29_effic(0.775)_thick(0.08)_condu(0.6)`   <-- SUCCEEDED
-#> [30]: `30_effic(0.775)_thick(0.0625)_condu(0.6)` <-- SUCCEEDED
-#> [31]: `31_effic(0.55)_thick(0.0625)_condu(0.6)`  <-- SUCCEEDED
-#> [32]: `32_effic(0.55)_thick(0.0625)_condu(0.5)`  <-- SUCCEEDED
-#>  Simulation started at `2019-08-28 02:36:24` and completed successfully after 12.02 secs.
+#> [01]: `1_effic(0.325)_thick(0.01)_condu(0.2)`    <-- SUCCEEDED
+#> [02]: `2_effic(0.325)_thick(0.01)_condu(0.1)`    <-- SUCCEEDED
+#> [03]: `3_effic(0.325)_thick(0.0275)_condu(0.1)`  <-- SUCCEEDED
+#> [04]: `4_effic(0.55)_thick(0.0275)_condu(0.1)`   <-- SUCCEEDED
+#> [05]: `5_effic(0.325)_thick(0.045)_condu(0.3)`   <-- SUCCEEDED
+#> [06]: `6_effic(0.325)_thick(0.045)_condu(0.4)`   <-- SUCCEEDED
+#> [07]: `7_effic(0.325)_thick(0.0625)_condu(0.4)`  <-- SUCCEEDED
+#> [08]: `8_effic(0.55)_thick(0.0625)_condu(0.4)`   <-- SUCCEEDED
+#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.2)`    <-- SUCCEEDED
+#> [10]: `10_effic(0.1)_thick(0.08)_condu(0.2)`     <-- SUCCEEDED
+#> [11]: `11_effic(0.325)_thick(0.08)_condu(0.2)`   <-- SUCCEEDED
+#> [12]: `12_effic(0.325)_thick(0.08)_condu(0.1)`   <-- SUCCEEDED
+#> [13]: `13_effic(1)_thick(0.0625)_condu(0.2)`     <-- SUCCEEDED
+....
 
 # extract output
 # here is just am example
@@ -292,20 +180,20 @@ eng <- sen$tabular_data(table_name = "site and source energy",
 (result <- sen$evaluate(eng))
 #> 
 #> Call:
-#> sensitivity::morris(model = NULL, factors = fctr, r = .r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = .grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = FALSE)
+#> sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = FALSE)
 #> 
 #> Model runs: 32 
 #>                     mu   mu.star     sigma
-#> efficiency  -0.5166667 0.5166667 0.7283380
-#> thickness   -5.9285714 5.9285714 2.6440979
-#> conducitivy  0.3500000 0.4250000 0.3422614
+#> efficiency  -0.5777778 0.5777778 0.8049231
+#> thickness   -4.4285714 4.4285714 4.3060741
+#> conducitivy  0.2000000 0.4000000 0.4503967
 
 # extract data
 attr(result, "data")
 #>    index        name         mu   mu.star     sigma
-#> 1:     1  efficiency -0.5166667 0.5166667 0.7283380
-#> 2:     2   thickness -5.9285714 5.9285714 2.6440979
-#> 3:     3 conducitivy  0.3500000 0.4250000 0.3422614
+#> 1:     1  efficiency -0.5777778 0.5777778 0.8049231
+#> 2:     2   thickness -4.4285714 4.4285714 4.3060741
+#> 3:     3 conducitivy  0.2000000 0.4000000 0.4503967
 ```
 
 Plot
@@ -316,3 +204,458 @@ plot(result)
 ```
 
 ![](man/figures/get-started-1.png)<!-- -->
+
+## Bayesian Calibration
+
+Create a `BayesCalibJob` object:
+
+``` r
+# use an example file from EnergyPlus v8.8 for demonstration here
+path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "RefBldgLargeOfficeNew2004_Chicago.idf")
+path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
+
+# create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
+bc <- bayes_job(path_idf, path_epw)
+```
+
+### Get RDD and MDD
+
+`$read_rdd()` and `$read_mdd()` can be used to get RDD and MDD for
+current seed model.
+
+``` r
+(rdd <- bc$read_rdd())
+#> Initializing RDD...
+#> Initializing RDD... [SUCCESSFUL]
+#> ══ EnergyPlus Report Data Dictionary File ═════════════════════════════════
+#>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
+#>   * Simulation started: 2019-09-12 04:54:00
+#> 
+#> ── Details ────────────────────────────────────────────────────────────────
+#>      index reported_time_step report_type
+#>   1:     1               Zone     Average
+#>   2:     2               Zone     Average
+#>   3:     3               Zone     Average
+#>   4:     4               Zone     Average
+#>   5:     5               Zone     Average
+#>  ---                                     
+#> 616:   616               HVAC     Average
+#> 617:   617               HVAC         Sum
+#> 618:   618               HVAC     Average
+#> 619:   619               HVAC         Sum
+#> 620:   620               HVAC     Average
+#>                                                           variable
+#>   1:                          Site Outdoor Air Drybulb Temperature
+#>   2:                         Site Outdoor Air Dewpoint Temperature
+....
+(mdd <- bc$read_mdd())
+#> ══ EnergyPlus Meter Data Dictionary File ══════════════════════════════════
+#>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
+#>   * Simulation started: 2019-09-12 04:54:00
+#> 
+#> ── Details ────────────────────────────────────────────────────────────────
+#>      index reported_time_step report_type
+#>   1:     1               Zone       Meter
+#>   2:     2               Zone       Meter
+#>   3:     3               Zone       Meter
+#>   4:     4               Zone       Meter
+#>   5:     5               Zone       Meter
+#>  ---                                     
+#> 173:   173               Zone       Meter
+#> 174:   174               Zone       Meter
+#> 175:   175               Zone       Meter
+#> 176:   176               Zone       Meter
+#> 177:   177               Zone       Meter
+#>                                         variable units
+#>   1:                        Electricity:Facility     J
+#>   2:                        Electricity:Building     J
+....
+```
+
+### Setting Input and Output Variables
+
+Input variables and output variables can be set by using `$input()` and
+`$output()`, respectively. For `$input()`, only variables listed in RDD
+are supported. For `$output()`, variables listed in RDD and MDD are both
+supported.
+
+By default, they are all empty and `$input()`, `$output()` will return
+`NULL`.
+
+``` r
+bc$input()
+#> NULL
+bc$output()
+#> NULL
+bc$models()
+#> Unable to create parametric models because input variables are not set. Please use `$input()` to set input variables.
+```
+
+You can specify input and output parameters using `RddFile`, `MddFile`
+and data.frames.
+
+``` r
+# using RDD and MDD
+bc$input(rdd[1:3])
+#>    index           class key_value                         variable_name
+#> 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature
+#> 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature
+#> 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature
+#>    reporting_frequency
+#> 1:            Timestep
+#> 2:            Timestep
+#> 3:            Timestep
+bc$output(mdd[1:3])
+#>    index        class key_value             variable_name
+#> 1:     1 Output:Meter      <NA>      Electricity:Facility
+#> 2:     2 Output:Meter      <NA>      Electricity:Building
+#> 3:     3 Output:Meter      <NA> Electricity:Zone:BASEMENT
+#>    reporting_frequency
+#> 1:            Timestep
+#> 2:            Timestep
+#> 3:            Timestep
+
+# using data.frame
+bc$input(eplusr::rdd_to_load(rdd[1:3]))
+#>    index           class key_value                         variable_name
+#> 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature
+#> 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature
+#> 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature
+#>    reporting_frequency
+#> 1:            Timestep
+#> 2:            Timestep
+#> 3:            Timestep
+bc$output(eplusr::mdd_to_load(mdd[1:3]))
+#>    index        class key_value             variable_name
+#> 1:     1 Output:Meter      <NA>      Electricity:Facility
+#> 2:     2 Output:Meter      <NA>      Electricity:Building
+#> 3:     3 Output:Meter      <NA> Electricity:Zone:BASEMENT
+#>    reporting_frequency
+#> 1:            Timestep
+#> 2:            Timestep
+#> 3:            Timestep
+```
+
+You can set `append` to `NULL` to remove all existing input and output
+parameters.
+
+``` r
+bc$input(append = NULL)
+#> NULL
+bc$output(append = NULL)
+#> NULL
+```
+
+You can also directly specify variable names:
+
+``` r
+bc$input(
+    name = c(
+        "site outdoor air drybulb temperature",
+        "site outdoor air relative humidity",
+        "site direct solar radiation rate per area",
+        "chiller electric power",
+        "chiller evaporator inlet temperature",
+        "chiller evaporator outlet temperature",
+        "chiller evaporator mass flow rate",
+        "fan air mass flow rate"
+    ),
+    reporting_frequency = "hourly"
+)
+#>    index           class key_value
+#> 1:     1 Output:Variable         *
+#> 2:     2 Output:Variable         *
+#> 3:     3 Output:Variable         *
+#> 4:     4 Output:Variable         *
+#> 5:     5 Output:Variable         *
+#> 6:     6 Output:Variable         *
+#> 7:     7 Output:Variable         *
+#> 8:     8 Output:Variable         *
+#>                                variable_name reporting_frequency
+#> 1:      Site Outdoor Air Drybulb Temperature              Hourly
+#> 2:        Site Outdoor Air Relative Humidity              Hourly
+#> 3: Site Direct Solar Radiation Rate per Area              Hourly
+#> 4:                    Chiller Electric Power              Hourly
+#> 5:      Chiller Evaporator Inlet Temperature              Hourly
+#> 6:     Chiller Evaporator Outlet Temperature              Hourly
+#> 7:         Chiller Evaporator Mass Flow Rate              Hourly
+#> 8:                    Fan Air Mass Flow Rate              Hourly
+bc$output(
+    name = c(
+        "Electricity:Building",
+        "InteriorLights:Electricity",
+        "InteriorEquipment:Electricity",
+        "Cooling:Electricity",
+        "Heating:Electricity",
+        "Heating:Gas",
+        "Fans:Electricity"
+    ),
+    reporting_frequency = "hourly"
+)
+#>    index        class key_value                 variable_name
+#> 1:     1 Output:Meter      <NA>          Electricity:Building
+#> 2:     2 Output:Meter      <NA>    InteriorLights:Electricity
+#> 3:     3 Output:Meter      <NA> InteriorEquipment:Electricity
+#> 4:     4 Output:Meter      <NA>           Cooling:Electricity
+#> 5:     5 Output:Meter      <NA>           Heating:Electricity
+#> 6:     6 Output:Meter      <NA>                   Heating:Gas
+#> 7:     7 Output:Meter      <NA>              Fans:Electricity
+#>    reporting_frequency
+#> 1:              Hourly
+#> 2:              Hourly
+#> 3:              Hourly
+#> 4:              Hourly
+#> 5:              Hourly
+#> 6:              Hourly
+#> 7:              Hourly
+```
+
+Note that variable cannot be set as both an input and output variable.
+
+``` r
+bc$output(name = "fan air mass flow rate", reporting_frequency = "hourly")
+#> Error: Variables specified have already been set as input: `*:Fan Air Mass Flow Rate`
+```
+
+Also, note that input and output variables should have the same
+reporting frequency.
+
+``` r
+bc$output(mdd[1], reporting_frequency = "daily")
+#> Error: Object specified does not have the same reporting frequency as existing input (`Hourly`). Invalid input reporting frequency: `daily`
+```
+
+For `$output()`, both variables in RDD and MDD are supported. However,
+for `$input()`, only varaibles in RDD are allowed.
+
+### Adding Parameters to Calibrate
+
+Similarly like `SensitivityJob`, parameters can be added using either
+`$param()` or `$apply_measure()`.
+
+Here use `$param()` for demonstration. Basically there are 3 format of
+defining a parameter:
+
+  - `object = list(field1 = c(min, max), field2 = c(min, max), ...)`
+    
+    This is the basic format. `field1` and `field2` in `object` will be
+    added as two different parameters, with minimum and maximum value
+    specified as `min` and `max`.
+
+  - `class := list(field1 = c(min, max), field2 = c(min, max), ...)`
+    
+    This is useful when you want to treat `field1` and `field2` in all
+    objects in `class` as two differnet parameters. Please note the use
+    of special notion of `:=` instead of `=`.
+
+  - `.(objects) := list(field1 = c(min, max), field2 = c(min, max),
+    ...)`
+    
+    Sometimes you may not want to treat a field in all objects in a
+    class but only a subset of objects. You can use a special notation
+    on the left hand side `.()`. In the parentheses can be object names
+    or IDs.
+
+<!-- end list -->
+
+``` r
+bc$param(
+    ZoneInfiltration_DesignFlowRate := list(flow_per_exterior_surface_area = c(0.0003, 0.001)),
+    Lights := list(watts_per_zone_floor_area = c(5, 20)),
+    .("Core_bottom People", "Core_mid People", "Core_top People") := list(
+      zone_floor_area_per_person = c(5, 15)
+    ),
+    ElectricEquipment := list(watts_per_zone_floor_area = c(5, 20)),
+    `CoolSys1 Chiller 1` = list(reference_cop = c(1, 5)),
+    `CoolSys1 Chiller 2` = list(reference_cop = c(1, 5)),
+    VAV_1_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+    VAV_2_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+    list(
+      VAV_3_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+      VAV_5_Fan = list(fan_total_efficiency = c(0.1, 0.9))
+    ),
+
+    .names = c("infil_rate", "lights", "people", "equipment", "chiller1cop",
+      "chiller2cop", "fan1eff", "fan2eff", "fan3eff", "fan5eff"
+    ),
+
+    .num_sim = 2L
+)
+#> ── EnergPlus Parametric Job ───────────────────────────────────────────────
+#> Seed Model: `/usr/local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLargeOffi...
+#> Weather: `/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francisco...
+#> EnergyPlus Version: `8.8.0`
+#> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
+#> Applied Measure: ``
+#> Parametric Models [2]: 
+#> [1]: `1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e(`
+#> [2]: `2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e(`
+#> << Job has not been run before >>
+```
+
+### Getting Sample Values and Parametric Models
+
+Parameter values can be retrieved using `$samples()`.
+
+``` r
+bc$samples()
+#>    case chiller1cop chiller2cop equipment   fan1eff   fan2eff   fan3eff
+#> 1:    1    3.866961    2.870356 19.763385 0.4745304 0.2552674 0.2501799
+#> 2:    2    1.624242    3.341994  7.868543 0.6941959 0.7146523 0.6084267
+#>      fan5eff   infil_rate    lights    people
+#> 1: 0.1774733 0.0008959121  8.146156  7.791732
+#> 2: 0.7798118 0.0003279914 14.955283 10.965330
+```
+
+Generated `Idf`s can be retrieved using `$models()`.
+
+``` r
+names(bc$models())
+#> [1] "1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e("
+#> [2] "2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e("
+```
+
+### Run simulations and gather data
+
+`$eplus_run()` runs all parametric models in parallel. Parameter
+`run_period` can be given to insert a new `RunPeriod` object. In this
+case, all existing `RunPeriod` objects in the seed model will be
+commented out.
+
+``` r
+bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 7), echo = FALSE)
+#> Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.
+#> Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.
+#> ── EnergPlus Parametric Job ───────────────────────────────────────────────
+#> Seed Model: `/usr/local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLargeOffi...
+#> Weather: `/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francisco...
+#> EnergyPlus Version: `8.8.0`
+#> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
+#> Applied Measure: ``
+#> Parametric Models [2]: 
+#> [1]: `1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e(` <-- SUCCEEDED
+#> [2]: `2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e(` <-- SUCCEEDED
+#>  Simulation started at `2019-09-12 04:54:33` and completed successfully after 20.34 secs.
+```
+
+`$data_sim()` returns a `data.table` (when `merge` is `TRUE`) or a list
+of 2 `data.table` (when `merge` is `FALSE`) which contains the simulated
+data of input and output parameters. These data will be stored
+internally and used during Bayesian calibration using Stan.
+
+The `resolution` parameter can be used to specify the time resolution of
+returned data. Note that input time resolution cannot be smaller than
+the reporting frequency, otherwise an error will be issued.
+
+``` r
+bc$data_sim("1 min")
+#> Error: Input resolution should not be smaller than reporting frequency (1 hour). Invalid resolution found: `1 min`
+```
+
+``` r
+bc$data_sim()
+#> $input
+#>          Date/Time
+#>   1:  01/01  01:00
+#>   2:  01/01  02:00
+#>   3:  01/01  03:00
+#>   4:  01/01  04:00
+#>   5:  01/01  05:00
+#>  ---              
+#> 332:  01/07  20:00
+#> 333:  01/07  21:00
+#> 334:  01/07  22:00
+#> 335:  01/07  23:00
+#> 336:  01/07  24:00
+#>      Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)
+#>   1:                                                     6.991667
+#>   2:                                                     7.200000
+#>   3:                                                     6.908333
+#>   4:                                                     6.350000
+#>   5:                                                     5.108333
+#>  ---                                                             
+....
+```
+
+### Specify Measured Data
+
+`$data_field()` takes a `data.frame` of measured value of output
+parameters and returns a list of `data.table`s which contains the
+measured value of input and output parameters, and newly measured value
+of input if applicable.
+
+For input parameters, the values of simulation data for the first case
+are directly used as the measured values.
+
+For demonstration, we use the seed model to generate fake measured
+output data.
+
+``` r
+# clone the seed model
+seed <- bc$seed()$clone()
+# remove existing RunPeriod objects
+seed$RunPeriod <- NULL
+# set run period as the same as in `$eplus_run()`
+seed$add(RunPeriod = list("test", 1, 1, 1, 7))
+#> $test
+#> <IdfObject: `RunPeriod`> [ID:857] `test`
+#> Class: <RunPeriod>
+#> ├─ 01: "test",           !- Name
+#> │─ 02: 1,                !- Begin Month
+#> │─ 03: 1,                !- Begin Day of Month
+#> │─ 04: 1,                !- End Month
+#> │─ 05: 7,                !- End Day of Month
+#> │─ 06: "UseWeatherFile", !- Day of Week for Start Day
+#> │─ 07: "Yes",            !- Use Weather File Holidays and Special Days
+#> │─ 08: "Yes",            !- Use Weather File Daylight Saving Period
+#> │─ 09: "No",             !- Apply Weekend Holiday Rule
+#> │─ 10: "Yes",            !- Use Weather File Rain Indicators
+#> └─ 11: "Yes";            !- Use Weather File Snow Indicators
+seed$SimulationControl$set(
+    `Run Simulation for Sizing Periods` = "No",
+    `Run Simulation for Weather File Run Periods` = "Yes"
+)
+#> <IdfObject: `SimulationControl`> [ID:2]
+#> Class: <SimulationControl>
+#> ├─ 1: "YES",      !- Do Zone Sizing Calculation
+#> │─ 2: "YES",      !- Do System Sizing Calculation
+#> │─ 3: "YES",      !- Do Plant Sizing Calculation
+#> │─ 4: "No",       !- Run Simulation for Sizing Periods
+#> │─ 5: "Yes",      !- Run Simulation for Weather File Run Periods
+#> │─ 6: "YES",      !- Do HVAC Sizing Simulation for Sizing Periods
+#> └─ 7: 2;          !- Maximum Number of HVAC Sizing Simulation Passes
+# save the model to tempdir
+seed$save(tempfile(fileext = ".idf"))
+job <- seed$run(path_epw, echo = FALSE)
+fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
+
+bc$data_field(fan_power[, -c("case", "Date/Time")])
+#> $input
+#>          Date/Time
+#>   1:  01/01  01:00
+#>   2:  01/01  02:00
+#>   3:  01/01  03:00
+#>   4:  01/01  04:00
+#>   5:  01/01  05:00
+#>  ---              
+#> 164:  01/07  20:00
+#> 165:  01/07  21:00
+#> 166:  01/07  22:00
+#> 167:  01/07  23:00
+#> 168:  01/07  24:00
+#>      Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)
+#>   1:                                                     6.991667
+#>   2:                                                     7.200000
+#>   3:                                                     6.908333
+#>   4:                                                     6.350000
+#>   5:                                                     5.108333
+#>  ---                                                             
+....
+```
+
+### Run Bayesian Calibration Using Stan
+
+``` r
+options(mc.cores = parallel::detectCores())
+bc$stan_run(iter = 300, chains = 3)
+```

@@ -1,4 +1,3 @@
-#' @importFrom eplusr eplusr_option level_checks
 # check_compactsch {{{
 check_compactsch <- function (dt, idf) {
     # init a column indicator
@@ -18,6 +17,10 @@ check_compactsch <- function (dt, idf) {
 
     data.table::set(dt, NULL, "value", NULL)
 }
+# }}}
+
+# tidy_names {{{
+tidy_names <- function (dt) data.table::setnames(dt, tolower(gsub("[^[:alnum:]]", "_", names(dt))))
 # }}}
 
 # Funs below are temporarily borrowed from eplusr, should find a better way to

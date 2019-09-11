@@ -16,3 +16,9 @@
 ^cran-comments\.md$
 ^tools$
 ^tic\.R$
+^src/stan_files/.*\.o$
+^src/stan_files/.*\.cc$
+^src/stan_files/.*\.hpp$
+^tests/testthat/stan_files/.*\.o$
+^tests/testthat/stan_files/.*\.cc$
+^tests/testthat/stan_files/.*\.hpp$

@@ -29,7 +29,8 @@ knitr::opts_knit$set(root.dir = tempdir())
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "README-",
+  out.lines = 20
 )
 
 # Make sure the date is shown in English format not Chinese.
@@ -40,7 +41,6 @@ invisible(Sys.setlocale(category = "LC_TIME", locale = "en_US.UTF-8"))
 Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
 
 [![Travis-CI Build Status](https://travis-ci.org/ideas-lab-nus/epScan.svg?branch=master)](https://travis-ci.org/ideas-lab-nus/epScan)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/ideas-lab-nus/epScan?branch=master&svg=true)](https://ci.appveyor.com/project/ideas-lab-nus/epScan)
 [![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
 [![CRAN Download Badge](https://cranlogs.r-pkg.org/badges/epScan)](https://cran.r-project.org/package=epScan)
@@ -127,7 +127,7 @@ Run simulations and calculate statistic indicators
 
 ```{r}
 # run simulations in temporary directory
-sen$run(dir = tempdir())
+sen$run(dir = tempdir(), echo = FALSE)
 
 # extract output
 # here is just am example
@@ -147,4 +147,237 @@ Plot
 ```{r get-started, fig.path = "man/figures/"}
 # plot
 plot(result)
+```
+
+## Bayesian Calibration
+
+Create a `BayesCalibJob` object:
+
+```{r}
+# use an example file from EnergyPlus v8.8 for demonstration here
+path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "RefBldgLargeOfficeNew2004_Chicago.idf")
+path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
+
+# create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
+bc <- bayes_job(path_idf, path_epw)
+```
+
+### Get RDD and MDD
+
+`$read_rdd()` and `$read_mdd()` can be used to get RDD and MDD for current seed
+model.
+
+```{r}
+(rdd <- bc$read_rdd())
+(mdd <- bc$read_mdd())
+```
+
+### Setting Input and Output Variables
+
+Input variables and output variables can be set by using `$input()` and
+`$output()`, respectively. For `$input()`, only variables listed in RDD are
+supported. For `$output()`, variables listed in RDD and MDD are both supported.
+
+By default, they are all empty and `$input()`, `$output()` will return `NULL`.
+
+```{r}
+bc$input()
+bc$output()
+bc$models()
+```
+
+You can specify input and output parameters using `RddFile`, `MddFile` and
+data.frames.
+
+```{r}
+# using RDD and MDD
+bc$input(rdd[1:3])
+bc$output(mdd[1:3])
+
+# using data.frame
+bc$input(eplusr::rdd_to_load(rdd[1:3]))
+bc$output(eplusr::mdd_to_load(mdd[1:3]))
+```
+
+You can set `append` to `NULL` to remove all existing input and output
+parameters.
+
+```{r}
+bc$input(append = NULL)
+bc$output(append = NULL)
+```
+
+You can also directly specify variable names:
+
+```{r}
+bc$input(
+    name = c(
+        "site outdoor air drybulb temperature",
+        "site outdoor air relative humidity",
+        "site direct solar radiation rate per area",
+        "chiller electric power",
+        "chiller evaporator inlet temperature",
+        "chiller evaporator outlet temperature",
+        "chiller evaporator mass flow rate",
+        "fan air mass flow rate"
+    ),
+    reporting_frequency = "hourly"
+)
+bc$output(
+    name = c(
+        "Electricity:Building",
+        "InteriorLights:Electricity",
+        "InteriorEquipment:Electricity",
+        "Cooling:Electricity",
+        "Heating:Electricity",
+        "Heating:Gas",
+        "Fans:Electricity"
+    ),
+    reporting_frequency = "hourly"
+)
+```
+
+Note that variable cannot be set as both an input and output variable.
+
+```{r, error = TRUE}
+bc$output(name = "fan air mass flow rate", reporting_frequency = "hourly")
+```
+
+Also, note that input and output variables should have the same reporting
+frequency.
+
+```{r, error = TRUE}
+bc$output(mdd[1], reporting_frequency = "daily")
+```
+
+For `$output()`, both variables in RDD and MDD are supported. However, for
+`$input()`, only varaibles in RDD are allowed.
+
+### Adding Parameters to Calibrate
+
+Similarly like `SensitivityJob`, parameters can be added using either `$param()`
+or `$apply_measure()`.
+
+Here use `$param()` for demonstration. Basically there are 3 format of defining
+a parameter:
+
+* `object = list(field1 = c(min, max), field2 = c(min, max), ...)`
+
+  This is the basic format. `field1` and `field2` in `object` will be added as
+  two different parameters, with minimum and maximum value specified as `min`
+  and `max`.
+
+* `class := list(field1 = c(min, max), field2 = c(min, max), ...)`
+
+  This is useful when you want to treat `field1` and `field2` in all objects in
+  `class` as two differnet parameters. Please note the use of special notion of
+  `:=` instead of `=`.
+
+* `.(objects) := list(field1 = c(min, max), field2 = c(min, max), ...)`
+
+  Sometimes you may not want to treat a field in all objects in a class but only
+  a subset of objects. You can use a special notation on the left hand side
+  `.()`. In the parentheses can be object names or IDs.
+
+```{r}
+bc$param(
+    ZoneInfiltration_DesignFlowRate := list(flow_per_exterior_surface_area = c(0.0003, 0.001)),
+    Lights := list(watts_per_zone_floor_area = c(5, 20)),
+    .("Core_bottom People", "Core_mid People", "Core_top People") := list(
+      zone_floor_area_per_person = c(5, 15)
+    ),
+    ElectricEquipment := list(watts_per_zone_floor_area = c(5, 20)),
+    `CoolSys1 Chiller 1` = list(reference_cop = c(1, 5)),
+    `CoolSys1 Chiller 2` = list(reference_cop = c(1, 5)),
+    VAV_1_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+    VAV_2_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+    list(
+      VAV_3_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+      VAV_5_Fan = list(fan_total_efficiency = c(0.1, 0.9))
+    ),
+
+    .names = c("infil_rate", "lights", "people", "equipment", "chiller1cop",
+      "chiller2cop", "fan1eff", "fan2eff", "fan3eff", "fan5eff"
+    ),
+
+    .num_sim = 2L
+)
+```
+
+### Getting Sample Values and Parametric Models
+
+Parameter values can be retrieved using `$samples()`.
+
+```{r}
+bc$samples()
+```
+
+Generated `Idf`s can be retrieved using `$models()`.
+
+```{r}
+names(bc$models())
+```
+
+### Run simulations and gather data
+
+`$eplus_run()` runs all parametric models in parallel. Parameter `run_period`
+can be given to insert a new `RunPeriod` object. In this case, all existing
+`RunPeriod` objects in the seed model will be commented out.
+
+```{r}
+bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 7), echo = FALSE)
+```
+
+`$data_sim()` returns a `data.table` (when `merge` is `TRUE`) or a list of 2
+`data.table` (when `merge` is `FALSE`) which contains the simulated data of
+input and output parameters. These data will be stored internally and used
+during Bayesian calibration using Stan.
+
+The `resolution` parameter can be used to specify the time resolution of
+returned data. Note that input time resolution cannot be smaller than the
+reporting frequency, otherwise an error will be issued.
+
+```{r, error = TRUE}
+bc$data_sim("1 min")
+```
+
+```{r}
+bc$data_sim()
+```
+
+### Specify Measured Data
+
+`$data_field()` takes a `data.frame` of measured value of output parameters and
+returns a list of `data.table`s which contains the measured value of input and
+output parameters, and newly measured value of input if applicable.
+
+For input parameters, the values of simulation data for the first case are
+directly used as the measured values.
+
+For demonstration, we use the seed model to generate fake measured output data.
+
+```{r}
+# clone the seed model
+seed <- bc$seed()$clone()
+# remove existing RunPeriod objects
+seed$RunPeriod <- NULL
+# set run period as the same as in `$eplus_run()`
+seed$add(RunPeriod = list("test", 1, 1, 1, 7))
+seed$SimulationControl$set(
+    `Run Simulation for Sizing Periods` = "No",
+    `Run Simulation for Weather File Run Periods` = "Yes"
+)
+# save the model to tempdir
+seed$save(tempfile(fileext = ".idf"))
+job <- seed$run(path_epw, echo = FALSE)
+fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
+
+bc$data_field(fan_power[, -c("case", "Date/Time")])
+```
+
+### Run Bayesian Calibration Using Stan
+
+```{r, eval = FALSE}
+options(mc.cores = parallel::detectCores())
+bc$stan_run(iter = 300, chains = 3)
 ```
