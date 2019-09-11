@@ -1192,7 +1192,14 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         chains = chains, iter = iter, open_progress = echo, show_messages = echo,
         ...
     )
-    (private$m_log$stan$fit <- fit)
+
+    # store
+    private$m_log$stan$eta_mu <- eta_mu
+    private$m_log$stan$eta_sd <- eta_sd
+    private$m_log$stan$data <- stan_data
+    private$m_log$stan$fit <- fit
+
+    fit
 }
 # }}}
 # bc_stan_kill {{{
