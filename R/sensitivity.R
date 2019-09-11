@@ -346,7 +346,11 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     assert(is_count(.r))
     assert(is_count(.grid_jump))
 
-    l <- eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .null = FALSE, .env = .env)
+    l <- tryCatch(eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .null = FALSE, .env = .env),
+        error_empty_input = function (e) {
+            abort("error_sa_empty_param_input", "Please give parameters to set.")
+        }
+    )
 
     # match Idf data
     # TODO: `match_set_idf_data` should be generalized to be a helper for all
