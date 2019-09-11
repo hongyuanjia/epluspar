@@ -365,7 +365,7 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     ), use.names = TRUE)
 
     # validate input
-    par <- sen_validate_par_space(l, private$m_idf)
+    par <- validate_par_space(l, private$m_idf, "sa")
 
     if (is.null(.names)) {
         fctr <- paste0("theta", seq_len(nrow(par$num$meta)))
@@ -468,7 +468,7 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     for (nm in names(l)) l[[nm]] <- eval(mc[-1L][[nm]])
 
     # check input format
-    par <- sen_validate_par_space(l)
+    par <- validate_par_space(l, type = "sa")
 
     if (is.null(.names)) {
         fctr <- par$dot$dot_nm
@@ -578,8 +578,10 @@ sen_morris_data <- function (morris) {
 }
 # }}}
 
-# sen_validate_par_space {{{
-sen_validate_par_space <- function (l, idf = NULL) {
+# validate_par_space {{{
+validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
+    type <- match.arg(type)
+
     if (all(c("value", "dot") %in% names(l))) {
         input <- l
     } else {
@@ -614,11 +616,20 @@ sen_validate_par_space <- function (l, idf = NULL) {
         num_info <- num[, {
             id <- rleid[[1L]]
             range <- new_value_num[[1L]]
-            if (length(range) != 3L) {
+            if (type == "sa" && length(range) != 3L) {
                 abort("error_param_num_format",
                     paste0(
                         "For numeric field, a numeric vector of length 3 should be provided ",
                         "which defines parameter's minimum value, maximum value and number of total levels. ",
+                        "Invalid input:\n", dot_string(input$dot[J(id), on = "rleid"])
+                    )
+                )
+            } else if (type == "bc" && length(range) != 2L) {
+                browser()
+                abort("error_param_num_format",
+                    paste0(
+                        "For numeric field, a numeric vector of length 2 should be provided ",
+                        "which defines parameter's minimum and maximum value. ",
                         "Invalid input:\n", dot_string(input$dot[J(id), on = "rleid"])
                     )
                 )
@@ -631,14 +642,19 @@ sen_validate_par_space <- function (l, idf = NULL) {
                 ))
             }
 
-            if (!is_count(range[[3L]])) {
+            if (type == "sa" && !is_count(range[[3L]])) {
                 abort("error_param_num_format", paste0(
                     "For numeric field, number of total levels (3rd element) should be a positive integer. ",
                     "Invalid input:\n", dot_string(input$dot[J(id), on = "rleid"])
                 ))
             }
 
-            list(min = range[[1L]], max = range[[2L]], levels = range[[3L]])
+            if (type == "sa") {
+                list(min = range[[1L]], max = range[[2L]], levels = range[[3L]])
+            } else {
+                list(min = range[[1L]], max = range[[2L]], levels = NA_integer_)
+            }
+
         }, by = "value_rleid"]
     }
     # }}}
