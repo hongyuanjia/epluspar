@@ -1302,6 +1302,9 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
         abort(err_type, paste0("Duplications found in ", type, " variables: ", invld$nm))
     }
 
+    # clone the original in case there are errors
+    if (!append) ori_idf <- private$m_idf$clone()
+
     # remove existing if necessary
     bc_clean_existing_input_output(super, self, private, type, append, dt)
 
@@ -1331,7 +1334,14 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     setcolorder(dt, "index")
     setorderv(dt, "index")
 
-    bc_combine_input_output(super, self, private, type, append, dt)
+    if (append) {
+        bc_combine_input_output(super, self, private, type, append, dt)
+    } else {
+        tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
+            error_bc_invalid_input = function (e) {private$m_idf <- ori_idf; stop(e)},
+            error_bc_invalid_output = function (e) {private$m_idf <- ori_idf; stop(e)}
+        )
+    }
 
     private[[m_name]]
 }
@@ -1392,6 +1402,8 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
         dict[is.na(key_value), key_value := "*"]
     }
 
+    # clone the original Idf in case there are errors
+    if (!append) ori_idf <- private$m_idf$clone()
     bc_clean_existing_input_output(super, self, private, type, append, dict)
 
     # now it's save to load it
@@ -1406,7 +1418,14 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
     dt <- tidy_names(dt[, index := .I])
     setcolorder(dt, "index")
 
-    bc_combine_input_output(super, self, private, type, append, dt)
+    if (append) {
+        bc_combine_input_output(super, self, private, type, append, dt)
+    } else {
+        tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
+            error_bc_invalid_input = function (e) {private$m_idf <- ori_idf; stop(e)},
+            error_bc_invalid_output = function (e) {private$m_idf <- ori_idf; stop(e)}
+        )
+    }
 
     private[[paste0("m_", type)]]
 }
@@ -1992,7 +2011,7 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
 
     # make sure each case gives same output rows
     count <- dt[, list(n = .N), by = "case"]
-    if (length(unique(count$n)) != 1L) {
+    if (nrow(dt) && length(unique(count$n)) != 1L) {
         abort("error_bc_data_sim_row_not_same", paste0("Internal error found when ",
             "extracting simulation data. Each case should give the same row number ",
             "of report variable data. If you use `$apply_measure()` to set parameters, ",
