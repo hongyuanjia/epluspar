@@ -30,9 +30,7 @@ bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
              copy_external = FALSE, echo = wait)
 bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
 bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
-bc$stan_run(iter = 2000L, chains = 4L, wait = TRUE, echo = wait, ...)
-bc$stan_kill()
-bc$stan_status()
+bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
 bc$eplus_kill()
 bc$eplus_status()
 bc$eplus_output_dir(which = NULL)
@@ -454,7 +452,7 @@ datetime components. For details, please see \code{$data_sim()}. Default:
 }
 
 \section{Run Bayesian Calibration Using Stan}{
-\preformatted{bc$stan_run(iter = 2000L, chains = 4L, echo = wait, ...)
+\preformatted{bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
 }
 
 \code{$stan_run()} runs Bayesian calibration using Stan.
