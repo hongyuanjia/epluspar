@@ -60,6 +60,7 @@ NULL
 #' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
 #' sensi$apply_measure (measure, ..., .names = NULL, .r = 12L, .grid_jump = 4L)
 #' sensi$samples()
+#' sensi$models()
 #' sensi$evaluate(results)
 #' ```
 #'
@@ -152,7 +153,7 @@ NULL
 #'   the parameter names will be the same as function parameters of `measure`.
 #'
 #' All models created using `$param()` and `$apply_measure()` will be named in
-#' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
+#' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that
 #' paramter names will be abbreviated using [abbreviate()] with `minlength`
 #' being `5L` and `use.classes` being `TRUE`. If samples contain duplications,
 #' [make.unique()] will be called to make sure every model has a unique name.
@@ -162,6 +163,11 @@ NULL
 #' method. The returned data.table has `1 + n` columns, where `n` is the
 #' parameter number, while `1` indicates an extra column named `case` giving the
 #' index of each sample.
+#'
+#' `$models()` returns a list of parametric [Idf][eplusr::Idf] objects created
+#' using sensitivity parameter values genereated using Morris method. This means
+#' that parametric models can only be created after sensitivity parameters have
+#' been set using `$param()` or `$apply_measure()`.
 #'
 #' `$evaluate()` takes a numeric vector with the same length as total sample
 #' number and returns the a [sensitivity::morris()] object. The statistics of
@@ -173,7 +179,6 @@ NULL
 #' sensi$version()
 #' sensi$seed()
 #' sensi$weather()
-#' param$models()
 #' sensi$save(dir = NULL, separate = TRUE, copy_external = FALSE)
 #' sensi$run(dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait)
 #' sensi$kill()
@@ -192,13 +197,11 @@ NULL
 #' ```
 #'
 #' All methods listed above are inherited from eplusr's
-#' [`ParametricJob`][eplusr::param_job()]. For detailed documentation on each
-#' methods, please see [eplusr's documentation][eplusr::ParametricJob].
+#' [`ParametricJob`][eplusr::ParametricJob]. For detailed documentation on each
+#' method, please see [eplusr's documentation][eplusr::ParametricJob].
 #'
 #' @examples
 #' \dontrun{
-#' library(eplusr)
-#'
 #' if (is_avail_eplus(8.8)) {
 #'     idf_name <- "5Zone_Transformer.idf"
 #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
@@ -518,9 +521,11 @@ case_names <- function (sample, minlength = 5L) {
 # }}}
 
 # par_names {{{
-par_names <- function (par, names = NULL) {
+par_names <- function (par, names = NULL, type = c("sa", "bc")) {
     if (is.null(names)) {
-        paste0("theta", seq_len(nrow(par$num$meta)))
+        type <- match.arg(type)
+        nm <- if (type == "sa") "theta" else "t"
+        paste0(nm, seq_len(nrow(par$num$meta)))
     } else {
         assert(length(names) == nrow(par$num$meta), msg = paste0(
             "`.name` should have the same length as number of input parameters, which is ",
@@ -653,7 +658,6 @@ validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
                     )
                 )
             } else if (type == "bc" && length(range) != 2L) {
-                browser()
                 abort("error_param_num_format",
                     paste0(
                         "For numeric field, a numeric vector of length 2 should be provided ",
