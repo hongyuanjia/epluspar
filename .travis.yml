@@ -32,6 +32,7 @@ before_install:
   - echo "CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3" >> ~/.R/Makevars
 
 script:
+  - R -q -e "eplusr::install_eplus(8.8)"
   - |
     travis_wait 42 R CMD build .
     travis_wait 59 R CMD check epScan*tar.gz
