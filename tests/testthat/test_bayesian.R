@@ -160,7 +160,7 @@ test_that("BayesCalib Class", {
     expect_is(smpl <- (bc$samples()), "data.table")
     expect_equal(nrow(smpl), 2L)
     expect_equal(ncol(smpl), 10L)
-    expect_equal(names(smpl), c("case", paste0("theta", 1:9)))
+    expect_equal(names(smpl), c("case", paste0("t", 1:9)))
     # }}}
 
     # $models() {{{
@@ -280,7 +280,7 @@ test_that("BayesCalib Class", {
     expect_error(bc$data_field(data.frame(a = 1:10, b = 11:20)), class = "error_bc_invalid_data_field_output")
 
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432)))
-    expect_equal(names(dt), c("input", "output"))
+    expect_equal(names(dt), c("input", "output", "new_input"))
     expect_equal(names(dt$input), c("Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
         "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
@@ -293,9 +293,11 @@ test_that("BayesCalib Class", {
     ))
     expect_equal(nrow(dt$input), 864/2)
     expect_equal(nrow(dt$output), 864/2)
+    expect_null(dt$new_input)
 
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE))
-    expect_equal(names(dt), c("Date/Time",
+    expect_equal(names(dt), c("merged", "new_input"))
+    expect_equal(names(dt$merged), c("Date/Time",
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
@@ -303,7 +305,7 @@ test_that("BayesCalib Class", {
         "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
     ))
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE, all = TRUE))
-    expect_equal(names(dt), c("case", "environment_period_index", "environment_name",
+    expect_equal(names(dt$merged), c("case", "environment_period_index", "environment_name",
         "simulation_days", "datetime", "month", "day", "hour", "minute",
         "day_type", "Date/Time",
         "Electricity:Building [J](TimeStep)",
