@@ -3,11 +3,7 @@
 \docType{class}
 \name{SensitivityJob}
 \alias{SensitivityJob}
-\alias{sensi_job}
 \title{Conduct Sensitivity Analysis for A EnergyPlus Model}
-\usage{
-sensi_job(idf, epw)
-}
 \description{
 \code{sensi_job()} takes an IDF and EPW as input and returns a \code{SensitivityJob},
 which provides a prototype of conducting sensitivity analysis of EnergyPlus
@@ -107,10 +103,10 @@ specifying the fields for all objects in a class, the class name instead of
 the object name should be used, and a special notation \code{:=} should be used
 instead of \code{=}, e.g. \code{class := list(field = value)}.
 \item \code{.r}: An positive integer specifying the number of elementary effect
-computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::morris}. Default: \code{12}.
+computed per factor. For details, see \link[sensitivity:morris]{sensitivity::morris}. Default: \code{12}.
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
 levels that are increased/decreased for computing the elementary effects.
-Default: \code{1L}. For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+Default: \code{1L}. For details, see \link[sensitivity:morris]{sensitivity::morris}.
 \item \code{.names}: A character vector of the parameter names. If \code{NULL},
 the parameter will be named in format \code{theta + number}. Default: \code{NULL}.
 }
@@ -146,10 +142,10 @@ returns an \code{Idf} object as output.
 \item \code{...}: Arguments \strong{except first \code{Idf} argument} that are passed to that
 \code{measure}.
 \item \code{.r}: An positive integer specifying the number of elementary effect
-computed per factor. For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+computed per factor. For details, see \link[sensitivity:morris]{sensitivity::morris}.
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
 levels that are increased/decreased for computing the elementary effects.
-For details, see \link[Sensitivity:morris]{Sensitivity::morris}.
+For details, see \link[sensitivity:morris]{sensitivity::morris}.
 }
 
 All models created using \code{$param()} and \code{$apply_measure()} will be named in
@@ -159,7 +155,7 @@ being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain dup
 \code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
 
 \code{$samples()} returns a \link[data.table:data.table]{data.table} which contains
-the sampled value for each parameter using \link[Sensitivity:morris]{Morris}
+the sampled value for each parameter using \link[sensitivity:morris]{Morris}
 method. The returned data.table has \code{1 + n} columns, where \code{n} is the
 parameter number, while \code{1} indicates an extra column named \code{case} giving the
 index of each sample.
@@ -203,12 +199,12 @@ method, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
 
 \examples{
 \dontrun{
-if (is_avail_eplus(8.8)) {
+if (eplusr::is_avail_eplus(8.8)) {
     idf_name <- "5Zone_Transformer.idf"
     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
-    idf_path <- file.path(eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-    epw_path <- file.path(eplus_config(8.8)$dir, "WeatherData", epw_name)
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 
     # create from local files
     sensi_job(idf_path, epw_path)

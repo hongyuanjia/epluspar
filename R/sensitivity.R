@@ -1,5 +1,5 @@
 #' @include utils.R
-#' @importFrom data.table data.table set setorder setattr
+#' @importFrom data.table data.table set setorder setattr ":="
 #' @importFrom sensitivity morris tell
 #' @importFrom purrr pmap
 NULL
@@ -104,10 +104,10 @@ NULL
 #'   the object name should be used, and a special notation `:=` should be used
 #'   instead of `=`, e.g. `class := list(field = value)`.
 #' * `.r`: An positive integer specifying the number of elementary effect
-#'   computed per factor. For details, see [Sensitivity::morris]. Default: `12`.
+#'   computed per factor. For details, see [sensitivity::morris]. Default: `12`.
 #' * `.grid_jump` : An integer or a vector of integers specifying the number of
 #'   levels that are increased/decreased for computing the elementary effects.
-#'   Default: `1L`. For details, see [Sensitivity::morris].
+#'   Default: `1L`. For details, see [sensitivity::morris].
 #' * `.names`: A character vector of the parameter names. If `NULL`,
 #'   the parameter will be named in format `theta + number`. Default: `NULL`.
 #'
@@ -145,10 +145,10 @@ NULL
 #' * `...`: Arguments **except first `Idf` argument** that are passed to that
 #'   `measure`.
 #' * `.r`: An positive integer specifying the number of elementary effect
-#'   computed per factor. For details, see [Sensitivity::morris].
+#'   computed per factor. For details, see [sensitivity::morris].
 #' * `.grid_jump` : An integer or a vector of integers specifying the number of
 #'   levels that are increased/decreased for computing the elementary effects.
-#'   For details, see [Sensitivity::morris].
+#'   For details, see [sensitivity::morris].
 #'
 #' All models created using `$param()` and `$apply_measure()` will be named in
 #' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that
@@ -200,12 +200,12 @@ NULL
 #'
 #' @examples
 #' \dontrun{
-#' if (is_avail_eplus(8.8)) {
+#' if (eplusr::is_avail_eplus(8.8)) {
 #'     idf_name <- "5Zone_Transformer.idf"
 #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 #'
-#'     idf_path <- file.path(eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-#'     epw_path <- file.path(eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 #'
 #'     # create from local files
 #'     sensi_job(idf_path, epw_path)
@@ -302,6 +302,35 @@ NULL
 #' }
 #' @docType class
 #' @name SensitivityJob
+#' @author Hongyuan Jia
+NULL
+
+#' Create a Sensitivity Analysis Job
+#'
+#' `sensi_job()` takes an IDF and EPW as input, and returns an `SensitivityJob`
+#' object for conducting sensitivity analysis on an EnergyPlus model. For more
+#' details, please see [SensitivityJob].
+#'
+#' @param idf A path to an local EnergyPlus IDF file or an `Idf` object.
+#' @param epw A path to an local EnergyPlus EPW file or an `Epw` object.
+#' @return An `SensitivityJob` object.
+#' @examples
+#' \dontrun{
+#' if (eplusr::is_avail_eplus(8.8)) {
+#'     idf_name <- "1ZoneUncontrolled.idf"
+#'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+#'
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'
+#'     # create from local files
+#'     sensi_job(idf_path, epw_path)
+#'
+#'     # create from an Idf and an Epw object
+#'     sensi_job(read_idf(idf_path), read_epw(epw_path))
+#' }
+#' }
+#' @seealso [bayes_job()] for creating a Bayesican calibration job.
 #' @author Hongyuan Jia
 #' @export
 # sensi_job{{{

@@ -3,26 +3,26 @@
 #' @importFrom data.table setnames setorderv melt.data.table rleidv setattr
 NULL
 
-# sampleQuality {{{
-sampleQuality <- function(sample, population, k) {
-    # k: ncol(population)
-    KL <- rep(NA,k)
-    for(ii in (1:k)){
-        Y1 <- sample[,ii]
-        Y2 <- population[,ii]
-        nr <- length(Y2)
-        r <- range(Y2)
-        Y1.dis <- entropy::discretize(Y1,numBins = nr^(1/3), r=r)
-        Y2.dis <- entropy::discretize(Y2,numBins = nr^(1/3), r=r)
-        #KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1/length(Y1),a2=1/length(Y2)) # Schurmann-Grassberger (1996) entropy estimator
-        KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1,a2=1) # KL divergence with laplace prior
-        #p1 <- as.data.frame(freqs.Dirichlet(Y1.dis+1, 0))$Freq
-        #p2 <- as.data.frame(freqs.Dirichlet(Y2.dis+1, 0))$Freq
-        #KL[ii] <- sum((p1-p2)*(log(p1)-log(p2)))
-    }
-    return(exp(-mean(KL)))
-}
-# }}}
+## sampleQuality {{{
+#sampleQuality <- function(sample, population, k) {
+#    # k: ncol(population)
+#    KL <- rep(NA,k)
+#    for(ii in (1:k)){
+#        Y1 <- sample[,ii]
+#        Y2 <- population[,ii]
+#        nr <- length(Y2)
+#        r <- range(Y2)
+#        Y1.dis <- entropy::discretize(Y1,numBins = nr^(1/3), r=r)
+#        Y2.dis <- entropy::discretize(Y2,numBins = nr^(1/3), r=r)
+#        #KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1/length(Y1),a2=1/length(Y2)) # Schurmann-Grassberger (1996) entropy estimator
+#        KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1,a2=1) # KL divergence with laplace prior
+#        #p1 <- as.data.frame(freqs.Dirichlet(Y1.dis+1, 0))$Freq
+#        #p2 <- as.data.frame(freqs.Dirichlet(Y2.dis+1, 0))$Freq
+#        #KL[ii] <- sum((p1-p2)*(log(p1)-log(p2)))
+#    }
+#    return(exp(-mean(KL)))
+#}
+## }}}
 
 #' Conduct Bayesian Calibration on an EnergyPlus Model
 #'
@@ -507,12 +507,12 @@ sampleQuality <- function(sample, population, k) {
 #'
 #' @examples
 #' \dontrun{
-#' if (is_avail_eplus(8.8)) {
+#' if (eplusr::is_avail_eplus(8.8)) {
 #'     idf_name <- "5Zone_Transformer.idf"
 #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 #'
-#'     idf_path <- file.path(eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-#'     epw_path <- file.path(eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 #'
 #'     # create from local files
 #'     bayes_job(idf_path, epw_path)
@@ -586,6 +586,35 @@ sampleQuality <- function(sample, population, k) {
 #' A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
 #' energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 #' 10.1016/j.enbuild.2018.06.028
+NULL
+
+#' Create a Bayesian Calibration Job
+#'
+#' `bayes_job()` takes an IDF and EPW as input, and returns an `BayesCalibJob`
+#' object for conducting Bayesian calibration on an EnergyPlus model. For more
+#' details, please see [BayesCalibJob].
+#'
+#' @param idf A path to an local EnergyPlus IDF file or an `Idf` object.
+#' @param epw A path to an local EnergyPlus EPW file or an `Epw` object.
+#' @return An `BayesCalibJob` object.
+#' @examples
+#' \dontrun{
+#' if (eplusr::is_avail_eplus(8.8)) {
+#'     idf_name <- "1ZoneUncontrolled.idf"
+#'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+#'
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'
+#'     # create from local files
+#'     bayes_job(idf_path, epw_path)
+#'
+#'     # create from an Idf and an Epw object
+#'     bayes_job(read_idf(idf_path), read_epw(epw_path))
+#' }
+#' }
+#' @seealso [sensi_job()] for creating a sensitivity analysis job.
+#' @author Hongyuan Jia
 #' @export
 # bayes_job {{{
 bayes_job <- function (idf, epw) {
@@ -1088,6 +1117,7 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
 }
 # }}}
 # bc_stan_run {{{
+#' @importFrom stats sd
 bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo = TRUE, ...) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
