@@ -1,7 +1,7 @@
 context("Sensitivity Implementation")
 
-# SET {{{
-test_that("Set", {
+# Sensitivity {{{
+test_that("Sensitivity", {
     # read idf
     example <- copy_example()
     sen <- Sensitivity$new(example$idf, example$epw)
