@@ -1106,9 +1106,15 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
 
     # newly measured input for prediction
     if (is.null(private$m_log$data_field$new_input)) {
-        xpred <- xc
+        with_pred <- FALSE
+        xpred <- xc[0L]
     } else {
+        warn("warn_bc_with_pred",
+            "Bayesican calibration with newly measured input for prediction ",
+            "has not been implemented. The newly measured input will not be used."
+        )
         xpred <- private$m_log$data_field$new_input
+        with_pred <- FALSE
     }
     # }}}
 
@@ -1120,7 +1126,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     # number of measured parameter observations
     n <- nrow(xf)
     # number of newly design points for predictions
-    n_pred <- nrow(xpred)
+    if (with_pred) n_pred <- nrow(xpred)
     # number of simulated observations
     m <- nrow(xc)
     # number of calibration parameters
@@ -1147,7 +1153,6 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
 
     xf_std <- copy(xf)
     xc_std <- copy(xc)
-    xpred_std <- copy(xpred)
 
     x <- rbindlist(list(xf, xc))
     x_min <- x[, lapply(.SD, min)]
@@ -1155,7 +1160,13 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     for (i in seq.int(p)) {
         set(xf_std, NULL, i, minmax_norm(xf_std[[i]], x_min[[i]], x_max[[i]]))
         set(xc_std, NULL, i, minmax_norm(xc_std[[i]], x_min[[i]], x_max[[i]]))
-        set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
+    }
+
+    if (with_pred) {
+        xpred_std <- copy(xpred)
+        for (i in seq.int(p)) {
+            set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
+        }
     }
     # }}}
 
@@ -1165,8 +1176,6 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         n = n,
         # number of simulated observations
         m = m,
-        # number of newly design points for predictions
-        n_pred = n_pred,
         # number of input parameters
         p = p,
         # number of calibration parameters
@@ -1182,16 +1191,32 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         # simulated input
         xc = xc,
         # calibration parameters
-        tc = tc,
-        # new design points for predictions
-        x_pred = xpred
+        tc = tc
     )
+
+    if (with_pred) {
+        stan_data <- c(stan_data,
+            list(
+                # number of newly design points for predictions
+                n_pred = n_pred,
+                # new design points for predictions
+                x_pred = xpred
+            )
+        )
+    }
     # }}}
 
-    fit <- rstan::sampling(stanmodels$bc_with_pred, data = stan_data,
-        chains = chains, iter = iter, open_progress = echo, show_messages = echo,
-        ...
-    )
+    if (with_pred) {
+        fit <- rstan::sampling(stanmodels$bc_with_pred, data = stan_data,
+            chains = chains, iter = iter, show_messages = echo,
+            ...
+        )
+    } else {
+        fit <- rstan::sampling(stanmodels$bc_without_pred, data = stan_data,
+            chains = chains, iter = iter, show_messages = echo,
+            ...
+        )
+    }
 
     # store
     private$m_log$stan$eta_mu <- eta_mu
