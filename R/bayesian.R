@@ -3,26 +3,26 @@
 #' @importFrom data.table setnames setorderv melt.data.table rleidv setattr
 NULL
 
-# sampleQuality {{{
-sampleQuality <- function(sample, population, k) {
-    # k: ncol(population)
-    KL <- rep(NA,k)
-    for(ii in (1:k)){
-        Y1 <- sample[,ii]
-        Y2 <- population[,ii]
-        nr <- length(Y2)
-        r <- range(Y2)
-        Y1.dis <- entropy::discretize(Y1,numBins = nr^(1/3), r=r)
-        Y2.dis <- entropy::discretize(Y2,numBins = nr^(1/3), r=r)
-        #KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1/length(Y1),a2=1/length(Y2)) # Schurmann-Grassberger (1996) entropy estimator
-        KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1,a2=1) # KL divergence with laplace prior
-        #p1 <- as.data.frame(freqs.Dirichlet(Y1.dis+1, 0))$Freq
-        #p2 <- as.data.frame(freqs.Dirichlet(Y2.dis+1, 0))$Freq
-        #KL[ii] <- sum((p1-p2)*(log(p1)-log(p2)))
-    }
-    return(exp(-mean(KL)))
-}
-# }}}
+## sampleQuality {{{
+#sampleQuality <- function(sample, population, k) {
+#    # k: ncol(population)
+#    KL <- rep(NA,k)
+#    for(ii in (1:k)){
+#        Y1 <- sample[,ii]
+#        Y2 <- population[,ii]
+#        nr <- length(Y2)
+#        r <- range(Y2)
+#        Y1.dis <- entropy::discretize(Y1,numBins = nr^(1/3), r=r)
+#        Y2.dis <- entropy::discretize(Y2,numBins = nr^(1/3), r=r)
+#        #KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1/length(Y1),a2=1/length(Y2)) # Schurmann-Grassberger (1996) entropy estimator
+#        KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1,a2=1) # KL divergence with laplace prior
+#        #p1 <- as.data.frame(freqs.Dirichlet(Y1.dis+1, 0))$Freq
+#        #p2 <- as.data.frame(freqs.Dirichlet(Y2.dis+1, 0))$Freq
+#        #KL[ii] <- sum((p1-p2)*(log(p1)-log(p2)))
+#    }
+#    return(exp(-mean(KL)))
+#}
+## }}}
 
 #' Conduct Bayesian Calibration on an EnergyPlus Model
 #'
@@ -507,12 +507,12 @@ sampleQuality <- function(sample, population, k) {
 #'
 #' @examples
 #' \dontrun{
-#' if (is_avail_eplus(8.8)) {
+#' if (eplusr::is_avail_eplus(8.8)) {
 #'     idf_name <- "5Zone_Transformer.idf"
 #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 #'
-#'     idf_path <- file.path(eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-#'     epw_path <- file.path(eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 #'
 #'     # create from local files
 #'     bayes_job(idf_path, epw_path)
@@ -586,6 +586,35 @@ sampleQuality <- function(sample, population, k) {
 #' A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
 #' energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 #' 10.1016/j.enbuild.2018.06.028
+NULL
+
+#' Create a Bayesian Calibration Job
+#'
+#' `bayes_job()` takes an IDF and EPW as input, and returns an `BayesCalibJob`
+#' object for conducting Bayesian calibration on an EnergyPlus model. For more
+#' details, please see [BayesCalibJob].
+#'
+#' @param idf A path to an local EnergyPlus IDF file or an `Idf` object.
+#' @param epw A path to an local EnergyPlus EPW file or an `Epw` object.
+#' @return An `BayesCalibJob` object.
+#' @examples
+#' \dontrun{
+#' if (eplusr::is_avail_eplus(8.8)) {
+#'     idf_name <- "1ZoneUncontrolled.idf"
+#'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+#'
+#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'
+#'     # create from local files
+#'     bayes_job(idf_path, epw_path)
+#'
+#'     # create from an Idf and an Epw object
+#'     bayes_job(read_idf(idf_path), read_epw(epw_path))
+#' }
+#' }
+#' @seealso [sensi_job()] for creating a sensitivity analysis job.
+#' @author Hongyuan Jia
 #' @export
 # bayes_job {{{
 bayes_job <- function (idf, epw) {
@@ -1088,6 +1117,7 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
 }
 # }}}
 # bc_stan_run {{{
+#' @importFrom stats sd
 bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo = TRUE, ...) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
@@ -1106,9 +1136,15 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
 
     # newly measured input for prediction
     if (is.null(private$m_log$data_field$new_input)) {
-        xpred <- xc
+        with_pred <- FALSE
+        xpred <- xc[0L]
     } else {
+        warn("warn_bc_with_pred",
+            "Bayesican calibration with newly measured input for prediction ",
+            "has not been implemented. The newly measured input will not be used."
+        )
         xpred <- private$m_log$data_field$new_input
+        with_pred <- FALSE
     }
     # }}}
 
@@ -1120,7 +1156,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     # number of measured parameter observations
     n <- nrow(xf)
     # number of newly design points for predictions
-    n_pred <- nrow(xpred)
+    if (with_pred) n_pred <- nrow(xpred)
     # number of simulated observations
     m <- nrow(xc)
     # number of calibration parameters
@@ -1147,7 +1183,6 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
 
     xf_std <- copy(xf)
     xc_std <- copy(xc)
-    xpred_std <- copy(xpred)
 
     x <- rbindlist(list(xf, xc))
     x_min <- x[, lapply(.SD, min)]
@@ -1155,7 +1190,13 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     for (i in seq.int(p)) {
         set(xf_std, NULL, i, minmax_norm(xf_std[[i]], x_min[[i]], x_max[[i]]))
         set(xc_std, NULL, i, minmax_norm(xc_std[[i]], x_min[[i]], x_max[[i]]))
-        set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
+    }
+
+    if (with_pred) {
+        xpred_std <- copy(xpred)
+        for (i in seq.int(p)) {
+            set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
+        }
     }
     # }}}
 
@@ -1165,8 +1206,6 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         n = n,
         # number of simulated observations
         m = m,
-        # number of newly design points for predictions
-        n_pred = n_pred,
         # number of input parameters
         p = p,
         # number of calibration parameters
@@ -1182,16 +1221,32 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         # simulated input
         xc = xc,
         # calibration parameters
-        tc = tc,
-        # new design points for predictions
-        x_pred = xpred
+        tc = tc
     )
+
+    if (with_pred) {
+        stan_data <- c(stan_data,
+            list(
+                # number of newly design points for predictions
+                n_pred = n_pred,
+                # new design points for predictions
+                x_pred = xpred
+            )
+        )
+    }
     # }}}
 
-    fit <- rstan::sampling(stanmodels$bc_with_pred, data = stan_data,
-        chains = chains, iter = iter, open_progress = echo, show_messages = echo,
-        ...
-    )
+    if (with_pred) {
+        fit <- rstan::sampling(stanmodels$bc_with_pred, data = stan_data,
+            chains = chains, iter = iter, show_messages = echo,
+            ...
+        )
+    } else {
+        fit <- rstan::sampling(stanmodels$bc_without_pred, data = stan_data,
+            chains = chains, iter = iter, show_messages = echo,
+            ...
+        )
+    }
 
     # store
     private$m_log$stan$eta_mu <- eta_mu

@@ -3,11 +3,7 @@
 \docType{class}
 \name{BayesCalibJob}
 \alias{BayesCalibJob}
-\alias{bayes_job}
 \title{Conduct Bayesian Calibration on an EnergyPlus Model}
-\usage{
-bayes_job(idf, epw)
-}
 \description{
 \code{bayes_job()} takes an IDF and EPW as input and returns a \code{BayesCalibJob},
 which provides a prototype of conducting Bayesian calibration of EnergyPlus
@@ -493,12 +489,12 @@ method, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
 
 \examples{
 \dontrun{
-if (is_avail_eplus(8.8)) {
+if (eplusr::is_avail_eplus(8.8)) {
     idf_name <- "5Zone_Transformer.idf"
     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
-    idf_path <- file.path(eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-    epw_path <- file.path(eplus_config(8.8)$dir, "WeatherData", epw_name)
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 
     # create from local files
     bayes_job(idf_path, epw_path)

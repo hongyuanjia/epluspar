@@ -7,7 +7,7 @@ Conduct sensitivity analysis and Bayesian calibration of EnergyPlus
 models.
 
 [![Travis-CI Build
-Status](https://travis-ci.org/ideas-lab-nus/epScan.svg?branch=master)](https://travis-ci.org/ideas-lab-nus/epScan)
+Status](https://api.travis-ci.com/ideas-lab-nus/epScan.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.org/ideas-lab-nus/epScan)
 [![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
 [![CRAN Download
@@ -100,19 +100,19 @@ sen$apply_measure(my_actions,
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: `my_actions`
 #> Parametric Models [32]: 
-#> [01]: `1_effic(0.325)_thick(0.01)_condu(0.2)`
-#> [02]: `2_effic(0.325)_thick(0.01)_condu(0.1)`
-#> [03]: `3_effic(0.325)_thick(0.0275)_condu(0.1)`
-#> [04]: `4_effic(0.55)_thick(0.0275)_condu(0.1)`
-#> [05]: `5_effic(0.325)_thick(0.045)_condu(0.3)`
-#> [06]: `6_effic(0.325)_thick(0.045)_condu(0.4)`
-#> [07]: `7_effic(0.325)_thick(0.0625)_condu(0.4)`
-#> [08]: `8_effic(0.55)_thick(0.0625)_condu(0.4)`
-#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.2)`
-#> [10]: `10_effic(0.1)_thick(0.08)_condu(0.2)`
-#> [11]: `11_effic(0.325)_thick(0.08)_condu(0.2)`
-#> [12]: `12_effic(0.325)_thick(0.08)_condu(0.1)`
-#> [13]: `13_effic(1)_thick(0.0625)_condu(0.2)`
+#> [01]: `1_effic(0.775)_thick(0.01)_condu(0.3)`
+#> [02]: `2_effic(0.775)_thick(0.01)_condu(0.2)`
+#> [03]: `3_effic(0.775)_thick(0.0275)_condu(0.2)`
+#> [04]: `4_effic(1)_thick(0.0275)_condu(0.2)`
+#> [05]: `5_effic(0.325)_thick(0.08)_condu(0.6)`
+#> [06]: `6_effic(0.1)_thick(0.08)_condu(0.6)`
+#> [07]: `7_effic(0.1)_thick(0.0625)_condu(0.6)`
+#> [08]: `8_effic(0.1)_thick(0.0625)_condu(0.5)`
+#> [09]: `9_effic(1)_thick(0.0275)_condu(0.4)`
+#> [10]: `10_effic(1)_thick(0.01)_condu(0.4)`
+#> [11]: `11_effic(1)_thick(0.01)_condu(0.5)`
+#> [12]: `12_effic(0.775)_thick(0.01)_condu(0.5)`
+#> [13]: `13_effic(1)_thick(0.08)_condu(0.5)`
 ....
 ```
 
@@ -121,25 +121,25 @@ Get samples
 ``` r
 sen$samples()
 #>     case efficiency thickness conducitivy
-#>  1:    1      0.325    0.0100         0.2
-#>  2:    2      0.325    0.0100         0.1
-#>  3:    3      0.325    0.0275         0.1
-#>  4:    4      0.550    0.0275         0.1
-#>  5:    5      0.325    0.0450         0.3
-#>  6:    6      0.325    0.0450         0.4
-#>  7:    7      0.325    0.0625         0.4
-#>  8:    8      0.550    0.0625         0.4
-#>  9:    9      0.100    0.0625         0.2
-#> 10:   10      0.100    0.0800         0.2
-#> 11:   11      0.325    0.0800         0.2
-#> 12:   12      0.325    0.0800         0.1
-#> 13:   13      1.000    0.0625         0.2
-#> 14:   14      0.775    0.0625         0.2
-#> 15:   15      0.775    0.0625         0.1
-#> 16:   16      0.775    0.0800         0.1
-#> 17:   17      0.775    0.0450         0.4
-#> 18:   18      0.550    0.0450         0.4
-#> 19:   19      0.550    0.0450         0.3
+#>  1:    1      0.775    0.0100         0.3
+#>  2:    2      0.775    0.0100         0.2
+#>  3:    3      0.775    0.0275         0.2
+#>  4:    4      1.000    0.0275         0.2
+#>  5:    5      0.325    0.0800         0.6
+#>  6:    6      0.100    0.0800         0.6
+#>  7:    7      0.100    0.0625         0.6
+#>  8:    8      0.100    0.0625         0.5
+#>  9:    9      1.000    0.0275         0.4
+#> 10:   10      1.000    0.0100         0.4
+#> 11:   11      1.000    0.0100         0.5
+#> 12:   12      0.775    0.0100         0.5
+#> 13:   13      1.000    0.0800         0.5
+#> 14:   14      0.775    0.0800         0.5
+#> 15:   15      0.775    0.0625         0.5
+#> 16:   16      0.775    0.0625         0.4
+#> 17:   17      0.775    0.0800         0.1
+#> 18:   18      1.000    0.0800         0.1
+#> 19:   19      1.000    0.0625         0.1
 ....
 ```
 
@@ -155,19 +155,19 @@ sen$run(dir = tempdir(), echo = FALSE)
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: `my_actions`
 #> Parametric Models [32]: 
-#> [01]: `1_effic(0.325)_thick(0.01)_condu(0.2)`    <-- SUCCEEDED
-#> [02]: `2_effic(0.325)_thick(0.01)_condu(0.1)`    <-- SUCCEEDED
-#> [03]: `3_effic(0.325)_thick(0.0275)_condu(0.1)`  <-- SUCCEEDED
-#> [04]: `4_effic(0.55)_thick(0.0275)_condu(0.1)`   <-- SUCCEEDED
-#> [05]: `5_effic(0.325)_thick(0.045)_condu(0.3)`   <-- SUCCEEDED
-#> [06]: `6_effic(0.325)_thick(0.045)_condu(0.4)`   <-- SUCCEEDED
-#> [07]: `7_effic(0.325)_thick(0.0625)_condu(0.4)`  <-- SUCCEEDED
-#> [08]: `8_effic(0.55)_thick(0.0625)_condu(0.4)`   <-- SUCCEEDED
-#> [09]: `9_effic(0.1)_thick(0.0625)_condu(0.2)`    <-- SUCCEEDED
-#> [10]: `10_effic(0.1)_thick(0.08)_condu(0.2)`     <-- SUCCEEDED
-#> [11]: `11_effic(0.325)_thick(0.08)_condu(0.2)`   <-- SUCCEEDED
-#> [12]: `12_effic(0.325)_thick(0.08)_condu(0.1)`   <-- SUCCEEDED
-#> [13]: `13_effic(1)_thick(0.0625)_condu(0.2)`     <-- SUCCEEDED
+#> [01]: `1_effic(0.775)_thick(0.01)_condu(0.3)`    <-- SUCCEEDED
+#> [02]: `2_effic(0.775)_thick(0.01)_condu(0.2)`    <-- SUCCEEDED
+#> [03]: `3_effic(0.775)_thick(0.0275)_condu(0.2)`  <-- SUCCEEDED
+#> [04]: `4_effic(1)_thick(0.0275)_condu(0.2)`      <-- SUCCEEDED
+#> [05]: `5_effic(0.325)_thick(0.08)_condu(0.6)`    <-- SUCCEEDED
+#> [06]: `6_effic(0.1)_thick(0.08)_condu(0.6)`      <-- SUCCEEDED
+#> [07]: `7_effic(0.1)_thick(0.0625)_condu(0.6)`    <-- SUCCEEDED
+#> [08]: `8_effic(0.1)_thick(0.0625)_condu(0.5)`    <-- SUCCEEDED
+#> [09]: `9_effic(1)_thick(0.0275)_condu(0.4)`      <-- SUCCEEDED
+#> [10]: `10_effic(1)_thick(0.01)_condu(0.4)`       <-- SUCCEEDED
+#> [11]: `11_effic(1)_thick(0.01)_condu(0.5)`       <-- SUCCEEDED
+#> [12]: `12_effic(0.775)_thick(0.01)_condu(0.5)`   <-- SUCCEEDED
+#> [13]: `13_effic(1)_thick(0.08)_condu(0.5)`       <-- SUCCEEDED
 ....
 
 # extract output
@@ -183,17 +183,17 @@ eng <- sen$tabular_data(table_name = "site and source energy",
 #> sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = FALSE)
 #> 
 #> Model runs: 32 
-#>                     mu   mu.star     sigma
-#> efficiency  -0.5777778 0.5777778 0.8049231
-#> thickness   -4.4285714 4.4285714 4.3060741
-#> conducitivy  0.2000000 0.4000000 0.4503967
+#>                    mu  mu.star     sigma
+#> efficiency  -0.500000 0.500000 0.7956673
+#> thickness   -7.071429 7.071429 4.7607482
+#> conducitivy  0.400000 0.400000 0.2449490
 
 # extract data
 attr(result, "data")
-#>    index        name         mu   mu.star     sigma
-#> 1:     1  efficiency -0.5777778 0.5777778 0.8049231
-#> 2:     2   thickness -4.4285714 4.4285714 4.3060741
-#> 3:     3 conducitivy  0.2000000 0.4000000 0.4503967
+#>    index        name        mu  mu.star     sigma
+#> 1:     1  efficiency -0.500000 0.500000 0.7956673
+#> 2:     2   thickness -7.071429 7.071429 4.7607482
+#> 3:     3 conducitivy  0.400000 0.400000 0.2449490
 ```
 
 Plot
@@ -229,7 +229,7 @@ current seed model.
 #> Initializing RDD... [SUCCESSFUL]
 #> ══ EnergyPlus Report Data Dictionary File ═════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-09-12 04:54:00
+#>   * Simulation started: 2019-09-13 03:57:00
 #> 
 #> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
@@ -251,7 +251,7 @@ current seed model.
 (mdd <- bc$read_mdd())
 #> ══ EnergyPlus Meter Data Dictionary File ══════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-09-12 04:54:00
+#>   * Simulation started: 2019-09-13 03:57:00
 #> 
 #> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
@@ -488,8 +488,8 @@ bc$param(
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: ``
 #> Parametric Models [2]: 
-#> [1]: `1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e(`
-#> [2]: `2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e(`
+#> [1]: `1_chiller1(3.269508)_chiller2(1.8782)_equip(6.568681)_fan1e(0.4158435)_fan2e(0.1973639)_fan3e(0.`
+#> [2]: `2_chiller1(2.548999)_chiller2(3.150411)_equip(17.37916)_fan1e(0.8259226)_fan2e(0.5983446)_fan3e(`
 #> << Job has not been run before >>
 ```
 
@@ -500,19 +500,19 @@ Parameter values can be retrieved using `$samples()`.
 ``` r
 bc$samples()
 #>    case chiller1cop chiller2cop equipment   fan1eff   fan2eff   fan3eff
-#> 1:    1    3.866961    2.870356 19.763385 0.4745304 0.2552674 0.2501799
-#> 2:    2    1.624242    3.341994  7.868543 0.6941959 0.7146523 0.6084267
-#>      fan5eff   infil_rate    lights    people
-#> 1: 0.1774733 0.0008959121  8.146156  7.791732
-#> 2: 0.7798118 0.0003279914 14.955283 10.965330
+#> 1:    1    3.269508    1.878200  6.568681 0.4158435 0.1973639 0.6244455
+#> 2:    2    2.548999    3.150411 17.379161 0.8259226 0.5983446 0.1711960
+#>      fan5eff   infil_rate   lights    people
+#> 1: 0.4309617 0.0007684997  5.05934 13.319322
+#> 2: 0.8508381 0.0006475060 18.54624  8.491197
 ```
 
 Generated `Idf`s can be retrieved using `$models()`.
 
 ``` r
 names(bc$models())
-#> [1] "1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e("
-#> [2] "2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e("
+#> [1] "1_chiller1(3.269508)_chiller2(1.8782)_equip(6.568681)_fan1e(0.4158435)_fan2e(0.1973639)_fan3e(0."
+#> [2] "2_chiller1(2.548999)_chiller2(3.150411)_equip(17.37916)_fan1e(0.8259226)_fan2e(0.5983446)_fan3e("
 ```
 
 ### Run simulations and gather data
@@ -533,9 +533,9 @@ bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 7), echo = F
 #> EnergyPlus Path: `/usr/local/EnergyPlus-8-8-0`
 #> Applied Measure: ``
 #> Parametric Models [2]: 
-#> [1]: `1_chiller1(3.866961)_chiller2(2.870356)_equip(19.76338)_fan1e(0.4745304)_fan2e(0.2552674)_fan3e(` <-- SUCCEEDED
-#> [2]: `2_chiller1(1.624242)_chiller2(3.341994)_equip(7.868543)_fan1e(0.6941959)_fan2e(0.7146523)_fan3e(` <-- SUCCEEDED
-#>  Simulation started at `2019-09-12 04:54:33` and completed successfully after 20.34 secs.
+#> [1]: `1_chiller1(3.269508)_chiller2(1.8782)_equip(6.568681)_fan1e(0.4158435)_fan2e(0.1973639)_fan3e(0.` <-- SUCCEEDED
+#> [2]: `2_chiller1(2.548999)_chiller2(3.150411)_equip(17.37916)_fan1e(0.8259226)_fan2e(0.5983446)_fan3e(` <-- SUCCEEDED
+#>  Simulation started at `2019-09-13 03:57:09` and completed successfully after 23.51 secs.
 ```
 
 `$data_sim()` returns a `data.table` (when `merge` is `TRUE`) or a list

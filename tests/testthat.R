@@ -1,5 +1,4 @@
 library(testthat)
-library(eplusr)
-eplusr_option(verbose_info = FALSE)
+library(epScan)
 
-test_check("eplusr")
+test_check("epScan")
