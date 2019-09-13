@@ -1825,6 +1825,7 @@ lhs_samples <- function (par, value, names = NULL, num) {
 
     # recreate the sample
     val <- dcast.data.table(val_m, case ~ name_par, value.var = "value")
+    setcolorder(val, c("case", fctr))
 
     # get case name
     nms <- case_names(val[, -"case"])
