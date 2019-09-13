@@ -1200,6 +1200,15 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     }
     # }}}
 
+    # min-max normalization on input parameter tc {{{
+    tc_std <- copy(tc)
+    tc_min <- tc[, lapply(.SD, min)]
+    tc_max <- tc[, lapply(.SD, max)]
+    for (i in seq.int(q)) {
+        set(tc_std, NULL, i, minmax_norm(tc_std[[i]], tc_min[[i]], tc_max[[i]]))
+    }
+    # }}}
+
     # create data as list for input to Stan {{{
     stan_data <- list(
         # number of measured parameter observations
@@ -1215,13 +1224,13 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         # measured output
         y = y,
         # simulated output
-        eta = eta,
+        eta = eta_std,
         # measured input
-        xf = xf,
+        xf = xf_std,
         # simulated input
-        xc = xc,
+        xc = xc_std,
         # calibration parameters
-        tc = tc
+        tc = tc_std
     )
 
     if (with_pred) {
@@ -1230,7 +1239,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
                 # number of newly design points for predictions
                 n_pred = n_pred,
                 # new design points for predictions
-                x_pred = xpred
+                x_pred = xpred_std
             )
         )
     }
