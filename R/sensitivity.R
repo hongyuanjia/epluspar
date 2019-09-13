@@ -590,29 +590,47 @@ morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
     # combine
     if (!is.null(value)) {
         # format val for `Idf$update()`
-        val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-            index = field_index, field = field_name, is_sch_value, class_id
-        )][val_m, on = c("value_rleid" = "index_par")]
-        setnames(val_m, "value_rleid", "index_par")
-
-        # if schedule value detected, change it to character
-        val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
-            , is_sch_value := NULL]
-
-        # this is necessary to get the right order of val
-        data.table::setorder(val_m, "case")
-        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-            "name", "index", "field", "value"
-        ))
-
-        val_m <- value[, list(id = object_id, index = field_index, class_id)][
-            val_m, on = c("class_id", "index"), allow.cartesian = TRUE][, class_id := NULL]
-        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-            "id", "name", "index", "field", "value"
-        ))
+        val_m <- match_sample_data(par, val_m, value)
     }
 
     list(names = nms, morris = mo, sample = val, value = val_m)
+}
+# }}}
+# match_sample_data {{{
+match_sample_data <- function (par, sample, value) {
+    sample <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
+        index = field_index, field = field_name, is_sch_value, class_id
+    )][sample, on = c("value_rleid" = "index_par")]
+    # change value column to list
+    set(sample, NULL, "value", as.list(sample$value))
+    setnames(sample, "value_rleid", "index_par")
+
+    # if schedule value detected, change it to character
+    sample[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
+        , is_sch_value := NULL]
+
+    # this is necessary to get the right order of val
+    data.table::setorder(sample, "case")
+    data.table::setcolorder(sample, c("case", "index_par", "name_par", "class",
+        "name", "index", "field", "value"
+    ))
+
+    # handle grouped parameters
+    grp <- par$dot[, list(grouped = class || vapply(dot_nm, length, 1L) > 1L), by = c("rleid")][
+        grouped == TRUE
+    ]
+
+    # get parameter index
+    target <- value[, list(id = object_id, input_rleid, input_object_rleid, field_index)]
+    target[J(grp$rleid), on = "input_rleid", input_object_rleid := 1L]
+    set(target, NULL, "index_par", rleidv(target, c("input_rleid", "input_object_rleid", "field_index")))
+    set(target, NULL, c("input_rleid", "input_object_rleid", "field_index"), NULL)
+
+    # merge
+    sample <- target[sample, on = c("index_par"), allow.cartesian = TRUE, nomatch = 0L]
+    data.table::setcolorder(sample, c("case", "index_par", "name_par", "class",
+        "id", "name", "index", "field", "value"
+    ))
 }
 # }}}
 # morris_data {{{

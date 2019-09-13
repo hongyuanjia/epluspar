@@ -1832,39 +1832,7 @@ lhs_samples <- function (par, value, names = NULL, num) {
     # combine
     if (!is.null(value)) {
         # format val for `Idf$update()`
-        val_m <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-            index = field_index, field = field_name, is_sch_value, class_id
-        )][val_m, on = c("value_rleid" = "index_par")]
-        # change value column to list
-        set(val_m, NULL, "value", as.list(val_m$value))
-        setnames(val_m, "value_rleid", "index_par")
-
-        # if schedule value detected, change it to character
-        val_m[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
-            , is_sch_value := NULL]
-
-        # this is necessary to get the right order of val
-        data.table::setorder(val_m, "case")
-        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-            "name", "index", "field", "value"
-        ))
-
-        # handle grouped parameters
-        grp <- par$dot[, list(grouped = class || vapply(dot_nm, length, 1L) > 1L), by = c("rleid")][
-            grouped == TRUE
-        ]
-
-        # get parameter index
-        target <- value[, list(id = object_id, input_rleid, input_object_rleid)]
-        target[J(grp$rleid), on = "input_rleid", input_object_rleid := 1L]
-        set(target, NULL, "index_par", rleidv(target, c("input_rleid", "input_object_rleid")))
-        set(target, NULL, c("input_rleid", "input_object_rleid"), NULL)
-
-        # merge
-        val_m <- target[val_m, on = c("index_par"), allow.cartesian = TRUE]
-        data.table::setcolorder(val_m, c("case", "index_par", "name_par", "class",
-            "id", "name", "index", "field", "value"
-        ))
+        val_m <- match_sample_data(par, val_m, value)
     }
 
     list(names = nms, sample = val, value = val_m)
