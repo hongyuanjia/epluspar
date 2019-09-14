@@ -28,7 +28,7 @@ Imports:
     purrr,
     Rcpp (>= 0.12.0),
     rstan (>= 2.18.1),
-    rstantools (>= 2.0.0.9000),
+    rstantools (>= 1.4.0),
     sensitivity
 LinkingTo:
     BH (>= 1.66.0),
@@ -44,8 +44,7 @@ Suggests:
     rmarkdown,
     stringi
 Remotes:
-    hongyuanjia/eplusr,
-    stan-dev/rstantools
+    hongyuanjia/eplusr
 SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>); GNU make
 Encoding: UTF-8
 LazyData: true
