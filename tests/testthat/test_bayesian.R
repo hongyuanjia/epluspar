@@ -295,7 +295,7 @@ test_that("BayesCalib Class", {
     ))
     expect_equal(nrow(dt$input), 864/2)
     expect_equal(nrow(dt$output), 864/2)
-    expect_null(dt$new_input)
+    expect_equal(nrow(dt$new_input), 864/2)
 
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE))
     expect_equal(names(dt), c("merged", "new_input"))

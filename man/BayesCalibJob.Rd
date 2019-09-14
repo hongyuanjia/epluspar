@@ -26,7 +26,10 @@ bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
              copy_external = FALSE, echo = wait)
 bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
 bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
-bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
+bc$data_bc()
+bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
+            mc.cores = parallel::detectCores(), ...)
+bc$stan_file(path = NULL)
 bc$eplus_kill()
 bc$eplus_status()
 bc$eplus_output_dir(which = NULL)
@@ -223,7 +226,7 @@ instead of \code{=}, e.g. \code{class := list(field = value)}. For grouping fiel
 from different objects in the same class, use \code{.()} in the left hand side
 and put object ID or names inside., .e.g \code{.(object1, object2) := list(field = value)}.
 \item \code{.num_sim}: An positive integer specifying the number of simulations to run
-for each value of calibration parameter value. (NOT CORRECT). Default:
+for each combination of calibration parameter value. Default:
 \code{30L}.
 \item \code{.names}: A character vector of the parameter names. If \code{NULL},
 the parameter will be named in format \code{t + number}. Default: \code{NULL}.
@@ -305,7 +308,7 @@ can be given to insert a new \code{RunPeriod} object. In this case, all existing
 \code{RunPeriod} objects in the seed model will be commented out.
 
 Note that when \code{run_period} is given, value of field \code{Run Simulation for Weather File Run Periods} in \code{SimulationControl} class will be reset to \code{Yes}
-to make sure input run period can take effect."
+to make sure input run period can take effect.
 
 \strong{Arguments}
 \itemize{
@@ -408,12 +411,14 @@ The specified \code{output} \code{\link[=data.frame]{data.frame()}} is validated
 each case extracted using \code{$data_sim()}.
 }
 
-Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly measured
-value of input parameters. The column number of input \code{\link[=data.frame]{data.frame()}} should
-be the same as the number of input parameters specified in \code{$input()}.
-
 For input parameters, the values of simulation data for the first case are
 directly used as the measured values.
+
+Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly measured
+value of input parameters. The column number of input \code{\link[=data.frame]{data.frame()}} should
+be the same as the number of input parameters specified in \code{$input()}. If not
+specified, the measured values of input parameters will be used for
+predictions.
 
 All the data will be stored internally and used during Bayesian calibration
 using Stan.
@@ -446,20 +451,61 @@ datetime components. For details, please see \code{$data_sim()}. Default:
 }
 
 \section{Run Bayesian Calibration Using Stan}{
-\preformatted{bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
+\preformatted{bc$data_bc()
+bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
+            mc.cores = parallel::detectCores(), ...)
+bc$stan_file(path = NULL)
 }
 
-\code{$stan_run()} runs Bayesian calibration using Stan.
+\code{$data_bc()} returns a list that contains data input for Bayesican
+calibration using the Stan model from Chong (2018):
+\itemize{
+\item \code{n}: Number of measured parameter observations.
+\item \code{n_pred}: Number of newly design points for predictions.
+\item \code{m}: Number of simulated observations.
+\item \code{p}: Number of input parameters.
+\item \code{q}: Number of calibration parameters.
+\item \code{y}: Data of measured output after z-score standardization using data of
+simulated output.
+\item \code{eta}: Data of simulated output after z-score standardization.
+\item \code{xf}: Data of measured input after min-max normalization.
+\item \code{xc}: Data of simulated input after min-max normalization.
+\item \code{x_pred}: Data of new design points for predictions after min-max
+normalization.
+\item \code{tc}: Data of calibration parameters after min-max normalization.
+}
+
+\code{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
+returns a list of 2 elements:
+\itemize{
+\item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
+\item \code{y_pred}: A \link[data.table:data.table]{data.table} with predicted output
+values.
+}
+
+\code{$stan_file()} saves the Stan file used internally for Bayesican calibration.
+If no path is given, a character vector of the Stan code is returned. If
+given, the code will be save to the path and the file path is returned.
 
 \strong{Arguments}
 \itemize{
+\item \code{file}: The path to the Stan program to use. If \code{NULL}, the pre-compiled
+Stan code from Chong (2018) will be used. Default: \code{NULL}.
+\item \code{data}: Only applicable when \code{file} is not \code{NULL}. The data to be used for
+Bayesican calibration. If \code{NULL}, the data that \code{$data_bc()} returns is
+used. Default: \code{NULL}.
+\item \code{path}: A path to save the Stan code. If \code{NULL}, a character vector of the
+Stan code is returned.
 \item \code{iter}: A positive integer specifying the number of iterations for each
 chain (including warmup). Default: \code{2000}.
 \item \code{chains}: A positive integer specifying the number of Markov chains.
 Default: \code{4}.
 \item \code{echo}: Whether to print intermediate output from Stan on the console,
 which might be helpful for model debugging. Default: \code{TRUE}.
-\item \code{...}: Additional arguments to pass to \link[rstan:sampling]{rstan::sampling}.
+\item \code{mc.cores}: An integer specifying how many cores to be used for Stan.
+Default: \code{parallel::detectCores()}.
+\item \code{...}: Additional arguments to pass to \link[rstan:sampling]{rstan::sampling} (when \code{file} is
+\code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not \code{NULL}).
 }
 }
 

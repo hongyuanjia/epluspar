@@ -48,7 +48,10 @@ NULL
 #'              copy_external = FALSE, echo = wait)
 #' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
 #' bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
-#' bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
+#' bc$data_bc()
+#' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
+#'             mc.cores = parallel::detectCores(), ...)
+#' bc$stan_file(path = NULL)
 #' bc$eplus_kill()
 #' bc$eplus_status()
 #' bc$eplus_output_dir(which = NULL)
@@ -245,7 +248,7 @@ NULL
 #'   and put object ID or names inside., .e.g `.(object1, object2) := list(field
 #'   = value)`.
 #' * `.num_sim`: An positive integer specifying the number of simulations to run
-#'   for each value of calibration parameter value. (NOT CORRECT). Default:
+#'   for each combination of calibration parameter value. Default:
 #'   `30L`.
 #' * `.names`: A character vector of the parameter names. If `NULL`,
 #'   the parameter will be named in format `t + number`. Default: `NULL`.
@@ -330,7 +333,7 @@ NULL
 #'
 #' Note that when `run_period` is given, value of field `Run Simulation for
 #' Weather File Run Periods` in `SimulationControl` class will be reset to `Yes`
-#' to make sure input run period can take effect."
+#' to make sure input run period can take effect.
 #'
 #' **Arguments**
 #'
@@ -429,12 +432,14 @@ NULL
 #' * The row number should be the same as the number of simulated values for
 #'   each case extracted using `$data_sim()`.
 #'
-#' Parameter `new_input` can be used to give a [data.frame()] of newly measured
-#' value of input parameters. The column number of input [data.frame()] should
-#' be the same as the number of input parameters specified in `$input()`.
-#'
 #' For input parameters, the values of simulation data for the first case are
 #' directly used as the measured values.
+#'
+#' Parameter `new_input` can be used to give a [data.frame()] of newly measured
+#' value of input parameters. The column number of input [data.frame()] should
+#' be the same as the number of input parameters specified in `$input()`. If not
+#' specified, the measured values of input parameters will be used for
+#' predictions.
 #'
 #' All the data will be stored internally and used during Bayesian calibration
 #' using Stan.
@@ -466,20 +471,58 @@ NULL
 #'
 #' @section Run Bayesian Calibration Using Stan:
 #' ```
-#' bc$stan_run(iter = 2000L, chains = 4L, echo = TRUE, ...)
+#' bc$data_bc()
+#' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
+#'             mc.cores = parallel::detectCores(), ...)
+#' bc$stan_file(path = NULL)
 #' ```
 #'
-#' `$stan_run()` runs Bayesian calibration using Stan.
+#' `$data_bc()` returns a list that contains data input for Bayesican
+#' calibration using the Stan model from Chong (2018):
+#'
+#' * `n`: Number of measured parameter observations.
+#' * `n_pred`: Number of newly design points for predictions.
+#' * `m`: Number of simulated observations.
+#' * `p`: Number of input parameters.
+#' * `q`: Number of calibration parameters.
+#' * `y`: Data of measured output after z-score standardization using data of
+#'   simulated output.
+#' * `eta`: Data of simulated output after z-score standardization.
+#' * `xf`: Data of measured input after min-max normalization.
+#' * `xc`: Data of simulated input after min-max normalization.
+#' * `x_pred`: Data of new design points for predictions after min-max
+#'   normalization.
+#' * `tc`: Data of calibration parameters after min-max normalization.
+#'
+#' `$stan_run()` runs Bayesian calibration using [Stan][rstan::stan] and
+#' returns a list of 2 elements:
+#'
+#' * `fit`: An object of S4 class [rstan::stanfit].
+#' * `y_pred`: A [data.table][data.table::data.table()] with predicted output
+#'   values.
+#'
+#' `$stan_file()` saves the Stan file used internally for Bayesican calibration.
+#' If no path is given, a character vector of the Stan code is returned. If
+#' given, the code will be save to the path and the file path is returned.
 #'
 #' **Arguments**
-#'
+#' * `file`: The path to the Stan program to use. If `NULL`, the pre-compiled
+#'   Stan code from Chong (2018) will be used. Default: `NULL`.
+#' * `data`: Only applicable when `file` is not `NULL`. The data to be used for
+#'   Bayesican calibration. If `NULL`, the data that `$data_bc()` returns is
+#'   used. Default: `NULL`.
+#' * `path`: A path to save the Stan code. If `NULL`, a character vector of the
+#'   Stan code is returned.
 #' * `iter`: A positive integer specifying the number of iterations for each
 #'   chain (including warmup). Default: `2000`.
 #' * `chains`: A positive integer specifying the number of Markov chains.
 #'   Default: `4`.
 #' * `echo`: Whether to print intermediate output from Stan on the console,
 #'   which might be helpful for model debugging. Default: `TRUE`.
-#' * `...`: Additional arguments to pass to [rstan::sampling].
+#' * `mc.cores`: An integer specifying how many cores to be used for Stan.
+#'   Default: `parallel::detectCores()`.
+#' * `...`: Additional arguments to pass to [rstan::sampling] (when `file` is
+#'   `NULL`) or [rstan::stan] (when `file` is not `NULL`).
 #'
 #' @section Inherited Methods from `ParametricJob`:
 #' ```
@@ -680,6 +723,9 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
         data_field = function (output, new_input = NULL, merge = FALSE, all = FALSE)
             bc_data_field(super, self, private, output, new_input, merge, all),
 
+        data_bc = function ()
+            bc_data_bc(super, self, private),
+
         eplus_run = function (dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
                               copy_external = FALSE, echo = wait)
             bc_eplus_run(super, self, private, dir, run_period, wait, force, copy_external, echo),
@@ -690,14 +736,11 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
         eplus_status = function ()
             super$status(),
 
-        stan_run = function (iter = 2000L, chains = 4L, echo = TRUE, ...)
-            bc_stan_run(super, self, private, iter, chains, echo, ...),
+        stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE, ...)
+            bc_stan_run(super, self, private, file, data, iter, chains, echo, ...),
 
-        stan_kill = function ()
-            bc_stan_kill(super, self, private),
-
-        stan_status = function ()
-            bc_stan_status(super, self, private),
+        stan_file = function (path = NULL)
+            bc_stan_file(super, self, private, path),
 
         eplus_output_dir = function (which = NULL)
             super$output_dir(which),
@@ -1092,22 +1135,24 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
     input <- private$m_log$data_sim$input[J(private$m_log$data_sim$input$case[[1L]]), on = "case"]
 
     # new measured input for prediction
-    if (!is.null(new_input)) {
+    if (is.null(new_input)) {
+        new_input <- copy(input)
+    } else {
         bc_assert_valid_measured(super, self, private, new_input, "new_input", FALSE)
 
         new_input <- as.data.table(new_input)
         setnames(new_input, names(private$m_log$data_sim$input)[-(1L:11L)])
-
-        private$m_log$data_field$new_input <- copy(new_input)
     }
 
     # log
     private$m_log$data_field$input <- copy(input)
     private$m_log$data_field$output <- copy(output)
+    private$m_log$data_field$new_input <- copy(new_input)
 
     # reset returned case to NA
     set(input, NULL, "case", NA_character_)
     set(output, NULL, "case", NA_character_)
+    set(new_input, NULL, "case", NA_character_)
 
     if (merge) {
         list(merged = combine_input_output_data(input, output, merge, all), new_input = new_input)
@@ -1116,9 +1161,8 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
     }
 }
 # }}}
-# bc_stan_run {{{
-#' @importFrom stats sd
-bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo = TRUE, ...) {
+# bc_data_bc {{{
+bc_data_bc <- function (super, self, private) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
     # data {{{
@@ -1131,21 +1175,10 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     eta <- private$m_log$data_sim$output[, .SD, .SDcols = -c(1L:11L)]
     # simulated input
     xc <- private$m_log$data_sim$input[, .SD, .SDcols = -c(1L:11L)]
+    # newly measured input for prediction
+    xpred <- private$m_log$data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
     # calibration parameters
     tc <- private$m_log$sample$sample[rep(case, each = nrow(xf)), .SD, .SDcols = -1L]
-
-    # newly measured input for prediction
-    if (is.null(private$m_log$data_field$new_input)) {
-        with_pred <- FALSE
-        xpred <- xc[0L]
-    } else {
-        warn("warn_bc_with_pred",
-            "Bayesican calibration with newly measured input for prediction ",
-            "has not been implemented. The newly measured input will not be used."
-        )
-        xpred <- private$m_log$data_field$new_input
-        with_pred <- FALSE
-    }
     # }}}
 
     # meta {{{
@@ -1156,7 +1189,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     # number of measured parameter observations
     n <- nrow(xf)
     # number of newly design points for predictions
-    if (with_pred) n_pred <- nrow(xpred)
+    n_pred <- nrow(xpred)
     # number of simulated observations
     m <- nrow(xc)
     # number of calibration parameters
@@ -1164,25 +1197,24 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     # }}}
 
     # z-score normalization on output parameter y and eta {{{
-    zscore_norm <- function (x, mu, sd) (x - mu) / sd
-    un_zscore_norm <- function (x, mu, sd) x * sd + mu
+    zscore_norm <- function (x, mean, sd) (x - mean) / sd
 
     eta_std <- copy(eta)
     y_std <- copy(y)
-    eta_mu <- eta[, lapply(.SD, mean)]
+    eta_mean <- eta[, lapply(.SD, mean)]
     eta_sd <- eta[, lapply(.SD, sd)]
     for (i in seq.int(d)) {
-        set(y_std, NULL, i, zscore_norm(y_std[[i]], eta_mu[[i]], eta_sd[[i]]))
-        set(eta_std, NULL, i, zscore_norm(eta_std[[i]], eta_mu[[i]], eta_sd[[i]]))
+        set(y_std, NULL, i, zscore_norm(y_std[[i]], eta_mean[[i]], eta_sd[[i]]))
+        set(eta_std, NULL, i, zscore_norm(eta_std[[i]], eta_mean[[i]], eta_sd[[i]]))
     }
     # }}}
 
     # min-max normalization on input parameter xf, xc and xpred {{{
     minmax_norm <- function (x, min, max) (x - min) / (max - min)
-    un_minmax_norm <- function (x, min, max) x * (max - min) + min
 
     xf_std <- copy(xf)
     xc_std <- copy(xc)
+    xpred_std <- copy(xpred)
 
     x <- rbindlist(list(xf, xc))
     x_min <- x[, lapply(.SD, min)]
@@ -1190,13 +1222,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     for (i in seq.int(p)) {
         set(xf_std, NULL, i, minmax_norm(xf_std[[i]], x_min[[i]], x_max[[i]]))
         set(xc_std, NULL, i, minmax_norm(xc_std[[i]], x_min[[i]], x_max[[i]]))
-    }
-
-    if (with_pred) {
-        xpred_std <- copy(xpred)
-        for (i in seq.int(p)) {
-            set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
-        }
+        set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
     }
     # }}}
 
@@ -1213,14 +1239,14 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     stan_data <- list(
         # number of measured parameter observations
         n = n,
+        # number of newly design points for predictions
+        n_pred = n_pred,
         # number of simulated observations
         m = m,
         # number of input parameters
         p = p,
         # number of calibration parameters
         q = q,
-        # number of output parameters
-        D = d,
         # measured output
         y = y,
         # simulated output
@@ -1229,41 +1255,86 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
         xf = xf_std,
         # simulated input
         xc = xc_std,
+        # new design points for predictions
+        x_pred = xpred_std,
         # calibration parameters
         tc = tc_std
     )
 
-    if (with_pred) {
-        stan_data <- c(stan_data,
-            list(
-                # number of newly design points for predictions
-                n_pred = n_pred,
-                # new design points for predictions
-                x_pred = xpred_std
-            )
-        )
+    # TODO: update this and also the doc when the multiple output code with
+    # prediction is tested
+    if (d > 1L) {
+        # add number of output parameters
+        stan_data <- c(stan_data, list(D = d))
+        stan_data <- stan_data[-c("n_pred", "x_pred")]
     }
     # }}}
 
-    if (with_pred) {
-        fit <- rstan::sampling(stanmodels$bc_with_pred, data = stan_data,
+    private$m_log$stan$data <- stan_data
+    private$m_log$stan$eta_mean <- eta_mean
+    private$m_log$stan$eta_sd <- eta_sd
+
+    stan_data
+}
+# }}}
+# bc_stan_run {{{
+#' @importFrom stats sd
+bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 2000L, chains = 4L,
+                         echo = TRUE, mc.cores = parallel::detectCores(), ...) {
+    opts <- options(mc.cores = mc.cores)
+    on.exit(options(opts), add = TRUE)
+
+    data_bc <- bc_data_bc(super, self, private)
+
+    if (!is.null(file)) {
+        data <- if (is.null(data)) data_bc else data
+        fit <- rstan::stan(file, data = data,
+            chains = chains, iter = iter, show_messages = echo,
+            ...
+        )
+    # update this when multiple output bc code is ready
+    } else if ("x_pred" %in% names(data_bc)){
+        data_bc$y <- data_bc$y[[1L]]
+        data_bc$eta <- data_bc$eta[[1L]]
+        fit <- rstan::sampling(stanmodels$bc_with_pred, data = data_bc,
             chains = chains, iter = iter, show_messages = echo,
             ...
         )
     } else {
-        fit <- rstan::sampling(stanmodels$bc_without_pred, data = stan_data,
+        fit <- rstan::sampling(stanmodels$bc_without_pred, data = data_bc,
             chains = chains, iter = iter, show_messages = echo,
             ...
         )
     }
 
     # store
-    private$m_log$stan$eta_mu <- eta_mu
-    private$m_log$stan$eta_sd <- eta_sd
-    private$m_log$stan$data <- stan_data
     private$m_log$stan$fit <- fit
 
-    private$m_log$stan
+    if ("x_pred" %in% names(data_bc)) {
+        samples <- rstan::extract(fit)
+        y_pred <- samples$y_pred * private$m_log$stan$eta_sd[[1L]] + private$m_log$stan$eta_mean[[1L]]
+    } else {
+        y_pred <- NULL
+    }
+
+    list(fit = fit, y_pred = y_pred)
+}
+# }}}
+# bc_stan_file {{{
+bc_stan_file <- function (super, self, private, path = NULL) {
+    lic <- system.file("stan/include/license.stan", package = "epScan", mustWork = TRUE)
+    bc <- system.file("stan/bc_with_pred.stan", package = "epScan", mustWork = TRUE)
+
+    code <- c(readLines(lic), "", readLines(bc))
+
+    if (is.null(path)) return(code)
+
+    if (!dir.exists(dirname(path))) dir.create(dirname(path), recursive = TRUE)
+
+    opts <- options(encoding = "native.enc")
+    on.exit(options(opts), add = TRUE)
+    writeLines(enc2utf8(code), path, useBytes = TRUE)
+    path
 }
 # }}}
 
