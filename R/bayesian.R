@@ -2078,7 +2078,7 @@ bc_retain_variable_order <- function (super, self, private, dt, type = c("input"
         variable_name = trimws(vapply(nm_sp, "[", "", 2L))
     )
 
-    dt_nm_all <- private[[m_name]][key_value == "*" | is.na(key_value)][dt_nm, on = "variable_name"]
+    dt_nm_all <- private[[m_name]][key_value == "*" | is.na(key_value)][dt_nm, on = "variable_name", nomatch = 0L]
     dt_nm_spe <- private[[m_name]][!dt_nm_all, on = "index"][, key_value := toupper(key_value)][
         dt_nm, on = c("key_value", "variable_name"), nomatch = 0L]
 
