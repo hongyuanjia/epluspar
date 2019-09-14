@@ -381,8 +381,7 @@ NULL
 #' column together with all input and output parameters are returned. You can
 #' retrieve extra columns by setting `all` to `TRUE`. Those column include:
 #'
-#' * `case`: Character type. Same as the parametric model name in pattern
-#'   `Case_ParameterName(ParamterValue)...`.
+#' * `case`: Integer type. Indices of parametric simulations.
 #' * `environment_period_index`: Integer type. The indice of environment.
 #' * `environment_name`: Character type. A text string identifying the
 #'   simulation environment.
@@ -1136,12 +1135,13 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
 
     # new measured input for prediction
     if (is.null(new_input)) {
-        new_input <- copy(input)
+        new_input <- input
     } else {
         bc_assert_valid_measured(super, self, private, new_input, "new_input", FALSE)
 
         new_input <- as.data.table(new_input)
         setnames(new_input, names(private$m_log$data_sim$input)[-(1L:11L)])
+        set(new_input, NULL, names(input)[1L:11L], input[, .SD, .SDcols = 1L:11L])
     }
 
     # log
@@ -1150,9 +1150,9 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
     private$m_log$data_field$new_input <- copy(new_input)
 
     # reset returned case to NA
-    set(input, NULL, "case", NA_character_)
-    set(output, NULL, "case", NA_character_)
-    set(new_input, NULL, "case", NA_character_)
+    set(input, NULL, "case", NA_integer_)
+    set(output, NULL, "case", NA_integer_)
+    set(new_input, NULL, "case", NA_integer_)
 
     if (merge) {
         list(merged = combine_input_output_data(input, output, merge, all), new_input = new_input)
@@ -2081,6 +2081,9 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
     key_spe <- private[[m_name]][!key_all, on = "index"]
     if (nrow(key_all)) {
         dt_all <- super$report_data(NULL, name = key_all$variable_name, all = TRUE)
+        if (nrow(dt_all)) {
+            set(dt_all, NULL, "case", as.integer(stringi::stri_extract_first_regex(dt_all$case, "^\\d+")))
+        }
     } else {
         dt_all <- data.table()
     }
@@ -2098,12 +2101,16 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
             ))
         }
         set(dt_spe, NULL, "key_value_upper", NULL)
+        if (nrow(dt_spe)) {
+            set(dt_spe, NULL, "case", as.integer(stringi::stri_extract_first_regex(dt_spe$case, "^\\d+")))
+        }
     } else {
         dt_spe <- data.table()
     }
 
     # combine
     dt <- rbindlist(list(dt_all, dt_spe))
+    setorderv(dt, "case")
 
     # make sure each case gives same output rows
     count <- dt[, list(n = .N), by = "case"]
@@ -2188,16 +2195,16 @@ combine_input_output_data <- function (input, output, merge = FALSE, all = FALSE
             "day_type", "Date/Time"), NULL
         )
         if (!all) {
-            set(output, NULL, c("case", "environment_period_index", "environment_name",
+            set(output, NULL, c("environment_period_index", "environment_name",
                 "simulation_days", "datetime", "month", "day", "hour", "minute",
                 "day_type"), NULL
             )
         }
     } else if (!all) {
-        set(input, NULL, c("case", "environment_period_index", "environment_name",
+        set(input, NULL, c("environment_period_index", "environment_name",
             "simulation_days", "datetime", "month", "day", "hour", "minute", "day_type"), NULL
         )
-        set(output, NULL, c("case", "environment_period_index", "environment_name",
+        set(output, NULL, c("environment_period_index", "environment_name",
             "simulation_days", "datetime", "month", "day", "hour", "minute", "day_type"), NULL
         )
     }

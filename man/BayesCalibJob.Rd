@@ -357,8 +357,7 @@ By default, \code{$data_sim()} returns minimal columns, i.e. the \code{Date/Time
 column together with all input and output parameters are returned. You can
 retrieve extra columns by setting \code{all} to \code{TRUE}. Those column include:
 \itemize{
-\item \code{case}: Character type. Same as the parametric model name in pattern
-\code{Case_ParameterName(ParamterValue)...}.
+\item \code{case}: Integer type. Indices of parametric simulations.
 \item \code{environment_period_index}: Integer type. The indice of environment.
 \item \code{environment_name}: Character type. A text string identifying the
 simulation environment.

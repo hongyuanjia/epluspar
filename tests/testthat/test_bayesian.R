@@ -190,13 +190,12 @@ test_that("BayesCalib Class", {
     # can extract sim data
     expect_silent(dt <- bc$data_sim())
     expect_equal(names(dt), c("input", "output"))
-    expect_equal(names(dt$input), c("Date/Time",
+    expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
         "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
         "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
     ))
-    expect_equal(names(dt$output), c(
-        "Date/Time",
+    expect_equal(names(dt$output), c("case", "Date/Time",
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)"
     ))
@@ -211,13 +210,12 @@ test_that("BayesCalib Class", {
     expect_silent(dt <- bc$data_sim(resolution = "1 day"))
     expect_equal(nrow(dt$input), 6)
     expect_equal(nrow(dt$output), 6)
-    expect_equal(names(dt$input), c("Date/Time",
+    expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](1 Day)",
         "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](1 Day)",
         "Environment:Site Outdoor Air Drybulb Temperature [C](1 Day)"
     ))
-    expect_equal(names(dt$output), c(
-        "Date/Time",
+    expect_equal(names(dt$output), c("case", "Date/Time",
         "Electricity:Building [J](1 Day)",
         "Electricity:Facility [J](1 Day)"
     ))
@@ -225,13 +223,12 @@ test_that("BayesCalib Class", {
     expect_silent(dt <- bc$data_sim(resolution = "1 month"))
     expect_equal(nrow(dt$input), 2)
     expect_equal(nrow(dt$output), 2)
-    expect_equal(names(dt$input), c("Date/Time",
+    expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](1 Month)",
         "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](1 Month)",
         "Environment:Site Outdoor Air Drybulb Temperature [C](1 Month)"
     ))
-    expect_equal(names(dt$output), c(
-        "Date/Time",
+    expect_equal(names(dt$output), c("case", "Date/Time",
         "Electricity:Building [J](1 Month)",
         "Electricity:Facility [J](1 Month)"
     ))
@@ -256,7 +253,7 @@ test_that("BayesCalib Class", {
     ))
 
     expect_silent(dt <- bc$data_sim(merge = TRUE))
-    expect_equal(names(dt), c("Date/Time",
+    expect_equal(names(dt), c("case", "Date/Time",
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
@@ -283,13 +280,12 @@ test_that("BayesCalib Class", {
 
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432)))
     expect_equal(names(dt), c("input", "output", "new_input"))
-    expect_equal(names(dt$input), c("Date/Time",
+    expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
         "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
         "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
     ))
-    expect_equal(names(dt$output), c(
-        "Date/Time",
+    expect_equal(names(dt$output), c("case", "Date/Time",
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)"
     ))
@@ -299,7 +295,7 @@ test_that("BayesCalib Class", {
 
     expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE))
     expect_equal(names(dt), c("merged", "new_input"))
-    expect_equal(names(dt$merged), c("Date/Time",
+    expect_equal(names(dt$merged), c("case", "Date/Time",
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
