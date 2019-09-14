@@ -1052,8 +1052,8 @@ bc_data_sim <- function (super, self, private, resolution = NULL, exclude_ddy = 
     if (!is.null(resolution)) {
         bc_assert_valid_resolution(super, self, private, resolution)
 
-        input <- bc_change_data_resolution(super, self, private, input, resolution)
-        output <- bc_change_data_resolution(super, self, private, output, resolution)
+        input <- report_dt_aggregate(input, resolution)
+        output <- report_dt_aggregate(output, resolution)
     }
 
     # format to wide
@@ -2088,15 +2088,12 @@ bc_retain_variable_order <- function (super, self, private, dt, type = c("input"
     setcolorder(dt, c(nm_meta, dt_nm$full_name))
 }
 # }}}
-# bc_change_data_resolution {{{
+# report_dt_aggregate {{{
 #' @importFrom lubridate ceiling_date
-bc_change_data_resolution <- function (super, self, private, dt, resolution) {
+report_dt_aggregate <- function (dt, resolution) {
     set(dt, NULL, "datetime", lubridate::ceiling_date(dt$datetime, resolution))
 
-    dt[self$read_rdd(), on = c("name" = "variable"), report_type := i.report_type]
-    dt[self$read_mdd(), on = c("name" = "variable"), report_type := i.report_type]
-
-    dt_avg <- suppressWarnings(dt[J("Average"), on = "report_type", nomatch = 0L,
+    dt_avg <- suppressWarnings(dt[J("Avg"), on = "type", nomatch = 0L,
         list(simulation_days = max(simulation_days), value = mean(value),
              month = month[.N], day = day[.N],
              hour = hour[.N], minute = minute[.N],
@@ -2105,7 +2102,7 @@ bc_change_data_resolution <- function (super, self, private, dt, resolution) {
         by = c("case", "datetime", "environment_period_index", "environment_name",
             "key_value", "name", "is_meter")
     ])
-    dt_sum <- suppressWarnings(dt[!J("Average"), on = "report_type",
+    dt_sum <- suppressWarnings(dt[!J("Avg"), on = "type",
         list(simulation_days = max(simulation_days), value = sum(value),
              month = month[.N], day = day[.N],
              hour = hour[.N], minute = minute[.N],
