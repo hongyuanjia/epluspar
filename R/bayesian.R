@@ -1263,15 +1263,7 @@ bc_stan_run <- function (super, self, private, iter = 2000L, chains = 4L, echo =
     private$m_log$stan$data <- stan_data
     private$m_log$stan$fit <- fit
 
-    fit
-}
-# }}}
-# bc_stan_kill {{{
-bc_stan_kill <- function (super, self, private) {
-}
-# }}}
-# bc_stan_status {{{
-bc_stan_status <- function (super, self, private) {
+    private$m_log$stan
 }
 # }}}
 
