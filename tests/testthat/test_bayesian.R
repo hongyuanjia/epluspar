@@ -251,26 +251,6 @@ test_that("BayesCalib Class", {
         "Electricity:Building [J](TimeStep)",
         "Electricity:Facility [J](TimeStep)"
     ))
-
-    expect_silent(dt <- bc$data_sim(merge = TRUE))
-    expect_equal(names(dt), c("case", "Date/Time",
-        "Electricity:Building [J](TimeStep)",
-        "Electricity:Facility [J](TimeStep)",
-        "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
-        "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
-        "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
-    ))
-
-    expect_silent(dt <- bc$data_sim(merge = TRUE, all = TRUE))
-    expect_equal(names(dt), c("case", "environment_period_index", "environment_name",
-        "simulation_days", "datetime", "month", "day", "hour", "minute",
-        "day_type", "Date/Time",
-        "Electricity:Building [J](TimeStep)",
-        "Electricity:Facility [J](TimeStep)",
-        "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
-        "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
-        "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
-    ))
     # }}}
 
     # $data_field() {{{
@@ -292,25 +272,14 @@ test_that("BayesCalib Class", {
     expect_equal(nrow(dt$input), 864/2)
     expect_equal(nrow(dt$output), 864/2)
     expect_equal(nrow(dt$new_input), 864/2)
+    # }}}
 
-    expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE))
-    expect_equal(names(dt), c("merged", "new_input"))
-    expect_equal(names(dt$merged), c("case", "Date/Time",
-        "Electricity:Building [J](TimeStep)",
-        "Electricity:Facility [J](TimeStep)",
-        "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
-        "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
-        "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
-    ))
-    expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432), merge = TRUE, all = TRUE))
-    expect_equal(names(dt$merged), c("case", "environment_period_index", "environment_name",
-        "simulation_days", "datetime", "month", "day", "hour", "minute",
-        "day_type", "Date/Time",
-        "Electricity:Building [J](TimeStep)",
-        "Electricity:Facility [J](TimeStep)",
-        "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
-        "Environment:Site Outdoor Air Humidity Ratio [kgWater/kgDryAir](TimeStep)",
-        "Environment:Site Outdoor Air Drybulb Temperature [C](TimeStep)"
-    ))
+    # $data_bc() {{{
+    expect_silent(dt_sim <- bc$data_sim())
+    expect_silent(dt_field <- bc$data_field(data.frame(a = 1:432, b = 1:432)))
+    expect_silent(bc$data_bc())
+    expect_silent(bc$data_bc(data_sim = dt_sim))
+    expect_silent(bc$data_bc(data_field = dt_field))
+    expect_silent(bc$data_bc(data_field = dt_field, data_sim = dt_sim))
     # }}}
 })

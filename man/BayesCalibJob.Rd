@@ -24,9 +24,9 @@ bc$samples()
 bc$models()
 bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
              copy_external = FALSE, echo = wait)
-bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
-bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
-bc$data_bc()
+bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
+bc$data_field(output, new_input = NULL, all = FALSE)
+bc$data_bc(data_field = NULL, data_sim = NULL)
 bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
             mc.cores = parallel::detectCores(), ...)
 bc$stan_file(path = NULL)
@@ -337,14 +337,12 @@ status. Default: the value of \code{wait}.
 }
 
 \section{Collect Simulation Data}{
-\preformatted{bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
+\preformatted{bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
 }
 
-\code{$data_sim()} returns a \link[data.table:data.table]{data.table} (when \code{merge}
-is \code{TRUE}) or a list of 2 \link[data.table:data.table]{data.table} (when
-\code{merge} is \code{FALSE}) which contains the simulated data of input and output
-parameters. These data will be stored internally and used during Bayesian
-calibration using Stan.
+\code{$data_sim()} returns a list of 2 \link[data.table:data.table]{data.table}
+which contains the simulated data of input and output parameters. These data
+will be stored internally and used during Bayesian calibration using Stan.
 
 The \code{resolution} parameter can be used to specify the time resolution of
 returned data. Note that input time resolution cannot be smaller than the
@@ -381,11 +379,6 @@ units are \code{min}, \code{hour}, \code{day}, \code{week}, \code{month}, and \c
 Example: \code{10 mins}, \code{2 hours}, \code{1 day}. If \code{NULL}, the variable reporting
 frequency is used. Default: \code{NULL}.
 \item \code{exclude_ddy}: Whether to exclude design day data. Default: \code{TRUE}.
-\item \code{merge}: Whether to merge simulated data of input and output parameters. If
-\code{TRUE}, a \link[data.table:data.table]{data.table} is returned which contains
-datetime, data of output parameters, and then data of input parameters. If
-\code{FALSE}, a list will be returned of which \code{input} contains the data of
-input parameters, and \code{output} contains the data of output parameters.
 Default: \code{FALSE}.
 \item \code{all}: If \code{TRUE}, extra columns are also included in the returned
 \link[data.table:data.table]{data.table} describing the simulation case and
@@ -394,7 +387,7 @@ datetime components. Default: \code{FALSE}.
 }
 
 \section{Specify Measured Data}{
-\preformatted{bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
+\preformatted{bc$data_field(output, new_input = NULL, all = FALSE)
 }
 
 \code{$data_field()} takes a \code{\link[=data.frame]{data.frame()}} of measured value of output
@@ -433,15 +426,6 @@ data can be matched whenever the calibration is performed.
 \item \code{output}: A \code{\link[=data.frame]{data.frame()}} containing measured value of output parameters.
 \item \code{new_input}: A \code{\link[=data.frame]{data.frame()}} containing newly measured value of input
 parameters.
-\item \code{merge}: Whether to merge simulated data of input and output parameters. If
-\code{TRUE}, a list of 2 \link[data.table:data.table]{data.table} is returned with
-first element named \code{merged} which contains datetime, data of output
-parameters, and then data of input parameters, and second element named
-\code{new_input} which contains formatted newly measured input parameter values.
-If \code{FALSE}, a list of 3 \link[data.table:data.table]{data.table} is returned
-with element \code{input}, \code{output} and \code{new_input} containing the data of
-input, output parameters and newly measured value of input pamameters.
-Default: \code{FALSE}.
 \item \code{all}: If \code{TRUE}, extra columns are also included in the returned
 \link[data.table:data.table]{data.table} describing the simulation case and
 datetime components. For details, please see \code{$data_sim()}. Default:
@@ -450,14 +434,15 @@ datetime components. For details, please see \code{$data_sim()}. Default:
 }
 
 \section{Run Bayesian Calibration Using Stan}{
-\preformatted{bc$data_bc()
+\preformatted{bc$data_bc(data_field = NULL, data_sim = NULL)
 bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
             mc.cores = parallel::detectCores(), ...)
 bc$stan_file(path = NULL)
 }
 
-\code{$data_bc()} returns a list that contains data input for Bayesican
-calibration using the Stan model from Chong (2018):
+\code{$data_bc()} takes a list of field data and simulated data, and returns a
+list that contains data input for Bayesican calibration using the Stan model
+from Chong (2018):
 \itemize{
 \item \code{n}: Number of measured parameter observations.
 \item \code{n_pred}: Number of newly design points for predictions.
@@ -473,6 +458,11 @@ simulated output.
 normalization.
 \item \code{tc}: Data of calibration parameters after min-max normalization.
 }
+
+Input \code{data_field} and \code{data_sim} should have the same structure as the
+output from \code{$data_field()} and \code{$data_sim()}. If \code{data_field} and
+\code{data_sim} is not specified, the output from \code{$data_field()} and
+\code{$data_sim()} will be used.
 
 \code{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
 returns a list of 2 elements:

@@ -46,9 +46,9 @@ NULL
 #' bc$models()
 #' bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
 #'              copy_external = FALSE, echo = wait)
-#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
-#' bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
-#' bc$data_bc()
+#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
+#' bc$data_field(output, new_input = NULL, all = FALSE)
+#' bc$data_bc(data_field = NULL, data_sim = NULL)
 #' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
 #'             mc.cores = parallel::detectCores(), ...)
 #' bc$stan_file(path = NULL)
@@ -361,14 +361,12 @@ NULL
 #'
 #' @section Collect Simulation Data:
 #' ```
-#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
+#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
 #' ```
 #'
-#' `$data_sim()` returns a [data.table][data.table::data.table()] (when `merge`
-#' is `TRUE`) or a list of 2 [data.table][data.table::data.table()] (when
-#' `merge` is `FALSE`) which contains the simulated data of input and output
-#' parameters. These data will be stored internally and used during Bayesian
-#' calibration using Stan.
+#' `$data_sim()` returns a list of 2 [data.table][data.table::data.table()]
+#' which contains the simulated data of input and output parameters. These data
+#' will be stored internally and used during Bayesian calibration using Stan.
 #'
 #' The `resolution` parameter can be used to specify the time resolution of
 #' returned data. Note that input time resolution cannot be smaller than the
@@ -404,11 +402,6 @@ NULL
 #'   Example: `10 mins`, `2 hours`, `1 day`. If `NULL`, the variable reporting
 #'   frequency is used. Default: `NULL`.
 #' * `exclude_ddy`: Whether to exclude design day data. Default: `TRUE`.
-#' * `merge`: Whether to merge simulated data of input and output parameters. If
-#'   `TRUE`, a [data.table][data.table::data.table()] is returned which contains
-#'   datetime, data of output parameters, and then data of input parameters. If
-#'   `FALSE`, a list will be returned of which `input` contains the data of
-#'   input parameters, and `output` contains the data of output parameters.
 #'   Default: `FALSE`.
 #' * `all`: If `TRUE`, extra columns are also included in the returned
 #'   [data.table][data.table::data.table()] describing the simulation case and
@@ -416,7 +409,7 @@ NULL
 #'
 #' @section Specify Measured Data:
 #' ```
-#' bc$data_field(output, new_input = NULL, merge = FALSE, all = FALSE)
+#' bc$data_field(output, new_input = NULL, all = FALSE)
 #' ```
 #'
 #' `$data_field()` takes a [data.frame()] of measured value of output
@@ -454,15 +447,6 @@ NULL
 #' * `output`: A [data.frame()] containing measured value of output parameters.
 #' * `new_input`: A [data.frame()] containing newly measured value of input
 #'   parameters.
-#' * `merge`: Whether to merge simulated data of input and output parameters. If
-#'   `TRUE`, a list of 2 [data.table][data.table::data.table()] is returned with
-#'   first element named `merged` which contains datetime, data of output
-#'   parameters, and then data of input parameters, and second element named
-#'   `new_input` which contains formatted newly measured input parameter values.
-#'   If `FALSE`, a list of 3 [data.table][data.table::data.table()] is returned
-#'   with element `input`, `output` and `new_input` containing the data of
-#'   input, output parameters and newly measured value of input pamameters.
-#'   Default: `FALSE`.
 #' * `all`: If `TRUE`, extra columns are also included in the returned
 #'   [data.table][data.table::data.table()] describing the simulation case and
 #'   datetime components. For details, please see `$data_sim()`. Default:
@@ -470,14 +454,15 @@ NULL
 #'
 #' @section Run Bayesian Calibration Using Stan:
 #' ```
-#' bc$data_bc()
+#' bc$data_bc(data_field = NULL, data_sim = NULL)
 #' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
 #'             mc.cores = parallel::detectCores(), ...)
 #' bc$stan_file(path = NULL)
 #' ```
 #'
-#' `$data_bc()` returns a list that contains data input for Bayesican
-#' calibration using the Stan model from Chong (2018):
+#' `$data_bc()` takes a list of field data and simulated data, and returns a
+#' list that contains data input for Bayesican calibration using the Stan model
+#' from Chong (2018):
 #'
 #' * `n`: Number of measured parameter observations.
 #' * `n_pred`: Number of newly design points for predictions.
@@ -492,6 +477,11 @@ NULL
 #' * `x_pred`: Data of new design points for predictions after min-max
 #'   normalization.
 #' * `tc`: Data of calibration parameters after min-max normalization.
+#'
+#' Input `data_field` and `data_sim` should have the same structure as the
+#' output from `$data_field()` and `$data_sim()`. If `data_field` and
+#' `data_sim` is not specified, the output from `$data_field()` and
+#' `$data_sim()` will be used.
 #'
 #' `$stan_run()` runs Bayesian calibration using [Stan][rstan::stan] and
 #' returns a list of 2 elements:
@@ -716,14 +706,14 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
         models = function ()
             bc_models(super, self, private),
 
-        data_sim = function (resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE)
-            bc_data_sim(super, self, private, resolution, exclude_ddy, merge, all),
+        data_sim = function (resolution = NULL, exclude_ddy = TRUE, all = FALSE)
+            bc_data_sim(super, self, private, resolution, exclude_ddy, all),
 
-        data_field = function (output, new_input = NULL, merge = FALSE, all = FALSE)
-            bc_data_field(super, self, private, output, new_input, merge, all),
+        data_field = function (output, new_input = NULL, all = FALSE)
+            bc_data_field(super, self, private, output, new_input, all),
 
-        data_bc = function ()
-            bc_data_bc(super, self, private),
+        data_bc = function (data_field = NULL, data_sim = NULL)
+            bc_data_bc(super, self, private, data_field, data_sim),
 
         eplus_run = function (dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
                               copy_external = FALSE, echo = wait)
@@ -1080,7 +1070,7 @@ bc_eplus_run <- function (super, self, private, dir = NULL, run_period = NULL,
 }
 # }}}
 # bc_data_sim {{{
-bc_data_sim <- function (super, self, private, resolution = NULL, exclude_ddy = TRUE, merge = FALSE, all = FALSE) {
+bc_data_sim <- function (super, self, private, resolution = NULL, exclude_ddy = TRUE, all = FALSE) {
     bc_assert_can_collect(super, self, private, stop = TRUE)
 
     # remove logged data
@@ -1108,12 +1098,13 @@ bc_data_sim <- function (super, self, private, resolution = NULL, exclude_ddy = 
 
     private$m_log$data_sim$input <- copy(input)
     private$m_log$data_sim$output <- copy(output)
+    private$m_log$data_sim$all <- all
 
-    combine_input_output_data(input, output, merge, all)
+    combine_input_output_data(input, output, all)
 }
 # }}}
 # bc_data_field {{{
-bc_data_field <- function (super, self, private, output, new_input = NULL, merge = FALSE, all = FALSE) {
+bc_data_field <- function (super, self, private, output, new_input = NULL, all = FALSE) {
     bc_assert_can_collect(super, self, private, stop = TRUE)
 
     # remove logged data
@@ -1148,35 +1139,44 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, merge
     private$m_log$data_field$input <- copy(input)
     private$m_log$data_field$output <- copy(output)
     private$m_log$data_field$new_input <- copy(new_input)
+    private$m_log$data_field$all <- all
 
     # reset returned case to NA
     set(input, NULL, "case", NA_integer_)
     set(output, NULL, "case", NA_integer_)
     set(new_input, NULL, "case", NA_integer_)
 
-    if (merge) {
-        list(merged = combine_input_output_data(input, output, merge, all), new_input = new_input)
-    } else {
-        c(combine_input_output_data(input, output, merge, all), list(new_input = new_input))
-    }
+    c(combine_input_output_data(input, output, all), list(new_input = new_input))
 }
 # }}}
 # bc_data_bc {{{
-bc_data_bc <- function (super, self, private) {
+bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
+
+    if (!is.null(data_sim)) {
+        data_sim <- bc_check_data(super, self, private, data_sim, "sim")
+    } else {
+        data_sim <- private$m_log$data_sim
+    }
+
+    if (!is.null(data_field)) {
+        data_field <- bc_check_data(super, self, private, data_field, "field")
+    } else {
+        data_field <- private$m_log$data_field
+    }
 
     # data {{{
     # exclude 11 meta column: case, datetime, ...
     # measured output
-    y <- private$m_log$data_field$output[, .SD, .SDcols = -c(1L:11L)]
+    y <- data_field$output[, .SD, .SDcols = -c(1L:11L)]
     # measured input
-    xf <- private$m_log$data_field$input[, .SD, .SDcols = -c(1L:11L)]
+    xf <- data_field$input[, .SD, .SDcols = -c(1L:11L)]
     # simulated output
-    eta <- private$m_log$data_sim$output[, .SD, .SDcols = -c(1L:11L)]
+    eta <- data_sim$output[, .SD, .SDcols = -c(1L:11L)]
     # simulated input
-    xc <- private$m_log$data_sim$input[, .SD, .SDcols = -c(1L:11L)]
+    xc <- data_sim$input[, .SD, .SDcols = -c(1L:11L)]
     # newly measured input for prediction
-    xpred <- private$m_log$data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
+    xpred <- data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
     # calibration parameters
     tc <- private$m_log$sample$sample[rep(case, each = nrow(xf)), .SD, .SDcols = -1L]
     # }}}
@@ -1266,7 +1266,7 @@ bc_data_bc <- function (super, self, private) {
     if (d > 1L) {
         # add number of output parameters
         stan_data <- c(stan_data, list(D = d))
-        stan_data <- stan_data[-c("n_pred", "x_pred")]
+        stan_data <- stan_data[!names(stan_data) %in% c("n_pred", "x_pred")]
     }
     # }}}
 
@@ -1903,7 +1903,7 @@ lhs_samples <- function (par, value, names = NULL, num) {
 }
 # }}}
 
-# data sim
+# data
 # bc_assert_can_model {{{
 bc_assert_can_model <- function (self, private, stop = FALSE) {
     if (stop) {
@@ -2073,6 +2073,85 @@ bc_assert_valid_measured <- function (super, self, private, dt, type = c("new_in
     TRUE
 }
 # }}}
+# bc_check_data {{{
+bc_check_data <- function (super, self, private, data, type = c("sim", "field")) {
+    type <- match.arg(type)
+    m_name <- paste0("data_", type)
+    err_type <- paste0("error_bc_invalid_", m_name)
+    ori <- private$m_log[[m_name]]
+
+    if (type == "sim") {
+        len <- 2L
+        nm <- c("input", "output")
+    } else {
+        len <- 3L
+        nm <- c("input", "output", "new_input")
+    }
+
+    if (!is.list(data)) {
+        abort(err_type, paste0("`", m_name, "` should be a list. ",
+            "Invalid input class: `", class(data)[[1L]], "`."
+        ))
+    }
+    if (length(data) != len) {
+        abort(err_type, paste0("`", m_name, "` should be a list of ", len, ". ",
+            "Invalid input length: `", length(data), "`."
+        ))
+    }
+    if (!all(names(data) %in% nm)) {
+        abort(err_type, paste0("`", m_name, "` should be a list of 2 ",
+            "named element `input` and `output`. Invalid element found: ",
+            paste0("`", names(data)[!names(data) %in% nm], "`", collapse = ", ")
+        ))
+    }
+
+    for (name in nm) {
+        if (!is.data.frame(data[[name]])) {
+            abort(err_type, paste0("`", name, "` of `", m_name, "` should be a ",
+                "data.frame. Invalid `", name, "` type: `", class(data[[name]])[[1L]], "`."
+            ))
+        }
+
+        data[[name]] <- as.data.table(data[[name]])
+
+        # remove meta columns
+        meta <- names(ori[[name]])[1L:11L]
+        if (length(meta_in <- intersect(names(data[[name]]), meta))) {
+            set(data[[name]], NULL, meta_in, NULL)
+        }
+
+        if (ncol(data[[name]]) != (ncol(ori[[name]]) - 11L)) {
+            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same variable ",
+                "number (", ncol(ori[[name]]) - 11L, ") as in `$", m_name, "()$", name, "`. ",
+                "Invalid variable number: ", ncol(data[[name]]), "."
+            ))
+        }
+        if (nrow(data[[name]]) != nrow(ori[[name]])) {
+            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same row ",
+                "number (", nrow(ori[[name]]), ") as in `$", m_name, "()$", name, "`. ",
+                "Invalid row number: ", nrow(data[[name]]), "."
+            ))
+        }
+
+        type_in <- unlist(data[[name]][, lapply(.SD, function (x) typeof(x))])
+        type <- unlist(ori[[name]][, lapply(.SD, function (x) typeof(x)), .SDcols = -(1L:11L)])
+        if (any(invld <- type_in != type)) {
+            idx <- which(invld)
+            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same variable ",
+                "type as in `$", m_name, "()$", name, "`. ",
+                "Invalid column type: ",
+                paste0("`", names(invld)[idx], "` type `", type_in[idx], "` (should be `", type[idx], "`)", collapse = ", "), "."
+            ))
+        }
+
+        # add meta columns
+        set(data[[name]], NULL, meta, ori[[name]][, .SD, .SDcols = 1L:11L])
+        setcolorder(data[[name]], meta)
+    }
+
+    data
+}
+# }}}
 # bc_extract_report_data {{{
 bc_extract_report_data <- function (super, self, private, type = c("input", "output"), exclude_ddy = TRUE) {
     m_name <- paste0("m_", type)
@@ -2188,19 +2267,8 @@ report_dt_aggregate <- function (dt, resolution) {
 }
 # }}}
 # combine_input_output_data {{{
-combine_input_output_data <- function (input, output, merge = FALSE, all = FALSE) {
-    if (merge) {
-        set(input, NULL, c("case", "environment_period_index", "environment_name",
-            "simulation_days", "datetime", "month", "day", "hour", "minute",
-            "day_type", "Date/Time"), NULL
-        )
-        if (!all) {
-            set(output, NULL, c("environment_period_index", "environment_name",
-                "simulation_days", "datetime", "month", "day", "hour", "minute",
-                "day_type"), NULL
-            )
-        }
-    } else if (!all) {
+combine_input_output_data <- function (input, output, all = FALSE) {
+    if (!all) {
         set(input, NULL, c("environment_period_index", "environment_name",
             "simulation_days", "datetime", "month", "day", "hour", "minute", "day_type"), NULL
         )
@@ -2209,11 +2277,7 @@ combine_input_output_data <- function (input, output, merge = FALSE, all = FALSE
         )
     }
 
-    if (merge) {
-        cbind(output, input)
-    } else {
-        list(input = input, output = output)
-    }
+    list(input = input, output = output)
 }
 # }}}
 # standardize_resolution {{{
