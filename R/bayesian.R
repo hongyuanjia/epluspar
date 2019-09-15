@@ -1449,7 +1449,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     if (nrow(dt_mtr)) {
         obj_mtr <- private$m_idf$load(dt_mtr, .unique = FALSE)
         dt_mtr <- private$m_idf$to_table(vapply(obj_mtr, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
-        setnames(dt_mtr, "Key Name", "Variable Name")
+        setnames(dt_mtr, names(dt_mtr)[[3L]], "Variable Name")
         set(dt_mtr, NULL, "Key Value", NA_character_)
         dt_mtr[dt, on = c("Variable Name" = "variable"), index := i.index]
     } else {
