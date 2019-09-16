@@ -469,9 +469,9 @@ NULL
 #' * `m`: Number of simulated observations.
 #' * `p`: Number of input parameters.
 #' * `q`: Number of calibration parameters.
-#' * `y`: Data of measured output after z-score standardization using data of
+#' * `yf`: Data of measured output after z-score standardization using data of
 #'   simulated output.
-#' * `eta`: Data of simulated output after z-score standardization.
+#' * `yc`: Data of simulated output after z-score standardization.
 #' * `xf`: Data of measured input after min-max normalization.
 #' * `xc`: Data of simulated input after min-max normalization.
 #' * `x_pred`: Data of new design points for predictions after min-max
@@ -1168,113 +1168,26 @@ bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL
     # data {{{
     # exclude 11 meta column: case, datetime, ...
     # measured output
-    y <- data_field$output[, .SD, .SDcols = -c(1L:11L)]
+    yf <- data_field$output[, .SD, .SDcols = -c(1L:11L)]
     # measured input
     xf <- data_field$input[, .SD, .SDcols = -c(1L:11L)]
     # simulated output
-    eta <- data_sim$output[, .SD, .SDcols = -c(1L:11L)]
+    yc <- data_sim$output[, .SD, .SDcols = -c(1L:11L)]
     # simulated input
     xc <- data_sim$input[, .SD, .SDcols = -c(1L:11L)]
     # newly measured input for prediction
-    xpred <- data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
+    x_pred <- data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
     # calibration parameters
     tc <- private$m_log$sample$sample[rep(case, each = nrow(xf)), .SD, .SDcols = -1L]
     # }}}
 
-    # meta {{{
-    # number of output parameters
-    d <- ncol(y)
-    # number of input parameters
-    p <- ncol(xf)
-    # number of measured parameter observations
-    n <- nrow(xf)
-    # number of newly design points for predictions
-    n_pred <- nrow(xpred)
-    # number of simulated observations
-    m <- nrow(xc)
-    # number of calibration parameters
-    q <- ncol(tc)
-    # }}}
+    data_bc <- init_data_bc(yf, xf, x_pred, yc, xc, tc)
 
-    # z-score normalization on output parameter y and eta {{{
-    zscore_norm <- function (x, mean, sd) (x - mean) / sd
+    private$m_log$stan$data <- data_bc$stan_data
+    private$m_log$stan$yc_mean <- data_bc$yc_mean
+    private$m_log$stan$yc_sd <- data_bc$yc_sd
 
-    eta_std <- copy(eta)
-    y_std <- copy(y)
-    eta_mean <- eta[, lapply(.SD, mean)]
-    eta_sd <- eta[, lapply(.SD, sd)]
-    for (i in seq.int(d)) {
-        set(y_std, NULL, i, zscore_norm(y_std[[i]], eta_mean[[i]], eta_sd[[i]]))
-        set(eta_std, NULL, i, zscore_norm(eta_std[[i]], eta_mean[[i]], eta_sd[[i]]))
-    }
-    # }}}
-
-    # min-max normalization on input parameter xf, xc and xpred {{{
-    minmax_norm <- function (x, min, max) (x - min) / (max - min)
-
-    xf_std <- copy(xf)
-    xc_std <- copy(xc)
-    xpred_std <- copy(xpred)
-
-    x <- rbindlist(list(xf, xc))
-    x_min <- x[, lapply(.SD, min)]
-    x_max <- x[, lapply(.SD, max)]
-    for (i in seq.int(p)) {
-        set(xf_std, NULL, i, minmax_norm(xf_std[[i]], x_min[[i]], x_max[[i]]))
-        set(xc_std, NULL, i, minmax_norm(xc_std[[i]], x_min[[i]], x_max[[i]]))
-        set(xpred_std, NULL, i, minmax_norm(xpred_std[[i]], x_min[[i]], x_max[[i]]))
-    }
-    # }}}
-
-    # min-max normalization on input parameter tc {{{
-    tc_std <- copy(tc)
-    tc_min <- tc[, lapply(.SD, min)]
-    tc_max <- tc[, lapply(.SD, max)]
-    for (i in seq.int(q)) {
-        set(tc_std, NULL, i, minmax_norm(tc_std[[i]], tc_min[[i]], tc_max[[i]]))
-    }
-    # }}}
-
-    # create data as list for input to Stan {{{
-    stan_data <- list(
-        # number of measured parameter observations
-        n = n,
-        # number of newly design points for predictions
-        n_pred = n_pred,
-        # number of simulated observations
-        m = m,
-        # number of input parameters
-        p = p,
-        # number of calibration parameters
-        q = q,
-        # measured output
-        y = y,
-        # simulated output
-        eta = eta_std,
-        # measured input
-        xf = xf_std,
-        # simulated input
-        xc = xc_std,
-        # new design points for predictions
-        x_pred = xpred_std,
-        # calibration parameters
-        tc = tc_std
-    )
-
-    # TODO: update this and also the doc when the multiple output code with
-    # prediction is tested
-    if (d > 1L) {
-        # add number of output parameters
-        stan_data <- c(stan_data, list(D = d))
-        stan_data <- stan_data[!names(stan_data) %in% c("n_pred", "x_pred")]
-    }
-    # }}}
-
-    private$m_log$stan$data <- stan_data
-    private$m_log$stan$eta_mean <- eta_mean
-    private$m_log$stan$eta_sd <- eta_sd
-
-    stan_data
+    data_bc$stan_data
 }
 # }}}
 # bc_stan_run {{{
@@ -1312,7 +1225,7 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
 
     if ("x_pred" %in% names(data_bc)) {
         samples <- rstan::extract(fit)
-        y_pred <- samples$y_pred * private$m_log$stan$eta_sd[[1L]] + private$m_log$stan$eta_mean[[1L]]
+        y_pred <- as.data.table(samples$y_pred * private$m_log$stan$yc_sd[[1L]] + private$m_log$stan$yc_mean[[1L]])
     } else {
         y_pred <- NULL
     }
@@ -2313,5 +2226,103 @@ parse_unit_spec <- function(unitspec) {
     }
 
     list(unit = unit, mult = mult)
+}
+# }}}
+# init_bc_data {{{
+init_data_bc <- function (yf, xf, x_pred, yc, xc, tc) {
+
+    # meta {{{
+    # number of output parameters
+    d <- ncol(yf)
+    # number of input parameters
+    p <- ncol(xf)
+    # number of measured parameter observations
+    n <- nrow(xf)
+    # number of newly design points for predictions
+    n_pred <- nrow(x_pred)
+    # number of simulated observations
+    m <- nrow(xc)
+    # number of calibration parameters
+    q <- ncol(tc)
+    # }}}
+
+    # z-score normalization on output parameter yf and eta {{{
+    zscore_norm <- function (x, mean, sd) (x - mean) / sd
+
+    yf_std <- copy(yf)
+    yc_std <- copy(yc)
+    yc_mean <- yc[, lapply(.SD, mean)]
+    yc_sd <- yc[, lapply(.SD, sd)]
+    for (i in seq.int(d)) {
+        set(yf_std, NULL, i, zscore_norm(yf_std[[i]], yc_mean[[i]], yc_sd[[i]]))
+        set(yc_std, NULL, i, zscore_norm(yc_std[[i]], yc_mean[[i]], yc_sd[[i]]))
+    }
+    # }}}
+
+    # min-max normalization on input parameter xf, xc and x_pred {{{
+    minmax_norm <- function (x, min, max) (x - min) / (max - min)
+
+    xf_std <- copy(xf)
+    xc_std <- copy(xc)
+    x_pred_std <- copy(x_pred)
+
+    x <- rbindlist(list(xf, xc))
+    x_min <- x[, lapply(.SD, min)]
+    x_max <- x[, lapply(.SD, max)]
+    for (i in seq.int(p)) {
+        set(xf_std, NULL, i, minmax_norm(xf_std[[i]], x_min[[i]], x_max[[i]]))
+        set(xc_std, NULL, i, minmax_norm(xc_std[[i]], x_min[[i]], x_max[[i]]))
+        set(x_pred_std, NULL, i, minmax_norm(x_pred_std[[i]], x_min[[i]], x_max[[i]]))
+    }
+    # }}}
+
+    # min-max normalization on input parameter tc {{{
+    tc_std <- copy(tc)
+    tc_min <- tc[, lapply(.SD, min)]
+    tc_max <- tc[, lapply(.SD, max)]
+    for (i in seq.int(q)) {
+        set(tc_std, NULL, i, minmax_norm(tc_std[[i]], tc_min[[i]], tc_max[[i]]))
+    }
+    # }}}
+
+    # create data as list for input to Stan {{{
+    stan_data <- list(
+        # number of measured parameter observations
+        n = n,
+        # number of newly design points for predictions
+        n_pred = n_pred,
+        # number of simulated observations
+        m = m,
+        # number of input parameters
+        p = p,
+        # number of calibration parameters
+        q = q,
+        # measured output
+        yf = yf,
+        # simulated output
+        yc = yc_std,
+        # measured input
+        xf = xf_std,
+        # simulated input
+        xc = xc_std,
+        # new design points for predictions
+        x_pred = x_pred_std,
+        # calibration parameters
+        tc = tc_std
+    )
+
+    # TODO: update this and also the doc when the multiple output code with
+    # prediction is tested
+    if (d > 1L) {
+        # add number of output parameters
+        stan_data <- c(stan_data, list(D = d))
+        stan_data <- stan_data[!names(stan_data) %in% c("n_pred", "x_pred")]
+    } else {
+        stan_data$yf <- unlist(stan_data$yf, use.names = FALSE)
+        stan_data$yc <- unlist(stan_data$yc, use.names = FALSE)
+    }
+    # }}}
+
+    list(stan_data = stan_data, yc_mean = yc_mean, yc_sd = yc_sd)
 }
 # }}}
