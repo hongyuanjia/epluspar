@@ -2298,7 +2298,7 @@ init_data_bc <- function (yf, xf, x_pred, yc, xc, tc) {
         # number of calibration parameters
         q = q,
         # measured output
-        yf = yf,
+        yf = yf_std,
         # simulated output
         yc = yc_std,
         # measured input
