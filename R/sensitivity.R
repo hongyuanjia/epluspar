@@ -360,12 +360,12 @@ Sensitivity <- R6::R6Class(classname = "SensitivityJob",
 
     private = list(
         # PRIVATE FIELDS {{{
-        m_idf = NULL,
-        m_epw = NULL,
+        m_seed = NULL,
+        m_idfs = NULL,
+        m_epws = NULL,
+        m_morris = NULL,
         m_job = NULL,
-        m_log = NULL,
-        m_param = NULL,
-        m_morris = NULL
+        m_log = NULL
         # }}}
     )
 )
@@ -387,8 +387,8 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     # `Idf$set()`'s friends, including `$add()`, `$load()`, `$update()`, and
     # etc.
     obj_val <- eplusr:::match_set_idf_data(
-        ._get_private(private$m_idf)$idd_env(),
-        ._get_private(private$m_idf)$idf_env(),
+        ._get_private(private$m_seed)$idd_env(),
+        ._get_private(private$m_seed)$idf_env(),
         l
     )
 
@@ -399,7 +399,7 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     ), use.names = TRUE)
 
     # validate input
-    par <- validate_par_space(l, private$m_idf, "sa")
+    par <- validate_par_space(l, private$m_seed, "sa")
 
     # sample
     sam <- morris_samples(par, obj_val$value, .names, .r, .grid_jump)
@@ -423,7 +423,7 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     }
 
     # match fun arg
-    mc <- match.call(measure, quote(measure(private$m_idf, ...)))[-1L]
+    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
     l <- vector("list", length(mc[-1L]))
     names(l) <- names(mc[-1L])
     # get value
@@ -513,7 +513,7 @@ sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
         fun <- message
     }
 
-    if (is.null(private$m_param)) {
+    if (is.null(private$m_idfs)) {
         fun("No models have been created. Please use $param() or $apply_measure() ",
             "to create parametric models after parameters are set."
         )
@@ -751,23 +751,23 @@ create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, typ
     # check if parameter is created using $apply_measure() or not
     if (is.null(private$m_log$measure_name)) {
         dt <- split(private$m_log$sample$value, by = "case", keep.by = FALSE)
-        private$m_param <- lapply(dt, function (upd) {
-            idf <- private$m_idf$clone()
+        private$m_idfs <- lapply(dt, function (upd) {
+            idf <- private$m_seed$clone()
             idf$update(upd)
             idf
         })
     } else {
-        private$m_param <- purrr::pmap(private$m_log$sample$sample[, -"case"],
-            private$m_log$measure_wrapper, idf = private$m_idf
+        private$m_idfs <- purrr::pmap(private$m_log$sample$sample[, -"case"],
+            private$m_log$measure_wrapper, idf = private$m_seed
         )
     }
 
     # assign name
-    setattr(private$m_param, "names", private$m_log$sample$names)
+    setattr(private$m_idfs, "names", private$m_log$sample$names)
 
     # log unique ids
-    private$m_log$uuid <- vapply(private$m_param, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
+    private$m_log$uuid <- vapply(private$m_idfs, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
 
-    private$m_param
+    private$m_idfs
 }
 # }}}

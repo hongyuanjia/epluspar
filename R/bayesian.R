@@ -673,7 +673,7 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
             eplusr:::with_silent(super$initialize(idf, epw))
 
             # remove all output variables and meters
-            private$m_idf <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
+            private$m_seed <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
 
             # init some logging variables
             private$m_log$run_ddy <- FALSE
@@ -767,13 +767,13 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
 
     private = list(
         # PRIVATE FIELDS {{{
-        m_idf = NULL,
-        m_epw = NULL,
-        m_job = NULL,
-        m_log = NULL,
+        m_seed = NULL,
+        m_idfs = NULL,
+        m_epws = NULL,
         m_input = NULL,
         m_output = NULL,
-        m_param = NULL
+        m_job = NULL,
+        m_log = NULL
         # }}}
     )
 )
@@ -781,7 +781,7 @@ BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
 
 # bc_remove_output_class {{{
 bc_remove_output_class <- function (super, self, private, all = TRUE, clone = FALSE) {
-    idf <- if (clone) private$m_idf$clone() else private$m_idf
+    idf <- if (clone) private$m_seed$clone() else private$m_seed
 
     # clean all output classes to speed up
     out_cls <- idf$class_name(by_group = TRUE)[["Output Reporting"]]
@@ -805,7 +805,7 @@ bc_remove_output_class <- function (super, self, private, all = TRUE, clone = FA
 # }}}
 # bc_run_ddy {{{
 bc_run_ddy <- function (super, self, private) {
-    if (!private$m_idf$is_valid_class("SizingPeriod:DesignDay")) {
+    if (!private$m_seed$is_valid_class("SizingPeriod:DesignDay")) {
         abort("error_no_ddy", paste0("In order to run design-day-only simulation, ",
             "at least one `SizingPeriod:DesignDay` should exist."
         ))
@@ -915,8 +915,8 @@ bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, 
     )
 
     obj_val <- eplusr:::match_set_idf_data(
-        ._get_private(private$m_idf)$idd_env(),
-        ._get_private(private$m_idf)$idf_env(),
+        ._get_private(private$m_seed)$idd_env(),
+        ._get_private(private$m_seed)$idf_env(),
         l
     )
 
@@ -928,7 +928,7 @@ bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, 
     ), use.names = TRUE)
 
     # validate input
-    par <- validate_par_space(l, private$m_idf, "bc")
+    par <- validate_par_space(l, private$m_seed, "bc")
 
     # get sample value
     sam <- lhs_samples(par, obj_val$value, .names, .num_sim)
@@ -960,7 +960,7 @@ bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L
     }
 
     # match fun arg
-    mc <- match.call(measure, quote(measure(private$m_idf, ...)))[-1L]
+    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
     l <- vector("list", length(mc[-1L]))
     names(l) <- names(mc[-1L])
     # get value
@@ -1008,7 +1008,7 @@ bc_samples <- function (super, self, private) {
 # }}}
 # bc_models {{{
 bc_models <- function (super, self, private) {
-    if (!is.null(private$m_param)) return(private$m_param)
+    if (!is.null(private$m_idfs)) return(private$m_idfs)
 
     create_par_models(self, private, verbose = TRUE, type = "bc")
 }
@@ -1049,21 +1049,21 @@ bc_eplus_run <- function (super, self, private, dir = NULL, run_period = NULL,
         assert(is.list(run_period))
 
         # if no parameter models have been set
-        if (is.null(private$m_param)) {
-            overwrite_runperiod(private$m_idf, run_period)
+        if (is.null(private$m_idfs)) {
+            overwrite_runperiod(private$m_seed, run_period)
             # should update logged seed UUID
-            private$m_log$seed_uuid <- ._get_private(private$m_idf)$m_log$uuid
+            private$m_log$seed_uuid <- ._get_private(private$m_seed)$m_log$uuid
             # create models
-            private$m_param <- create_par_models(self, private, stop = TRUE, type = "bc")
+            private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
         } else {
             # create models
-            private$m_param <- create_par_models(self, private, stop = TRUE, type = "bc")
-            lapply(private$m_param, overwrite_runperiod, run_period = run_period)
+            private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
+            lapply(private$m_idfs, overwrite_runperiod, run_period = run_period)
             # should update logged parametric model UUIDs
-            private$m_log$uuid <- vapply(private$m_param, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
+            private$m_log$uuid <- vapply(private$m_idfs, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
         }
     } else {
-        private$m_param <- create_par_models(self, private, stop = TRUE, type = "bc")
+        private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
     }
 
     super$run(dir, wait = wait, force = force, copy_external = copy_external, echo = echo)
@@ -1264,7 +1264,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     if (is.null(key_value) && is.null(name) && is.null(reporting_frequency)) {
         if (is.null(append)) {
             if (NROW(private[[m_name]])) {
-                eplusr:::with_silent(private$m_idf$del(private[[m_name]]$id, .force = TRUE))
+                eplusr:::with_silent(private$m_seed$del(private[[m_name]]$id, .force = TRUE))
             }
             private[[m_name]] <- NULL
         }
@@ -1272,7 +1272,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     }
 
     # make sure seed UUID is updated
-    on.exit(private$m_log$seed_uuid <- ._get_private(private$m_idf)$m_log$uuid, add = TRUE)
+    on.exit(private$m_log$seed_uuid <- ._get_private(private$m_seed)$m_log$uuid, add = TRUE)
 
     if (is.null(append)) append <- FALSE
 
@@ -1343,7 +1343,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     }
 
     # clone the original in case there are errors
-    if (!append) ori_idf <- private$m_idf$clone()
+    if (!append) ori_idf <- private$m_seed$clone()
 
     # remove existing if necessary
     bc_clean_existing_input_output(super, self, private, type, append, dt)
@@ -1352,16 +1352,16 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     # now it's save to load it
     dt_var <- rdd_to_load(setattr(dt[report_type != "Meter"], "class", c("RddFile", class(dt))))
     if (nrow(dt_var)) {
-        obj_var <- private$m_idf$load(dt_var, .unique = FALSE)
-        dt_var <- private$m_idf$to_table(vapply(obj_var, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
+        obj_var <- private$m_seed$load(dt_var, .unique = FALSE)
+        dt_var <- private$m_seed$to_table(vapply(obj_var, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
         dt_var[dt, on = c("Variable Name" = "variable"), index := i.index]
     } else {
         dt_var <- data.table()
     }
     dt_mtr <- mdd_to_load(setattr(dt[report_type == "Meter"], "class", c("MddFile", class(dt))))
     if (nrow(dt_mtr)) {
-        obj_mtr <- private$m_idf$load(dt_mtr, .unique = FALSE)
-        dt_mtr <- private$m_idf$to_table(vapply(obj_mtr, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
+        obj_mtr <- private$m_seed$load(dt_mtr, .unique = FALSE)
+        dt_mtr <- private$m_seed$to_table(vapply(obj_mtr, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
         setnames(dt_mtr, names(dt_mtr)[[3L]], "Variable Name")
         set(dt_mtr, NULL, "Key Value", NA_character_)
         dt_mtr[dt, on = c("Variable Name" = "variable"), index := i.index]
@@ -1378,8 +1378,8 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
         bc_combine_input_output(super, self, private, type, append, dt)
     } else {
         tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
-            error_bc_invalid_input = function (e) {private$m_idf <- ori_idf; stop(e)},
-            error_bc_invalid_output = function (e) {private$m_idf <- ori_idf; stop(e)}
+            error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
+            error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
         )
     }
 
@@ -1443,13 +1443,13 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
     }
 
     # clone the original Idf in case there are errors
-    if (!append) ori_idf <- private$m_idf$clone()
+    if (!append) ori_idf <- private$m_seed$clone()
     bc_clean_existing_input_output(super, self, private, type, append, dict)
 
     # now it's save to load it
-    obj <- private$m_idf$load(load_fun(dict), .unique = FALSE)
+    obj <- private$m_seed$load(load_fun(dict), .unique = FALSE)
 
-    dt <- private$m_idf$to_table(vapply(obj, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
+    dt <- private$m_seed$to_table(vapply(obj, function (x) x$id(), 1L), wide = TRUE)[, name := NULL]
     if (inherits(dict, "MddFile")) {
         setnames(dt, "Key Name", "Variable Name")
         set(dt, NULL, "Key Value", NA_character_)
@@ -1462,8 +1462,8 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
         bc_combine_input_output(super, self, private, type, append, dt)
     } else {
         tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
-            error_bc_invalid_input = function (e) {private$m_idf <- ori_idf; stop(e)},
-            error_bc_invalid_output = function (e) {private$m_idf <- ori_idf; stop(e)}
+            error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
+            error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
         )
     }
 
@@ -1583,7 +1583,7 @@ bc_clean_existing_input_output <- function (super, self, private, type, append, 
     # delete the old
     if (!append) {
         if (NROW(private[[m_name]])) {
-            private$m_idf$del(private[[m_name]]$id, .force = TRUE)
+            private$m_seed$del(private[[m_name]]$id, .force = TRUE)
         }
     # remove duplicated
     } else {
@@ -1654,7 +1654,7 @@ bc_combine_input_output <- function (super, self, private, type, append, dt) {
 
         if (any(idx)) {
             invld <- dt[idx[1:nrow(dt)]]
-            private$m_idf$del(invld$id)
+            private$m_seed$del(invld$id)
             abort(paste0("error_bc_invalid_", type),
                 paste0("Variables specified have already been set as ",
                     if (type == "input") "output" else "input", ": ",
@@ -1668,7 +1668,7 @@ bc_combine_input_output <- function (super, self, private, type, append, dt) {
             invld <- dt[J(var), on = "variable_name"]
             # input can not be inserted if there is one with key value being "*"
             if (nrow(invld <- invld[id > 0L])) {
-                private$m_idf$del(invld$id)
+                private$m_seed$del(invld$id)
                 if (nrow(invld_star <- invld[key_value == "*"])) {
                     abort(paste0("error_bc_invalid_", type), paste0("Cannot insert ",
                         "new ", type, " variable with key value being `*` when ",
@@ -1860,7 +1860,7 @@ bc_assert_can_collect <- function (super, self, private, stop = FALSE) {
         fun <- message
     }
 
-    if (is.null(private$m_param)) {
+    if (is.null(private$m_idfs)) {
         fun("No models have been created. Please use $model() to create parametric ",
             "models after input, output and parameters are set."
         )
@@ -1905,7 +1905,7 @@ bc_assert_valid_resolution <- function (super, self, private, resolution) {
 
     # get current resolution
     if (freq == "Timestep") {
-        cur_res <- as.integer(60 / private$m_idf$Timestep$Number_of_Timesteps_per_Hour)
+        cur_res <- as.integer(60 / private$m_seed$Timestep$Number_of_Timesteps_per_Hour)
         err_res <- paste0(cur_res, " min")
     } else if (freq == "Hourly") {
         cur_res <- 60
