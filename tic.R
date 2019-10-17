@@ -1,6 +1,5 @@
 # add Makevars
 get_stage("before_install") %>%
-dir.create("~/.R")
     add_code_step(dir.create("~/.R")) %>%
     add_code_step(writeLines(
         c("CXX14 = g++-7 -fPIC -flto=2",
