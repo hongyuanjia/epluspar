@@ -663,6 +663,9 @@ validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
     # check param format
     data.table::set(input$value, NULL, "is_chr", vapply(input$value$new_value_num, anyNA, logical(1)))
 
+    # retain input param order
+    if ("input_rleid" %in% names(input$value)) setorderv(input$value, "input_rleid")
+
     # add input rield
     input$value[, value_rleid := .I]
 
