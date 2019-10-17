@@ -1647,7 +1647,7 @@ bc_combine_input_output <- function (super, self, private, type, append, dt) {
     if (NROW(private[[m_name2]])) {
         all <- rbindlist(list(
             dt[, list(id, key_value, variable_name)],
-            private[[m_name2]][, list(-id, key_value, variable_name)]
+            private[[m_name2]][, list(id = -id, key_value, variable_name)]
         ))
 
         idx <- duplicated(all, by = c("key_value", "variable_name"), fromLast = TRUE)
