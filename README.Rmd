@@ -375,9 +375,62 @@ fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
 bc$data_field(fan_power[, -c("case", "Date/Time")])
 ```
 
+### Specify Input Data for Stan
+
+`$data_bc()` takes a list of field data and simulated data, and returns a
+list that contains data input for Bayesican calibration using the Stan model
+
+* `n`: Number of measured parameter observations.
+* `m`: Number of simulated observations.
+* `p`: Number of input parameters.
+* `q`: Number of calibration parameters.
+* `yf`: Data of measured output after z-score standardization using data of
+  simulated output.
+* `yc`: Data of simulated output after z-score standardization.
+* `xf`: Data of measured input after min-max normalization.
+* `xc`: Data of simulated input after min-max normalization.
+* `tc`: Data of calibration parameters after min-max normalization.
+
+```{r}
+str(bc$data_bc())
+```
+
+You can also supply your own field data and simulated data and using
+`$data_bc()` to construct the input for the Stan model. Input `data_field` and
+`data_sim` should have the same structure as the output from `$data_field()` and
+`$data_sim()`. If `data_field` and `data_sim` is not specified, the output from
+`$data_field()` and `$data_sim()` will be used.
+
+### Get Stan file
+
+You can save the internal Stan code using `$stan_file()`. If no path is
+specified, a character vector that contains the stan code will be returned.
+
+```{r, out.lines = 20}
+bc$stan_file()
+```
+
 ### Run Bayesian Calibration Using Stan
+
+You can run Bayesian calibration using Stan using `$stan_run()`.
+
+If `data` argument is not specified, the output of `$data_bc()` is directlyed
+used.
 
 ```{r, eval = FALSE}
 options(mc.cores = parallel::detectCores())
 bc$stan_run(iter = 300, chains = 3)
+```
+
+You can also use custom data set
+
+```{r, eval = FALSE}
+bc$stan_run(data = bc$data_bc(), iter = 300, chains = 3)
+```
+
+Instead of using builtin Stan model, you can also provide your own Stan code
+using `file` argument.
+
+```{r, eval = FALSE}
+bc$stan_run(file = bc$stan_file(tempfile(fileext = ".stan")), iter = 300, chains = 3)
 ```
