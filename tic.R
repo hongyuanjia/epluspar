@@ -1,12 +1,12 @@
 # add Makevars
 get_stage("before_install") %>%
-    add_code_step(system("mkdir -p ~/.R/")) %>%
+    add_code_step(dir.create("/home/travis/.R")) %>%
     add_code_step(writeLines(
         "
         CXX14 = g++-7 -fPIC -flto=2
         CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3
         ",
-        con = "~/.R/Makevars"
+        con = "/home/travis/.R/Makevars"
     ))
 
 # install EnergyPlus v8.8
