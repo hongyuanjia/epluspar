@@ -6,7 +6,7 @@ output:
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r setup, include = FALSE}
-library(epScan)
+library(epluspar)
 library(knitr)
 
 # the default output hook
@@ -37,22 +37,22 @@ knitr::opts_chunk$set(
 invisible(Sys.setlocale(category = "LC_TIME", locale = "en_US.UTF-8"))
 ```
 
-# epScan
+# epluspar
 Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
 
-[![Travis-CI Build Status](https://api.travis-ci.com/ideas-lab-nus/epScan.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.com/ideas-lab-nus/epScan)
-[![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
-[![CRAN Download Badge](https://cranlogs.r-pkg.org/badges/epScan)](https://cran.r-project.org/package=epScan)
+[![Travis-CI Build Status](https://api.travis-ci.com/ideas-lab-nus/epluspar.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.com/ideas-lab-nus/epluspar)
+[![codecov](https://codecov.io/gh/ideas-lab-nus/epluspar/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epluspar)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/epluspar)](https://cran.r-project.org/package=epluspar)
+[![CRAN Download Badge](https://cranlogs.r-pkg.org/badges/epluspar)](https://cran.r-project.org/package=epluspar)
 
 ## Installation
 
-Currently, epScan is not on CRAN. You can install the development version from
+Currently, epluspar is not on CRAN. You can install the development version from
 GitHub.
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("remotes")
-remotes::install_github("ideas-lab-nus/epScan")
+remotes::install_github("ideas-lab-nus/epluspar")
 ```
 
 # Get started

@@ -1,26 +1,26 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# epScan
+# epluspar
 
 Conduct sensitivity analysis and Bayesian calibration of EnergyPlus
 models.
 
 [![Travis-CI Build
-Status](https://api.travis-ci.com/ideas-lab-nus/epScan.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.com/ideas-lab-nus/epScan)
-[![codecov](https://codecov.io/gh/ideas-lab-nus/epScan/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epScan)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/epScan)](https://cran.r-project.org/package=epScan)
+Status](https://api.travis-ci.com/ideas-lab-nus/epluspar.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.com/ideas-lab-nus/epluspar)
+[![codecov](https://codecov.io/gh/ideas-lab-nus/epluspar/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epluspar)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/epluspar)](https://cran.r-project.org/package=epluspar)
 [![CRAN Download
-Badge](https://cranlogs.r-pkg.org/badges/epScan)](https://cran.r-project.org/package=epScan)
+Badge](https://cranlogs.r-pkg.org/badges/epluspar)](https://cran.r-project.org/package=epluspar)
 
 ## Installation
 
-Currently, epScan is not on CRAN. You can install the development
+Currently, epluspar is not on CRAN. You can install the development
 version from GitHub.
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("ideas-lab-nus/epScan")
+remotes::install_github("ideas-lab-nus/epluspar")
 ```
 
 # Get started
@@ -713,18 +713,18 @@ returned.
 ``` r
 bc$stan_file()
 #>   [1] "/*"                                                                      
-#>   [2] "    epScan is free software: you can redistribute it and/or modify"      
+#>   [2] "    epluspar is free software: you can redistribute it and/or modify"      
 #>   [3] "    it under the terms of the GNU General Public License as published by"
 #>   [4] "    the Free Software Foundation, either version 3 of the License, or"   
 #>   [5] "    (at your option) any later version."                                 
 #>   [6] ""                                                                        
-#>   [7] "    epScan is distributed in the hope that it will be useful,"           
+#>   [7] "    epluspar is distributed in the hope that it will be useful,"           
 #>   [8] "    but WITHOUT ANY WARRANTY; without even the implied warranty of"      
 #>   [9] "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"       
 #>  [10] "    GNU General Public License for more details."                        
 #>  [11] ""                                                                        
 #>  [12] "    You should have received a copy of the GNU General Public License"   
-#>  [13] "    along with epScan.  If not, see <http://www.gnu.org/licenses/>."     
+#>  [13] "    along with epluspar.  If not, see <http://www.gnu.org/licenses/>."     
 #>  [14] "*/"                                                                      
 #>  [15] ""                                                                        
 #>  [16] "data {"                                                                  

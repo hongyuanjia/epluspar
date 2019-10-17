@@ -1235,8 +1235,8 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
 # }}}
 # bc_stan_file {{{
 bc_stan_file <- function (super, self, private, path = NULL) {
-    lic <- system.file("stan/include/license.stan", package = "epScan", mustWork = TRUE)
-    bc <- system.file("stan/bc_with_pred.stan", package = "epScan", mustWork = TRUE)
+    lic <- system.file("stan/include/license.stan", package = "epluspar", mustWork = TRUE)
+    bc <- system.file("stan/bc_with_pred.stan", package = "epluspar", mustWork = TRUE)
 
     code <- c(readLines(lic), "", readLines(bc))
 

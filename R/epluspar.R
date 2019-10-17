@@ -1,12 +1,12 @@
-#' The 'epScan' package.
+#' The 'epluspar' package.
 #'
 #' @description Conduct sensitivity analysis and Bayesian calibration of
 #' EnergyPlus models.
 #'
 #' @docType package
-#' @name epScan-package
-#' @aliases epScan
-#' @useDynLib epScan, .registration = TRUE
+#' @name epluspar-package
+#' @aliases epluspar
+#' @useDynLib epluspar, .registration = TRUE
 #' @import methods
 #' @import Rcpp
 #' @import eplusr
