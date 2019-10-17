@@ -1,5 +1,7 @@
 # add Makevars
 get_stage("before_install") %>%
+    # See https://github.com/r-lib/devtools/issues/32
+    add_code_step(system("export TMPDIR=~/tmp")) %>%
     add_code_step(dir.create("~/.R")) %>%
     add_code_step(writeLines(c("CXX14 = g++-7 -fPIC -flto=2", "CXX14FLAGS = -O3"), con = "~/.R/Makevars"))
 
