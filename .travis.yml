@@ -1,8 +1,36 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+# Default configuration for use with tic package
+# tic documentation to get started: https://ropenscilabs.github.io/tic/
+# Usually you shouldn't need to change the first part of the file
+
+# DO NOT CHANGE THE CODE BELOW
+before_install:
+- R -q -e 'if (!requireNamespace("remotes")) install.packages("remotes")'
+- R -q -e 'if (getRversion() < "3.2" && !requireNamespace("curl")) install.packages("curl")'
+- R -q -e 'remotes::install_github("ropenscilabs/tic"); tic::prepare_all_stages()'
+- R -q -e 'tic::before_install()'
+install: R -q -e 'tic::install()'
+after_install: R -q -e 'tic::after_install()'
+before_script: R -q -e 'tic::before_script()'
+script: R -q -e 'tic::script()'
+after_success: R -q -e 'tic::after_success()'
+after_failure: R -q -e 'tic::after_failure()'
+before_deploy: R -q -e 'tic::before_deploy()'
+deploy:
+  provider: script
+  overwrite: true
+  script: R -q -e 'tic::deploy()'
+  on:
+    all_branches: true
+after_deploy: R -q -e 'tic::after_deploy()'
+after_script: R -q -e 'tic::after_script()'
+# DO NOT CHANGE THE CODE ABOVE
+
+# Header
 language: r
 sudo: true
-cache: packages
 dist: trusty
-
+cache: packages
 latex: true
 
 r_github_packages:
@@ -25,25 +53,3 @@ matrix:
 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
-before_install:
-  - mkdir -p ~/.R/
-  - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
-  - echo "CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3" >> ~/.R/Makevars
-
-script:
-  - R -q -e "eplusr::install_eplus(8.8)"
-  - |
-    R CMD build .
-    R CMD check epScan*tar.gz
-
-after_script:
-  - tar -ztvf epScan_*.tar.gz
-  - echo ${NOT_CRAN}
-
-after_success:
-  - tar -C .. -xf $PKG_TARBALL
-  - Rscript -e 'covr::codecov()'
-
-after_failure:
-  - cat epScan.Rcheck/00*
