@@ -1,0 +1,28 @@
+url: https://ideas-lab-nus.github.io/epScan
+
+development:
+  model: auto
+
+navbar:
+  left:
+    - icon: fa-home fa-lg
+      href: index.html
+    - text: "Reference"
+      href: reference/index.html
+    - text: Changelog
+      href: news/index.html
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/ideas-lab-nus/epScan
+
+reference:
+  - title: Sensitivity
+    desc: Conduct Sensitivity Analysis for An EnergyPlus Model
+    contents:
+      - Sensitivity
+      - sensi_job
+  - title: Bayesian Calibration
+    desc: Conduct Bayesian Calibration on An EnergyPlus Model
+    contents:
+      - BayesCalib
+      - bayes_job

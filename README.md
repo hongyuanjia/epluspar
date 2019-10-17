@@ -739,7 +739,7 @@ bc$stan_file()
 #>  [10] "    GNU General Public License for more details."                        
 #>  [11] ""                                                                        
 #>  [12] "    You should have received a copy of the GNU General Public License"   
-#>  [13] "    along with epstan.  If not, see <http://www.gnu.org/licenses/>."     
+#>  [13] "    along with epScan.  If not, see <http://www.gnu.org/licenses/>."     
 #>  [14] "*/"                                                                      
 #>  [15] ""                                                                        
 #>  [16] "data {"                                                                  
