@@ -4,7 +4,7 @@
 #' @importFrom purrr pmap
 NULL
 
-#' Conduct Sensitivity Analysis for A EnergyPlus Model
+#' Conduct Sensitivity Analysis for An EnergyPlus Model
 #'
 #' `sensi_job()` takes an IDF and EPW as input and returns a `SensitivityJob`,
 #' which provides a prototype of conducting sensitivity analysis of EnergyPlus

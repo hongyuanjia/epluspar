@@ -3,7 +3,7 @@
 \docType{class}
 \name{SensitivityJob}
 \alias{SensitivityJob}
-\title{Conduct Sensitivity Analysis for A EnergyPlus Model}
+\title{Conduct Sensitivity Analysis for An EnergyPlus Model}
 \description{
 \code{sensi_job()} takes an IDF and EPW as input and returns a \code{SensitivityJob},
 which provides a prototype of conducting sensitivity analysis of EnergyPlus

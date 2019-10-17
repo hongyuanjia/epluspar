@@ -24,7 +24,7 @@ NULL
 #}
 ## }}}
 
-#' Conduct Bayesian Calibration on an EnergyPlus Model
+#' Conduct Bayesian Calibration on An EnergyPlus Model
 #'
 #' `bayes_job()` takes an IDF and EPW as input and returns a `BayesCalibJob`,
 #' which provides a prototype of conducting Bayesian calibration of EnergyPlus

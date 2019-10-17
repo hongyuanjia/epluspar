@@ -40,6 +40,7 @@ Suggests:
     testthat,
     covr,
     pkgdown,
+    pkgload,
     knitr,
     rmarkdown,
     stringi

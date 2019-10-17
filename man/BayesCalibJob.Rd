@@ -3,7 +3,7 @@
 \docType{class}
 \name{BayesCalibJob}
 \alias{BayesCalibJob}
-\title{Conduct Bayesian Calibration on an EnergyPlus Model}
+\title{Conduct Bayesian Calibration on An EnergyPlus Model}
 \description{
 \code{bayes_job()} takes an IDF and EPW as input and returns a \code{BayesCalibJob},
 which provides a prototype of conducting Bayesian calibration of EnergyPlus
@@ -449,9 +449,9 @@ from Chong (2018):
 \item \code{m}: Number of simulated observations.
 \item \code{p}: Number of input parameters.
 \item \code{q}: Number of calibration parameters.
-\item \code{y}: Data of measured output after z-score standardization using data of
+\item \code{yf}: Data of measured output after z-score standardization using data of
 simulated output.
-\item \code{eta}: Data of simulated output after z-score standardization.
+\item \code{yc}: Data of simulated output after z-score standardization.
 \item \code{xf}: Data of measured input after min-max normalization.
 \item \code{xc}: Data of simulated input after min-max normalization.
 \item \code{x_pred}: Data of new design points for predictions after min-max

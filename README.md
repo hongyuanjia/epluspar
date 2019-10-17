@@ -36,6 +36,11 @@ path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.
 
 # create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
 sen <- sensi_job(path_idf, path_epw)
+#> IDD v8.8.0 has not been parsed before.
+#> Try to locate `Energy+.idd` in EnergyPlus v8.8.0 installation folder '/usr/local/EnergyPlus-8-8-0'.
+#> IDD file found: '/usr/local/EnergyPlus-8-8-0/Energy+.idd'.
+#> Start parsing...
+#> Parsing completed.
 #> Adding an object in class `Output:SQLite` and setting its `Option Type` to `SimpleAndTabular` in order to create SQLite output file.
 ```
 
@@ -88,26 +93,26 @@ sen$apply_measure(my_actions,
     conducitivy = c(0.1, 0.6, 6),
     .r = 8, .grid_jump = 1
 )
-#> -- EnergPlus Parametric Simulation Job ------------------------------------
-#> * Seed: 'C:\EnergyPlusV8-8-0\ExampleFiles\5Zone_Transformer.idf'
-#> * Weather: 'C:\EnergyPlusV8-8-0\WeatherData\USA_CA_San.Francisco.Intl....
+#> ── EnergPlus Parametric Simulation Job ────────────────────────────────────
+#> * Seed: '/usr/local/EnergyPlus-8-8-0/ExampleFiles/5Zone_Transformer.id...
+#> * Weather: '/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francis...
 #> * EnergyPlus Version: '8.8.0'
-#> * EnergyPlus Path: 'C:\EnergyPlusV8-8-0'
+#> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: 'my_actions'
 #> Parametric Models [32]: 
-#> [01]: '1_effic(0.775)_thick(0.045)_condu(0.4)'
-#> [02]: '2_effic(0.775)_thick(0.045)_condu(0.3)'
-#> [03]: '3_effic(0.55)_thick(0.045)_condu(0.3)'
-#> [04]: '4_effic(0.55)_thick(0.0275)_condu(0.3)'
-#> [05]: '5_effic(0.325)_thick(0.045)_condu(0.3)'
-#> [06]: '6_effic(0.55)_thick(0.045)_condu(0.3)'
-#> [07]: '7_effic(0.55)_thick(0.045)_condu(0.4)'
-#> [08]: '8_effic(0.55)_thick(0.0275)_condu(0.4)'
-#> [09]: '9_effic(0.55)_thick(0.045)_condu(0.4)'
-#> [10]: '10_effic(0.55)_thick(0.045)_condu(0.5)'
-#> [11]: '11_effic(0.775)_thick(0.045)_condu(0.5)'
-#> [12]: '12_effic(0.775)_thick(0.0275)_condu(0.5)'
-#> [13]: '13_effic(0.55)_thick(0.08)_condu(0.1)'
+#> [01]: '1_effic(0.55)_thick(0.0275)_condu(0.3)'
+#> [02]: '2_effic(0.55)_thick(0.0275)_condu(0.4)'
+#> [03]: '3_effic(0.325)_thick(0.0275)_condu(0.4)'
+#> [04]: '4_effic(0.325)_thick(0.045)_condu(0.4)'
+#> [05]: '5_effic(0.775)_thick(0.0625)_condu(0.5)'
+#> [06]: '6_effic(0.775)_thick(0.0625)_condu(0.6)'
+#> [07]: '7_effic(0.55)_thick(0.0625)_condu(0.6)'
+#> [08]: '8_effic(0.55)_thick(0.045)_condu(0.6)'
+#> [09]: '9_effic(0.325)_thick(0.045)_condu(0.3)'
+#> [10]: '10_effic(0.1)_thick(0.045)_condu(0.3)'
+#> [11]: '11_effic(0.1)_thick(0.045)_condu(0.4)'
+#> [12]: '12_effic(0.1)_thick(0.0625)_condu(0.4)'
+#> [13]: '13_effic(0.775)_thick(0.0275)_condu(0.4)'
 ....
 ```
 
@@ -115,26 +120,26 @@ Get samples
 
 ``` r
 sen$samples()
-#>      case efficiency thickness conducitivy
-#>     <int>      <num>     <num>       <num>
-#>  1:     1      0.775    0.0450         0.4
-#>  2:     2      0.775    0.0450         0.3
-#>  3:     3      0.550    0.0450         0.3
-#>  4:     4      0.550    0.0275         0.3
-#>  5:     5      0.325    0.0450         0.3
-#>  6:     6      0.550    0.0450         0.3
-#>  7:     7      0.550    0.0450         0.4
-#>  8:     8      0.550    0.0275         0.4
-#>  9:     9      0.550    0.0450         0.4
-#> 10:    10      0.550    0.0450         0.5
-#> 11:    11      0.775    0.0450         0.5
-#> 12:    12      0.775    0.0275         0.5
-#> 13:    13      0.550    0.0800         0.1
-#> 14:    14      0.550    0.0625         0.1
-#> 15:    15      0.550    0.0625         0.2
-#> 16:    16      0.775    0.0625         0.2
-#> 17:    17      0.100    0.0100         0.2
-#> 18:    18      0.325    0.0100         0.2
+#>     case efficiency thickness conducitivy
+#>  1:    1      0.550    0.0275         0.3
+#>  2:    2      0.550    0.0275         0.4
+#>  3:    3      0.325    0.0275         0.4
+#>  4:    4      0.325    0.0450         0.4
+#>  5:    5      0.775    0.0625         0.5
+#>  6:    6      0.775    0.0625         0.6
+#>  7:    7      0.550    0.0625         0.6
+#>  8:    8      0.550    0.0450         0.6
+#>  9:    9      0.325    0.0450         0.3
+#> 10:   10      0.100    0.0450         0.3
+#> 11:   11      0.100    0.0450         0.4
+#> 12:   12      0.100    0.0625         0.4
+#> 13:   13      0.775    0.0275         0.4
+#> 14:   14      0.775    0.0450         0.4
+#> 15:   15      1.000    0.0450         0.4
+#> 16:   16      1.000    0.0450         0.5
+#> 17:   17      0.775    0.0800         0.4
+#> 18:   18      0.775    0.0800         0.3
+#> 19:   19      0.550    0.0800         0.3
 ....
 ```
 
@@ -143,26 +148,26 @@ Run simulations and calculate statistic indicators
 ``` r
 # run simulations in temporary directory
 sen$run(dir = tempdir(), echo = FALSE)
-#> -- EnergPlus Parametric Simulation Job ------------------------------------
-#> * Seed: 'C:\EnergyPlusV8-8-0\ExampleFiles\5Zone_Transformer.idf'
-#> * Weather: 'C:\EnergyPlusV8-8-0\WeatherData\USA_CA_San.Francisco.Intl....
+#> ── EnergPlus Parametric Simulation Job ────────────────────────────────────
+#> * Seed: '/usr/local/EnergyPlus-8-8-0/ExampleFiles/5Zone_Transformer.id...
+#> * Weather: '/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francis...
 #> * EnergyPlus Version: '8.8.0'
-#> * EnergyPlus Path: 'C:\EnergyPlusV8-8-0'
+#> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: 'my_actions'
 #> Parametric Models [32]: 
-#> [01]: '1_effic(0.775)_thick(0.045)_condu(0.4)'   <-- SUCCEEDED
-#> [02]: '2_effic(0.775)_thick(0.045)_condu(0.3)'   <-- SUCCEEDED
-#> [03]: '3_effic(0.55)_thick(0.045)_condu(0.3)'    <-- SUCCEEDED
-#> [04]: '4_effic(0.55)_thick(0.0275)_condu(0.3)'   <-- SUCCEEDED
-#> [05]: '5_effic(0.325)_thick(0.045)_condu(0.3)'   <-- SUCCEEDED
-#> [06]: '6_effic(0.55)_thick(0.045)_condu(0.3)'    <-- SUCCEEDED
-#> [07]: '7_effic(0.55)_thick(0.045)_condu(0.4)'    <-- SUCCEEDED
-#> [08]: '8_effic(0.55)_thick(0.0275)_condu(0.4)'   <-- SUCCEEDED
-#> [09]: '9_effic(0.55)_thick(0.045)_condu(0.4)'    <-- SUCCEEDED
-#> [10]: '10_effic(0.55)_thick(0.045)_condu(0.5)'   <-- SUCCEEDED
-#> [11]: '11_effic(0.775)_thick(0.045)_condu(0.5)'  <-- SUCCEEDED
-#> [12]: '12_effic(0.775)_thick(0.0275)_condu(0.5)' <-- SUCCEEDED
-#> [13]: '13_effic(0.55)_thick(0.08)_condu(0.1)'    <-- SUCCEEDED
+#> [01]: '1_effic(0.55)_thick(0.0275)_condu(0.3)'   <-- SUCCEEDED
+#> [02]: '2_effic(0.55)_thick(0.0275)_condu(0.4)'   <-- SUCCEEDED
+#> [03]: '3_effic(0.325)_thick(0.0275)_condu(0.4)'  <-- SUCCEEDED
+#> [04]: '4_effic(0.325)_thick(0.045)_condu(0.4)'   <-- SUCCEEDED
+#> [05]: '5_effic(0.775)_thick(0.0625)_condu(0.5)'  <-- SUCCEEDED
+#> [06]: '6_effic(0.775)_thick(0.0625)_condu(0.6)'  <-- SUCCEEDED
+#> [07]: '7_effic(0.55)_thick(0.0625)_condu(0.6)'   <-- SUCCEEDED
+#> [08]: '8_effic(0.55)_thick(0.045)_condu(0.6)'    <-- SUCCEEDED
+#> [09]: '9_effic(0.325)_thick(0.045)_condu(0.3)'   <-- SUCCEEDED
+#> [10]: '10_effic(0.1)_thick(0.045)_condu(0.3)'    <-- SUCCEEDED
+#> [11]: '11_effic(0.1)_thick(0.045)_condu(0.4)'    <-- SUCCEEDED
+#> [12]: '12_effic(0.1)_thick(0.0625)_condu(0.4)'   <-- SUCCEEDED
+#> [13]: '13_effic(0.775)_thick(0.0275)_condu(0.4)' <-- SUCCEEDED
 ....
 
 # extract output
@@ -178,18 +183,17 @@ eng <- sen$tabular_data(table_name = "site and source energy",
 #> sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = FALSE)
 #> 
 #> Model runs: 32 
-#>                    mu  mu.star     sigma
-#> efficiency  -0.600000 0.600000 0.8226082
-#> thickness   -7.571429 7.571429 3.6748297
-#> conducitivy  0.537500 0.537500 0.2445842
+#>                     mu   mu.star     sigma
+#> efficiency  -0.3277778 0.3277778 0.5716093
+#> thickness   -6.5714286 6.5714286 3.2897048
+#> conducitivy  0.4750000 0.4750000 0.2251983
 
 # extract data
 attr(result, "data")
-#>    index        name        mu  mu.star     sigma
-#>    <int>      <char>     <num>    <num>     <num>
-#> 1:     1  efficiency -0.600000 0.600000 0.8226082
-#> 2:     2   thickness -7.571429 7.571429 3.6748297
-#> 3:     3 conducitivy  0.537500 0.537500 0.2445842
+#>    index        name         mu   mu.star     sigma
+#> 1:     1  efficiency -0.3277778 0.3277778 0.5716093
+#> 2:     2   thickness -6.5714286 6.5714286 3.2897048
+#> 3:     3 conducitivy  0.4750000 0.4750000 0.2251983
 ```
 
 Plot
@@ -223,13 +227,12 @@ current seed model.
 (rdd <- bc$read_rdd())
 #> Initializing RDD...
 #> Initializing RDD... [SUCCESSFUL]
-#> == EnergyPlus Report Data Dictionary File =================================
+#> ══ EnergyPlus Report Data Dictionary File ═════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-10-17 11:52:00
+#>   * Simulation started: 2019-10-18 01:30:00
 #> 
-#> -- Details ----------------------------------------------------------------
+#> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
-#>      <int>             <char>      <char>
 #>   1:     1               Zone     Average
 #>   2:     2               Zone     Average
 #>   3:     3               Zone     Average
@@ -242,16 +245,16 @@ current seed model.
 #> 619:   619               HVAC         Sum
 #> 620:   620               HVAC     Average
 #>                                                           variable
-#>                                                             <char>
+#>   1:                          Site Outdoor Air Drybulb Temperature
+#>   2:                         Site Outdoor Air Dewpoint Temperature
 ....
 (mdd <- bc$read_mdd())
-#> == EnergyPlus Meter Data Dictionary File ==================================
+#> ══ EnergyPlus Meter Data Dictionary File ══════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-10-17 11:52:00
+#>   * Simulation started: 2019-10-18 01:30:00
 #> 
-#> -- Details ----------------------------------------------------------------
+#> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
-#>      <int>             <char>      <char>
 #>   1:     1               Zone       Meter
 #>   2:     2               Zone       Meter
 #>   3:     3               Zone       Meter
@@ -263,8 +266,9 @@ current seed model.
 #> 175:   175               Zone       Meter
 #> 176:   176               Zone       Meter
 #> 177:   177               Zone       Meter
-#>                                         variable  units
-#>                                           <char> <char>
+#>                                         variable units
+#>   1:                        Electricity:Facility     J
+#>   2:                        Electricity:Building     J
 ....
 ```
 
@@ -294,50 +298,39 @@ and data.frames.
 # using RDD and MDD
 bc$input(rdd[1:3])
 #>    index           class key_value                         variable_name
-#>    <int>          <char>    <char>                                <char>
 #> 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature
 #> 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature
 #> 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature
 #>    reporting_frequency
-#>                 <char>
 #> 1:            Timestep
 #> 2:            Timestep
 #> 3:            Timestep
 bc$output(mdd[1:3])
-#> Column 1 ['V1'] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names='check' (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.
 #>    index        class key_value             variable_name
-#>    <int>       <char>    <char>                    <char>
 #> 1:     1 Output:Meter      <NA>      Electricity:Facility
 #> 2:     2 Output:Meter      <NA>      Electricity:Building
 #> 3:     3 Output:Meter      <NA> Electricity:Zone:BASEMENT
 #>    reporting_frequency
-#>                 <char>
 #> 1:            Timestep
 #> 2:            Timestep
 #> 3:            Timestep
 
 # using data.frame
 bc$input(eplusr::rdd_to_load(rdd[1:3]))
-#> Column 1 ['V1'] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names='check' (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.
 #>    index           class key_value                         variable_name
-#>    <int>          <char>    <char>                                <char>
 #> 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature
 #> 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature
 #> 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature
 #>    reporting_frequency
-#>                 <char>
 #> 1:            Timestep
 #> 2:            Timestep
 #> 3:            Timestep
 bc$output(eplusr::mdd_to_load(mdd[1:3]))
-#> Column 1 ['V1'] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names='check' (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.
 #>    index        class key_value             variable_name
-#>    <int>       <char>    <char>                    <char>
 #> 1:     1 Output:Meter      <NA>      Electricity:Facility
 #> 2:     2 Output:Meter      <NA>      Electricity:Building
 #> 3:     3 Output:Meter      <NA> Electricity:Zone:BASEMENT
 #>    reporting_frequency
-#>                 <char>
 #> 1:            Timestep
 #> 2:            Timestep
 #> 3:            Timestep
@@ -370,7 +363,6 @@ bc$input(
     reporting_frequency = "hourly"
 )
 #>    index           class key_value
-#>    <int>          <char>    <char>
 #> 1:     1 Output:Variable         *
 #> 2:     2 Output:Variable         *
 #> 3:     3 Output:Variable         *
@@ -380,7 +372,6 @@ bc$input(
 #> 7:     7 Output:Variable         *
 #> 8:     8 Output:Variable         *
 #>                                variable_name reporting_frequency
-#>                                       <char>              <char>
 #> 1:      Site Outdoor Air Drybulb Temperature              Hourly
 #> 2:        Site Outdoor Air Relative Humidity              Hourly
 #> 3: Site Direct Solar Radiation Rate per Area              Hourly
@@ -401,9 +392,7 @@ bc$output(
     ),
     reporting_frequency = "hourly"
 )
-#> Column 1 ['V1'] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names='check' (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.
 #>    index        class key_value                 variable_name
-#>    <int>       <char>    <char>                        <char>
 #> 1:     1 Output:Meter      <NA>          Electricity:Building
 #> 2:     2 Output:Meter      <NA>    InteriorLights:Electricity
 #> 3:     3 Output:Meter      <NA> InteriorEquipment:Electricity
@@ -412,7 +401,6 @@ bc$output(
 #> 6:     6 Output:Meter      <NA>                   Heating:Gas
 #> 7:     7 Output:Meter      <NA>              Fans:Electricity
 #>    reporting_frequency
-#>                 <char>
 #> 1:              Hourly
 #> 2:              Hourly
 #> 3:              Hourly
@@ -426,7 +414,6 @@ Note that variable cannot be set as both an input and output variable.
 
 ``` r
 bc$output(name = "fan air mass flow rate", reporting_frequency = "hourly")
-#> Column 1 ['V1'] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names='check' (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.
 #> Error: Variables specified have already been set as input: `*:Fan Air Mass Flow Rate`
 ```
 
@@ -494,15 +481,15 @@ bc$param(
 
     .num_sim = 2L
 )
-#> -- EnergPlus Parametric Simulation Job ------------------------------------
-#> * Seed: 'C:\EnergyPlusV8-8-0\ExampleFiles\RefBldgLargeOfficeNew2004_Ch...
-#> * Weather: 'C:\EnergyPlusV8-8-0\WeatherData\USA_CA_San.Francisco.Intl....
+#> ── EnergPlus Parametric Simulation Job ────────────────────────────────────
+#> * Seed: '/usr/local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLargeOfficeNe...
+#> * Weather: '/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francis...
 #> * EnergyPlus Version: '8.8.0'
-#> * EnergyPlus Path: 'C:\EnergyPlusV8-8-0'
+#> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: ''
 #> Parametric Models [2]: 
-#> [1]: '1_infil(0.0007308011)_light(7.163818)_peopl(7.63004)_equip(9.216...
-#> [2]: '2_infil(0.0003754032)_light(12.77769)_peopl(12.62039)_equip(14.0...
+#> [1]: '1_infil(0.0006376304)_light(19.24608)_peopl(7.945347)_equip(13.8...
+#> [2]: '2_infil(0.0006869685)_light(5.583451)_peopl(10.1201)_equip(9.141...
 #> << Job has not been run before >>
 ```
 
@@ -512,22 +499,20 @@ Parameter values can be retrieved using `$samples()`.
 
 ``` r
 bc$samples()
-#>     case   infil_rate    lights   people equipment chiller1cop chiller2cop
-#>    <int>        <num>     <num>    <num>     <num>       <num>       <num>
-#> 1:     1 0.0007308011  7.163818  7.63004  9.216766    2.417505    1.336081
-#> 2:     2 0.0003754032 12.777686 12.62039 14.081863    4.541293    3.071068
+#>    case   infil_rate    lights    people equipment chiller1cop chiller2cop
+#> 1:    1 0.0006376304 19.246078  7.945347 13.844522    3.210830    2.166242
+#> 2:    2 0.0006869685  5.583451 10.120099  9.141765    2.854589    4.337313
 #>      fan1eff   fan2eff   fan3eff   fan5eff
-#>        <num>     <num>     <num>     <num>
-#> 1: 0.2512283 0.5377493 0.2660899 0.4653870
-#> 2: 0.7981429 0.2478102 0.6160529 0.5864326
+#> 1: 0.2937184 0.8133329 0.2716662 0.1057743
+#> 2: 0.5767808 0.2509174 0.8942518 0.7980554
 ```
 
 Generated `Idf`s can be retrieved using `$models()`.
 
 ``` r
 names(bc$models())
-#> [1] "1_infil(0.0007308011)_light(7.163818)_peopl(7.63004)_equip(9.216766)_chiller1(2.417505)_chiller2"
-#> [2] "2_infil(0.0003754032)_light(12.77769)_peopl(12.62039)_equip(14.08186)_chiller1(4.541293)_chiller"
+#> [1] "1_infil(0.0006376304)_light(19.24608)_peopl(7.945347)_equip(13.84452)_chiller1(3.21083)_chiller2"
+#> [2] "2_infil(0.0006869685)_light(5.583451)_peopl(10.1201)_equip(9.141765)_chiller1(2.854589)_chiller2"
 ```
 
 ### Run simulations and gather data
@@ -541,16 +526,16 @@ commented out.
 bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 7), echo = FALSE)
 #> Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.
 #> Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.
-#> -- EnergPlus Parametric Simulation Job ------------------------------------
-#> * Seed: 'C:\EnergyPlusV8-8-0\ExampleFiles\RefBldgLargeOfficeNew2004_Ch...
-#> * Weather: 'C:\EnergyPlusV8-8-0\WeatherData\USA_CA_San.Francisco.Intl....
+#> ── EnergPlus Parametric Simulation Job ────────────────────────────────────
+#> * Seed: '/usr/local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLargeOfficeNe...
+#> * Weather: '/usr/local/EnergyPlus-8-8-0/WeatherData/USA_CA_San.Francis...
 #> * EnergyPlus Version: '8.8.0'
-#> * EnergyPlus Path: 'C:\EnergyPlusV8-8-0'
+#> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: ''
 #> Parametric Models [2]: 
-#> [1]: '1_infil(0.0007308011)_light(7.163818)_peopl(7.6300... <-- SUCCEEDED
-#> [2]: '2_infil(0.0003754032)_light(12.77769)_peopl(12.620... <-- SUCCEEDED
-#>  Simulation started at '2019-10-17 11:52:38' and completed successfully after 32.33 secs.
+#> [1]: '1_infil(0.0006376304)_light(19.24608)_peopl(7.9453... <-- SUCCEEDED
+#> [2]: '2_infil(0.0006869685)_light(5.583451)_peopl(10.120... <-- SUCCEEDED
+#>  Simulation started at '2019-10-18 01:30:32' and completed successfully after 24.46 secs.
 ```
 
 `$data_sim()` returns a `data.table` (when `merge` is `TRUE`) or a list
@@ -570,25 +555,25 @@ bc$data_sim("1 min")
 ``` r
 bc$data_sim()
 #> $input
-#>       case     Date/Time
-#>      <int>        <char>
-#>   1:     1  01/01  01:00
-#>   2:     1  01/01  02:00
-#>   3:     1  01/01  03:00
-#>   4:     1  01/01  04:00
-#>   5:     1  01/01  05:00
-#>  ---                    
-#> 332:     2  01/07  20:00
-#> 333:     2  01/07  21:00
-#> 334:     2  01/07  22:00
-#> 335:     2  01/07  23:00
-#> 336:     2  01/07  24:00
+#>      case     Date/Time
+#>   1:    1  01/01  01:00
+#>   2:    1  01/01  02:00
+#>   3:    1  01/01  03:00
+#>   4:    1  01/01  04:00
+#>   5:    1  01/01  05:00
+#>  ---                   
+#> 332:    2  01/07  20:00
+#> 333:    2  01/07  21:00
+#> 334:    2  01/07  22:00
+#> 335:    2  01/07  23:00
+#> 336:    2  01/07  24:00
 #>      Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)
-#>                                                             <num>
 #>   1:                                                     6.991667
 #>   2:                                                     7.200000
 #>   3:                                                     6.908333
 #>   4:                                                     6.350000
+#>   5:                                                     5.108333
+#>  ---                                                             
 ....
 ```
 
@@ -615,30 +600,30 @@ seed$add(RunPeriod = list("test", 1, 1, 1, 7))
 #> $test
 #> <IdfObject: 'RunPeriod'> [ID:857] `test`
 #> Class: <RunPeriod>
-#> +- 01 : "test",           !- Name
-#> |- 02*: 1,                !- Begin Month
-#> |- 03*: 1,                !- Begin Day of Month
-#> |- 04*: 1,                !- End Month
-#> |- 05*: 7,                !- End Day of Month
-#> |- 06 : "UseWeatherFile", !- Day of Week for Start Day
-#> |- 07 : "Yes",            !- Use Weather File Holidays and Special Days
-#> |- 08 : "Yes",            !- Use Weather File Daylight Saving Period
-#> |- 09 : "No",             !- Apply Weekend Holiday Rule
-#> |- 10 : "Yes",            !- Use Weather File Rain Indicators
-#> \- 11 : "Yes";            !- Use Weather File Snow Indicators
+#> ├─ 01 : "test",           !- Name
+#> │─ 02*: 1,                !- Begin Month
+#> │─ 03*: 1,                !- Begin Day of Month
+#> │─ 04*: 1,                !- End Month
+#> │─ 05*: 7,                !- End Day of Month
+#> │─ 06 : "UseWeatherFile", !- Day of Week for Start Day
+#> │─ 07 : "Yes",            !- Use Weather File Holidays and Special Days
+#> │─ 08 : "Yes",            !- Use Weather File Daylight Saving Period
+#> │─ 09 : "No",             !- Apply Weekend Holiday Rule
+#> │─ 10 : "Yes",            !- Use Weather File Rain Indicators
+#> └─ 11 : "Yes";            !- Use Weather File Snow Indicators
 seed$SimulationControl$set(
     `Run Simulation for Sizing Periods` = "No",
     `Run Simulation for Weather File Run Periods` = "Yes"
 )
 #> <IdfObject: 'SimulationControl'> [ID:2]
 #> Class: <SimulationControl>
-#> +- 1: "YES",      !- Do Zone Sizing Calculation
-#> |- 2: "YES",      !- Do System Sizing Calculation
-#> |- 3: "YES",      !- Do Plant Sizing Calculation
-#> |- 4: "No",       !- Run Simulation for Sizing Periods
-#> |- 5: "Yes",      !- Run Simulation for Weather File Run Periods
-#> |- 6: "YES",      !- Do HVAC Sizing Simulation for Sizing Periods
-#> \- 7: 2;          !- Maximum Number of HVAC Sizing Simulation Passes
+#> ├─ 1: "YES",      !- Do Zone Sizing Calculation
+#> │─ 2: "YES",      !- Do System Sizing Calculation
+#> │─ 3: "YES",      !- Do Plant Sizing Calculation
+#> │─ 4: "No",       !- Run Simulation for Sizing Periods
+#> │─ 5: "Yes",      !- Run Simulation for Weather File Run Periods
+#> │─ 6: "YES",      !- Do HVAC Sizing Simulation for Sizing Periods
+#> └─ 7: 2;          !- Maximum Number of HVAC Sizing Simulation Passes
 # save the model to tempdir
 seed$save(tempfile(fileext = ".idf"))
 job <- seed$run(path_epw, echo = FALSE)
@@ -646,25 +631,25 @@ fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
 
 bc$data_field(fan_power[, -c("case", "Date/Time")])
 #> $input
-#>       case     Date/Time
-#>      <int>        <char>
-#>   1:    NA  01/01  01:00
-#>   2:    NA  01/01  02:00
-#>   3:    NA  01/01  03:00
-#>   4:    NA  01/01  04:00
-#>   5:    NA  01/01  05:00
-#>  ---                    
-#> 164:    NA  01/07  20:00
-#> 165:    NA  01/07  21:00
-#> 166:    NA  01/07  22:00
-#> 167:    NA  01/07  23:00
-#> 168:    NA  01/07  24:00
+#>      case     Date/Time
+#>   1:   NA  01/01  01:00
+#>   2:   NA  01/01  02:00
+#>   3:   NA  01/01  03:00
+#>   4:   NA  01/01  04:00
+#>   5:   NA  01/01  05:00
+#>  ---                   
+#> 164:   NA  01/07  20:00
+#> 165:   NA  01/07  21:00
+#> 166:   NA  01/07  22:00
+#> 167:   NA  01/07  23:00
+#> 168:   NA  01/07  24:00
 #>      Environment:Site Outdoor Air Drybulb Temperature [C](Hourly)
-#>                                                             <num>
 #>   1:                                                     6.991667
 #>   2:                                                     7.200000
 #>   3:                                                     6.908333
 #>   4:                                                     6.350000
+#>   5:                                                     5.108333
+#>  ---                                                             
 ....
 ```
 
@@ -695,20 +680,20 @@ str(bc$data_bc())
 #>  $ p : int 15
 #>  $ q : int 10
 #>  $ yf:Classes 'data.table' and 'data.frame': 168 obs. of  7 variables:
-#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:168] -0.259 -0.259 -0.259 -0.259 -0.259 ...
-#>   ..$ Electricity:Building [J](Hourly)         : num [1:168] -0.902 -0.902 -0.902 -0.902 -0.902 ...
-#>   ..$ Fans:Electricity [J](Hourly)             : num [1:168] -0.961 -0.973 -0.961 -0.973 -0.961 ...
+#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:168] -0.248 -0.248 -0.248 -0.248 -0.248 ...
+#>   ..$ Electricity:Building [J](Hourly)         : num [1:168] -0.817 -0.817 -0.817 -0.817 -0.817 ...
+#>   ..$ Fans:Electricity [J](Hourly)             : num [1:168] -1.07 -1.08 -1.07 -1.08 -1.07 ...
 #>   ..$ Heating:Electricity [J](Hourly)          : num [1:168] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-#>   ..$ Heating:Gas [J](Hourly)                  : num [1:168] -0.638 -0.645 -0.632 -0.637 -0.612 ...
-#>   ..$ InteriorEquipment:Electricity [J](Hourly): num [1:168] -0.999 -0.999 -0.999 -0.999 -0.999 ...
-#>   ..$ InteriorLights:Electricity [J](Hourly)   : num [1:168] -0.811 -0.811 -0.811 -0.811 -0.811 ...
+#>   ..$ Heating:Gas [J](Hourly)                  : num [1:168] -0.643 -0.651 -0.636 -0.642 -0.615 ...
+#>   ..$ InteriorEquipment:Electricity [J](Hourly): num [1:168] -0.989 -0.989 -0.989 -0.989 -0.989 ...
+#>   ..$ InteriorLights:Electricity [J](Hourly)   : num [1:168] -0.71 -0.71 -0.71 -0.71 -0.71 ...
 #>   ..- attr(*, ".internal.selfref")=<externalptr> 
 #>  $ yc:Classes 'data.table' and 'data.frame': 336 obs. of  7 variables:
-#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:336] -0.259 -0.259 -0.259 -0.259 -0.259 ...
-#>   ..$ Electricity:Building [J](Hourly)         : num [1:336] -0.995 -0.995 -0.995 -0.995 -0.995 ...
-#>   ..$ Fans:Electricity [J](Hourly)             : num [1:336] -0.903 -0.919 -0.893 -0.919 -0.893 ...
+#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:336] -0.248 -0.248 -0.248 -0.248 -0.248 ...
+#>   ..$ Electricity:Building [J](Hourly)         : num [1:336] -0.66 -0.66 -0.66 -0.66 -0.66 ...
+#>   ..$ Fans:Electricity [J](Hourly)             : num [1:336] -0.947 -0.969 -0.925 -0.969 -0.925 ...
 #>   ..$ Heating:Electricity [J](Hourly)          : num [1:336] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-#>   ..$ Heating:Gas [J](Hourly)                  : num [1:336] -0.582 -0.589 -0.55 -0.566 -0.505 ...
+#>   ..$ Heating:Gas [J](Hourly)                  : num [1:336] -0.63 -0.629 -0.599 -0.603 -0.557 ...
 ....
 ```
 
@@ -739,7 +724,7 @@ bc$stan_file()
 #>  [10] "    GNU General Public License for more details."                        
 #>  [11] ""                                                                        
 #>  [12] "    You should have received a copy of the GNU General Public License"   
-#>  [13] "    along with epstan.  If not, see <http://www.gnu.org/licenses/>."     
+#>  [13] "    along with epScan.  If not, see <http://www.gnu.org/licenses/>."     
 #>  [14] "*/"                                                                      
 #>  [15] ""                                                                        
 #>  [16] "data {"                                                                  
