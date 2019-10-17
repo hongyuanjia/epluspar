@@ -16,13 +16,16 @@ navbar:
       href: https://github.com/ideas-lab-nus/epScan
 
 reference:
+  - title: epScan package
+    contents:
+      - epScan-package
   - title: Sensitivity
     desc: Conduct Sensitivity Analysis for An EnergyPlus Model
     contents:
-      - Sensitivity
+      - SensitivityJob
       - sensi_job
   - title: Bayesian Calibration
     desc: Conduct Bayesian Calibration on An EnergyPlus Model
     contents:
-      - BayesCalib
+      - BayesCalibJob
       - bayes_job
