@@ -14,6 +14,7 @@ get_stage("script") %>%
     add_code_step(eplusr::install_eplus(8.8))
 
 # R CMD Check
+args <- "--as-cran"
 build_args <- c("--force")
 do_package_checks(args = args, build_args = build_args)
 
