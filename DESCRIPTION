@@ -1,4 +1,4 @@
-Package: epScan
+Package: epluspar
 Title: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models
 Version: 0.0.0.9000
 Authors@R: c(
@@ -14,8 +14,8 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-9486-4728"))
     )
 Description: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
-URL: https://github.com/ideas-lab-nus/epScan
-BugReports: https://github.com/ideas-lab-nus/epScan
+URL: https://github.com/ideas-lab-nus/epluspar
+BugReports: https://github.com/ideas-lab-nus/epluspar
 License: MIT + file LICENSE
 Depends:
     R (>= 3.4.0),
@@ -54,7 +54,7 @@ Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
 RoxygenNote: 6.1.1
 Collate:
     'bayesian.R'
-    'epScan.R'
+    'epluspar.R'
     'utils.R'
     'sensitivity.R'
     'stanmodels.R'

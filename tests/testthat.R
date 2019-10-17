@@ -1,4 +1,4 @@
 library(testthat)
-library(epScan)
+library(epluspar)
 
-test_check("epScan")
+test_check("epluspar")
