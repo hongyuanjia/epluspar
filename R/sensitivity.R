@@ -393,9 +393,13 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     )
 
     # handle whole-class case
+    cls <- l$dot[class == TRUE, rleid]
+    # handle .() case
+    flat <- l$dot[dep == 2L & class == FALSE, rleid]
+    multi <- l$object[J(flat), on = "rleid", .N > 1L, by = "rleid"][V1 == TRUE, rleid]
     l$value <- data.table::rbindlist(list(
-        obj_val$value[J(l$dot[class == TRUE, rleid]), on = "input_rleid", .SD[1L], by = c("class_id", "field_index")],
-        obj_val$value[!J(l$dot[class == TRUE, rleid]), on = "input_rleid"]
+        obj_val$value[J(c(cls, multi)), on = "input_rleid", .SD[1L], by = c("class_id", "field_index")],
+        obj_val$value[!J(c(cls, multi)), on = "input_rleid"]
     ), use.names = TRUE)
 
     # validate input
