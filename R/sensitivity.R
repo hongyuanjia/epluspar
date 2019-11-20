@@ -354,8 +354,8 @@ Sensitivity <- R6::R6Class(classname = "SensitivityJob",
         apply_measure = function (measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
             sen_apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump),
 
-        samples = function (scale = FALSE)
-            sen_samples(self, private, scale),
+        samples = function ()
+            sen_samples(self, private),
 
         evaluate = function (results)
             sen_evaluate(self, private, results)
