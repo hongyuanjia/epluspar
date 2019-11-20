@@ -21,8 +21,8 @@ NULL
 #' sensi$version()
 #' sensi$seed()
 #' sensi$weather()
-#' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
+#' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
+#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
 #' sensi$samples()
 #' sensi$evaluate(results)
 #' sensi$models()
@@ -57,8 +57,8 @@ NULL
 #'
 #' @section Set Parameters:
 #' ```
-#' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
+#' sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
+#' sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
 #' sensi$samples()
 #' sensi$models()
 #' sensi$evaluate(results)
@@ -149,6 +149,10 @@ NULL
 #' * `.grid_jump` : An integer or a vector of integers specifying the number of
 #'   levels that are increased/decreased for computing the elementary effects.
 #'   For details, see [sensitivity::morris].
+#' * `.scale` : If `TRUE`, the input design of experiments is scaled after
+#'   building the design and before computing the elementary effects so that all
+#'   factors vary within the range [0,1]. Default: `TRUE`. For details, see
+#'   [sensitivity::morris].
 #'
 #' All models created using `$param()` and `$apply_measure()` will be named in
 #' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that
@@ -344,10 +348,10 @@ Sensitivity <- R6::R6Class(classname = "SensitivityJob",
     inherit = eplusr:::Parametric, cloneable = FALSE, lock_class = FALSE,
     public = list(
         # PUBLIC FUNCTIONS {{{
-        param = function (..., .names = NULL, .r = 12L, .grid_jump = 4L)
+        param = function (..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
             sen_param(self, private, ..., .r = .r, .grid_jump = .grid_jump, .names = .names),
 
-        apply_measure = function (measure, ..., .r = 12L, .grid_jump = 4L)
+        apply_measure = function (measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
             sen_apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump),
 
         samples = function ()
@@ -372,7 +376,8 @@ Sensitivity <- R6::R6Class(classname = "SensitivityJob",
 # }}}
 
 # sen_param {{{
-sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump = 4L, .env = parent.frame()) {
+sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump = 4L,
+                       .scale = TRUE, .env = parent.frame()) {
     assert(is_count(.r))
     assert(is_count(.grid_jump))
 
@@ -406,7 +411,7 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     par <- validate_par_space(l, private$m_seed, "sa")
 
     # sample
-    sam <- morris_samples(par, obj_val$value, .names, .r, .grid_jump)
+    sam <- morris_samples(par, obj_val$value, .names, .r, .grid_jump, .scale)
 
     private$m_morris <- sam$morris
     private$m_log$sample <- sam[names(sam) != "morris"]
@@ -417,7 +422,7 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
 }
 # }}}
 # sen_apply_measure {{{
-sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L) {
+sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE) {
     # measure name
     mea_nm <- deparse(substitute(measure, parent.frame()))
 
@@ -436,7 +441,7 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     # check input format
     par <- validate_par_space(l, type = "sa")
 
-    sam <- morris_samples(par, NULL, par$dot$dot_nm, .r, .grid_jump)
+    sam <- morris_samples(par, NULL, par$dot$dot_nm, .r, .grid_jump, .scale)
 
     # store morris object
     private$m_morris <- sam$morris
@@ -561,13 +566,13 @@ par_names <- function (par, names = NULL, type = c("sa", "bc")) {
 }
 # }}}
 # morris_samples {{{
-morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump) {
+morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump, scale) {
     fctr <- par_names(par, names)
 
     # use sensitivity::morris to generate input
     mo <- sensitivity::morris(model = NULL, factors = fctr, r = r,
         design = list(type = "oat", levels = par$num$meta$levels, grid.jump = grid_jump),
-        binf = par$num$meta$min, bsup = par$num$meta$max, scale = FALSE
+        binf = par$num$meta$min, bsup = par$num$meta$max, scale = scale
     )
 
     # get parameter value

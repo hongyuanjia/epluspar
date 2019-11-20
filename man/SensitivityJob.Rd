@@ -20,8 +20,8 @@ which means that all methods provided by
 sensi$version()
 sensi$seed()
 sensi$weather()
-sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
+sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
 sensi$samples()
 sensi$evaluate(results)
 sensi$models()
@@ -58,31 +58,31 @@ sensi$print()
 }
 
 \section{Set Parameters}{
-\preformatted{sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L)
-sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L)
+\preformatted{sensi$param(..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
+sensi$apply_measure(measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
 sensi$samples()
 sensi$models()
 sensi$evaluate(results)
 }
 
 There are 2 ways to set sensitivity parameters in \code{SensitivityJob} class,
-i.e. \code{$param()} and \code{$apply_measure()}.
+i.e. \verb{$param()} and \verb{$apply_measure()}.
 
-\code{$param()} takes parameter definitions in list format, which is similar to
-\code{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
+\verb{$param()} takes parameter definitions in list format, which is similar to
+\verb{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
 single value, but a numeric vector of length 3, indicating the minimum,
-maximum and number of levels of the parameter. Every list in \code{$param()}
+maximum and number of levels of the parameter. Every list in \verb{$param()}
 should be named with a valid object name. Object ID can also be used but have
 to be combined with prevailing two periods \code{..}, e.g. \code{..10} indicates the
 object with ID \code{10}. There is a special syntax \code{class := list(field = value)}
-in \code{$param()}. Note the use of \code{:=} instead of \code{=}. The main difference is
-that, unlike \code{=}, the left hand side of \code{:=} should be a valid class name in
+in \verb{$param()}. Note the use of \verb{:=} instead of \verb{=}. The main difference is
+that, unlike \verb{=}, the left hand side of \verb{:=} should be a valid class name in
 current \code{Idf} object.  It will set the field of all objects in specified
 class to specified value.
 
 For example, the code block below defines 3 parameters:
 \itemize{
-\item Field \code{Fan Total Efficiency} in object named \code{Supply Fan 1} in class
+\item Field \verb{Fan Total Efficiency} in object named \verb{Supply Fan 1} in class
 \code{Fan:VariableVolume} class, with minimum, maximum and number of levels
 being 0.1, 1.0 and 5, respectively.
 \item Field \code{Thickness} in all objects in class \code{Material}, with minimum, maximum
@@ -100,8 +100,8 @@ maximum and number of levels being 0.1, 0.6 and 10, respectively.
 \item \code{...}: Lists of paramter definitions. Each list should be named with a valid
 object name or a valid object ID denoted in style \code{..1}, \code{..2} and etc. For
 specifying the fields for all objects in a class, the class name instead of
-the object name should be used, and a special notation \code{:=} should be used
-instead of \code{=}, e.g. \code{class := list(field = value)}.
+the object name should be used, and a special notation \verb{:=} should be used
+instead of \verb{=}, e.g. \code{class := list(field = value)}.
 \item \code{.r}: An positive integer specifying the number of elementary effect
 computed per factor. For details, see \link[sensitivity:morris]{sensitivity::morris}. Default: \code{12}.
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
@@ -111,23 +111,23 @@ Default: \code{1L}. For details, see \link[sensitivity:morris]{sensitivity::morr
 the parameter will be named in format \code{theta + number}. Default: \code{NULL}.
 }
 
-\code{$apply_measure()} works in a similar way as the \code{$apply_measure} in
+\verb{$apply_measure()} works in a similar way as the \verb{$apply_measure} in
 \link[eplusr:ParametricJob]{eplusr::ParametricJob} class, with only exception that each argument
 supplied in \code{...} should be a numeric vector of length 3, indicating the
 minimum, maximum and number of levels of the parameter.
-Basically \code{$apply_measure()} allows to apply a measure to an \link{Idf}.
+Basically \verb{$apply_measure()} allows to apply a measure to an \link{Idf}.
 A measure here is just a function that takes an \link{Idf} object and other
 arguments as input, and returns a modified \link{Idf} object as output. The names
 of function parameter will be used as the names of sensitivity parameter. For
 example, the equivalent version of specifying parameters described above
-using \code{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy) {
+using \verb{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy) \{
     idf$set(
         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
         Material := list(Thickness = thickness, Conductivity = conducivity)
     )
 
     idf
-}
+\}
 
 sensi$apply_measure(measure,
     efficiency = c(min = 0.1, max = 1.0, levels = 5),
@@ -146,26 +146,30 @@ computed per factor. For details, see \link[sensitivity:morris]{sensitivity::mor
 \item \code{.grid_jump} : An integer or a vector of integers specifying the number of
 levels that are increased/decreased for computing the elementary effects.
 For details, see \link[sensitivity:morris]{sensitivity::morris}.
+\item \code{.scale} : If \code{TRUE}, the input design of experiments is scaled after
+building the design and before computing the elementary effects so that all
+factors vary within the range \link{0,1}. Default: \code{TRUE}. For details, see
+\link[sensitivity:morris]{sensitivity::morris}.
 }
 
-All models created using \code{$param()} and \code{$apply_measure()} will be named in
-the same pattern, i.e. \code{Case_ParameterName(ParamterValue)...}. Note that
+All models created using \verb{$param()} and \verb{$apply_measure()} will be named in
+the same pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that
 paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength}
 being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain duplications,
 \code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
 
-\code{$samples()} returns a \link[data.table:data.table]{data.table} which contains
+\verb{$samples()} returns a \link[data.table:data.table]{data.table} which contains
 the sampled value for each parameter using \link[sensitivity:morris]{Morris}
 method. The returned data.table has \code{1 + n} columns, where \code{n} is the
 parameter number, while \code{1} indicates an extra column named \code{case} giving the
 index of each sample.
 
-\code{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
+\verb{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
 using sensitivity parameter values genereated using Morris method. This means
 that parametric models can only be created after sensitivity parameters have
-been set using \code{$param()} or \code{$apply_measure()}.
+been set using \verb{$param()} or \verb{$apply_measure()}.
 
-\code{$evaluate()} takes a numeric vector with the same length as total sample
+\verb{$evaluate()} takes a numeric vector with the same length as total sample
 number and returns the a \code{\link[sensitivity:morris]{sensitivity::morris()}} object. The statistics of
 interest (mu, mu* and sigma) are stored as an attribute named \code{data} and can
 be retrieved using \code{atrr(sensi$evaluate(), "data")}.
