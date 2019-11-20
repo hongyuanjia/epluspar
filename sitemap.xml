@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/BayesCalibJob.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/SensitivityJob.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/bayes_job.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/epluspar-package.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/sensi_job.html</loc>
+  </url>
+</urlset>
