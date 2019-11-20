@@ -88,7 +88,7 @@ sen$param(
     ),
 
     # use `.names` to give names to each parameter
-    .names = c("efficiency", "thickness", "conducitivy"),
+    .names = c("efficiency", "thickness", "conductivity"),
 
     # See `r` and `grid_jump` in `sensitivity::morris`
     .r = 8, .grid_jump = 1
@@ -158,7 +158,7 @@ Create a `BayesCalibJob` object:
 path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "RefBldgLargeOfficeNew2004_Chicago.idf")
 path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
 
-# create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
+# create a `SensitivityJob` class which inherits from eplusr::ParametricJob class
 bc <- bayes_job(path_idf, path_epw)
 ```
 
@@ -251,7 +251,7 @@ bc$output(mdd[1], reporting_frequency = "daily")
 ```
 
 For `$output()`, both variables in RDD and MDD are supported. However, for
-`$input()`, only varaibles in RDD are allowed.
+`$input()`, only variables in RDD are allowed.
 
 ### Adding Parameters to Calibrate
 
@@ -270,7 +270,7 @@ a parameter:
 * `class := list(field1 = c(min, max), field2 = c(min, max), ...)`
 
   This is useful when you want to treat `field1` and `field2` in all objects in
-  `class` as two differnet parameters. Please note the use of special notion of
+  `class` as two different parameters. Please note the use of special notion of
   `:=` instead of `=`.
 
 * `.(objects) := list(field1 = c(min, max), field2 = c(min, max), ...)`
@@ -378,7 +378,7 @@ bc$data_field(fan_power[, -c("case", "Date/Time")])
 ### Specify Input Data for Stan
 
 `$data_bc()` takes a list of field data and simulated data, and returns a
-list that contains data input for Bayesican calibration using the Stan model
+list that contains data input for Bayesian calibration using the Stan model
 
 * `n`: Number of measured parameter observations.
 * `m`: Number of simulated observations.
@@ -414,7 +414,7 @@ bc$stan_file()
 
 You can run Bayesian calibration using Stan using `$stan_run()`.
 
-If `data` argument is not specified, the output of `$data_bc()` is directlyed
+If `data` argument is not specified, the output of `$data_bc()` is directly
 used.
 
 ```{r, eval = FALSE}

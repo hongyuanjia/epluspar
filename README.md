@@ -64,7 +64,7 @@ sen$param(
     ),
 
     # use `.names` to give names to each parameter
-    .names = c("efficiency", "thickness", "conducitivy"),
+    .names = c("efficiency", "thickness", "conductivity"),
 
     # See `r` and `grid_jump` in `sensitivity::morris`
     .r = 8, .grid_jump = 1
@@ -100,19 +100,19 @@ sen$apply_measure(my_actions,
 #> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: 'my_actions'
 #> Parametric Models [32]: 
-#> [01]: '1_effic(0.55)_thick(0.0275)_condu(0.3)'
-#> [02]: '2_effic(0.55)_thick(0.0275)_condu(0.4)'
-#> [03]: '3_effic(0.325)_thick(0.0275)_condu(0.4)'
-#> [04]: '4_effic(0.325)_thick(0.045)_condu(0.4)'
-#> [05]: '5_effic(0.775)_thick(0.0625)_condu(0.5)'
-#> [06]: '6_effic(0.775)_thick(0.0625)_condu(0.6)'
-#> [07]: '7_effic(0.55)_thick(0.0625)_condu(0.6)'
-#> [08]: '8_effic(0.55)_thick(0.045)_condu(0.6)'
-#> [09]: '9_effic(0.325)_thick(0.045)_condu(0.3)'
-#> [10]: '10_effic(0.1)_thick(0.045)_condu(0.3)'
-#> [11]: '11_effic(0.1)_thick(0.045)_condu(0.4)'
-#> [12]: '12_effic(0.1)_thick(0.0625)_condu(0.4)'
-#> [13]: '13_effic(0.775)_thick(0.0275)_condu(0.4)'
+#> [01]: '1_effic(0.1)_thick(0.08)_condu(0.5)'
+#> [02]: '2_effic(0.1)_thick(0.08)_condu(0.4)'
+#> [03]: '3_effic(0.1)_thick(0.0625)_condu(0.4)'
+#> [04]: '4_effic(0.325)_thick(0.0625)_condu(0.4)'
+#> [05]: '5_effic(0.775)_thick(0.08)_condu(0.3)'
+#> [06]: '6_effic(0.775)_thick(0.08)_condu(0.2)'
+#> [07]: '7_effic(0.775)_thick(0.0625)_condu(0.2)'
+#> [08]: '8_effic(0.55)_thick(0.0625)_condu(0.2)'
+#> [09]: '9_effic(1)_thick(0.0625)_condu(0.1)'
+#> [10]: '10_effic(0.775)_thick(0.0625)_condu(0.1)'
+#> [11]: '11_effic(0.775)_thick(0.045)_condu(0.1)'
+#> [12]: '12_effic(0.775)_thick(0.045)_condu(0.2)'
+#> [13]: '13_effic(0.55)_thick(0.0625)_condu(0.4)'
 ....
 ```
 
@@ -121,25 +121,25 @@ Get samples
 ``` r
 sen$samples()
 #>     case efficiency thickness conducitivy
-#>  1:    1      0.550    0.0275         0.3
-#>  2:    2      0.550    0.0275         0.4
-#>  3:    3      0.325    0.0275         0.4
-#>  4:    4      0.325    0.0450         0.4
-#>  5:    5      0.775    0.0625         0.5
-#>  6:    6      0.775    0.0625         0.6
-#>  7:    7      0.550    0.0625         0.6
-#>  8:    8      0.550    0.0450         0.6
-#>  9:    9      0.325    0.0450         0.3
-#> 10:   10      0.100    0.0450         0.3
-#> 11:   11      0.100    0.0450         0.4
-#> 12:   12      0.100    0.0625         0.4
-#> 13:   13      0.775    0.0275         0.4
-#> 14:   14      0.775    0.0450         0.4
-#> 15:   15      1.000    0.0450         0.4
-#> 16:   16      1.000    0.0450         0.5
-#> 17:   17      0.775    0.0800         0.4
-#> 18:   18      0.775    0.0800         0.3
-#> 19:   19      0.550    0.0800         0.3
+#>  1:    1      0.100    0.0800         0.5
+#>  2:    2      0.100    0.0800         0.4
+#>  3:    3      0.100    0.0625         0.4
+#>  4:    4      0.325    0.0625         0.4
+#>  5:    5      0.775    0.0800         0.3
+#>  6:    6      0.775    0.0800         0.2
+#>  7:    7      0.775    0.0625         0.2
+#>  8:    8      0.550    0.0625         0.2
+#>  9:    9      1.000    0.0625         0.1
+#> 10:   10      0.775    0.0625         0.1
+#> 11:   11      0.775    0.0450         0.1
+#> 12:   12      0.775    0.0450         0.2
+#> 13:   13      0.550    0.0625         0.4
+#> 14:   14      0.550    0.0625         0.5
+#> 15:   15      0.325    0.0625         0.5
+#> 16:   16      0.325    0.0800         0.5
+#> 17:   17      0.550    0.0625         0.3
+#> 18:   18      0.550    0.0625         0.4
+#> 19:   19      0.775    0.0625         0.4
 ....
 ```
 
@@ -155,19 +155,19 @@ sen$run(dir = tempdir(), echo = FALSE)
 #> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: 'my_actions'
 #> Parametric Models [32]: 
-#> [01]: '1_effic(0.55)_thick(0.0275)_condu(0.3)'   <-- SUCCEEDED
-#> [02]: '2_effic(0.55)_thick(0.0275)_condu(0.4)'   <-- SUCCEEDED
-#> [03]: '3_effic(0.325)_thick(0.0275)_condu(0.4)'  <-- SUCCEEDED
-#> [04]: '4_effic(0.325)_thick(0.045)_condu(0.4)'   <-- SUCCEEDED
-#> [05]: '5_effic(0.775)_thick(0.0625)_condu(0.5)'  <-- SUCCEEDED
-#> [06]: '6_effic(0.775)_thick(0.0625)_condu(0.6)'  <-- SUCCEEDED
-#> [07]: '7_effic(0.55)_thick(0.0625)_condu(0.6)'   <-- SUCCEEDED
-#> [08]: '8_effic(0.55)_thick(0.045)_condu(0.6)'    <-- SUCCEEDED
-#> [09]: '9_effic(0.325)_thick(0.045)_condu(0.3)'   <-- SUCCEEDED
-#> [10]: '10_effic(0.1)_thick(0.045)_condu(0.3)'    <-- SUCCEEDED
-#> [11]: '11_effic(0.1)_thick(0.045)_condu(0.4)'    <-- SUCCEEDED
-#> [12]: '12_effic(0.1)_thick(0.0625)_condu(0.4)'   <-- SUCCEEDED
-#> [13]: '13_effic(0.775)_thick(0.0275)_condu(0.4)' <-- SUCCEEDED
+#> [01]: '1_effic(0.1)_thick(0.08)_condu(0.5)'      <-- SUCCEEDED
+#> [02]: '2_effic(0.1)_thick(0.08)_condu(0.4)'      <-- SUCCEEDED
+#> [03]: '3_effic(0.1)_thick(0.0625)_condu(0.4)'    <-- SUCCEEDED
+#> [04]: '4_effic(0.325)_thick(0.0625)_condu(0.4)'  <-- SUCCEEDED
+#> [05]: '5_effic(0.775)_thick(0.08)_condu(0.3)'    <-- SUCCEEDED
+#> [06]: '6_effic(0.775)_thick(0.08)_condu(0.2)'    <-- SUCCEEDED
+#> [07]: '7_effic(0.775)_thick(0.0625)_condu(0.2)'  <-- SUCCEEDED
+#> [08]: '8_effic(0.55)_thick(0.0625)_condu(0.2)'   <-- SUCCEEDED
+#> [09]: '9_effic(1)_thick(0.0625)_condu(0.1)'      <-- SUCCEEDED
+#> [10]: '10_effic(0.775)_thick(0.0625)_condu(0.1)' <-- SUCCEEDED
+#> [11]: '11_effic(0.775)_thick(0.045)_condu(0.1)'  <-- SUCCEEDED
+#> [12]: '12_effic(0.775)_thick(0.045)_condu(0.2)'  <-- SUCCEEDED
+#> [13]: '13_effic(0.55)_thick(0.0625)_condu(0.4)'  <-- SUCCEEDED
 ....
 
 # extract output
@@ -180,20 +180,20 @@ eng <- sen$tabular_data(table_name = "site and source energy",
 (result <- sen$evaluate(eng))
 #> 
 #> Call:
-#> sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = FALSE)
+#> sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = scale)
 #> 
 #> Model runs: 32 
-#>                     mu   mu.star     sigma
-#> efficiency  -0.3277778 0.3277778 0.5716093
-#> thickness   -6.5714286 6.5714286 3.2897048
-#> conducitivy  0.4750000 0.4750000 0.2251983
+#>                   mu mu.star     sigma
+#> efficiency  -0.32000 0.32000 0.4600621
+#> thickness   -0.28000 0.28000 0.2242448
+#> conducitivy  0.16875 0.16875 0.1251784
 
 # extract data
 attr(result, "data")
-#>    index        name         mu   mu.star     sigma
-#> 1:     1  efficiency -0.3277778 0.3277778 0.5716093
-#> 2:     2   thickness -6.5714286 6.5714286 3.2897048
-#> 3:     3 conducitivy  0.4750000 0.4750000 0.2251983
+#>    index        name       mu mu.star     sigma
+#> 1:     1  efficiency -0.32000 0.32000 0.4600621
+#> 2:     2   thickness -0.28000 0.28000 0.2242448
+#> 3:     3 conducitivy  0.16875 0.16875 0.1251784
 ```
 
 Plot
@@ -214,7 +214,7 @@ Create a `BayesCalibJob` object:
 path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "RefBldgLargeOfficeNew2004_Chicago.idf")
 path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
 
-# create a `SensitivityJob` class which inheris from eplusr::ParametricJob class
+# create a `SensitivityJob` class which inherits from eplusr::ParametricJob class
 bc <- bayes_job(path_idf, path_epw)
 ```
 
@@ -229,7 +229,7 @@ current seed model.
 #> Initializing RDD... [SUCCESSFUL]
 #> ══ EnergyPlus Report Data Dictionary File ═════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-10-18 01:30:00
+#>   * Simulation started: 2019-11-20 22:08:00
 #> 
 #> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
@@ -251,7 +251,7 @@ current seed model.
 (mdd <- bc$read_mdd())
 #> ══ EnergyPlus Meter Data Dictionary File ══════════════════════════════════
 #>   * EnergyPlus version: 8.8.0 (7c3bbe4830)
-#>   * Simulation started: 2019-10-18 01:30:00
+#>   * Simulation started: 2019-11-20 22:08:00
 #> 
 #> ── Details ────────────────────────────────────────────────────────────────
 #>      index reported_time_step report_type
@@ -426,7 +426,7 @@ bc$output(mdd[1], reporting_frequency = "daily")
 ```
 
 For `$output()`, both variables in RDD and MDD are supported. However,
-for `$input()`, only varaibles in RDD are allowed.
+for `$input()`, only variables in RDD are allowed.
 
 ### Adding Parameters to Calibrate
 
@@ -445,7 +445,7 @@ defining a parameter:
   - `class := list(field1 = c(min, max), field2 = c(min, max), ...)`
     
     This is useful when you want to treat `field1` and `field2` in all
-    objects in `class` as two differnet parameters. Please note the use
+    objects in `class` as two different parameters. Please note the use
     of special notion of `:=` instead of `=`.
 
   - `.(objects) := list(field1 = c(min, max), field2 = c(min, max),
@@ -488,8 +488,8 @@ bc$param(
 #> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: ''
 #> Parametric Models [2]: 
-#> [1]: '1_infil(0.0006376304)_light(19.24608)_peopl(7.945347)_equip(13.8...
-#> [2]: '2_infil(0.0006869685)_light(5.583451)_peopl(10.1201)_equip(9.141...
+#> [1]: '1_infil(0.000916078)_light(13.03067)_peopl(6.531709)_equip(11.54...
+#> [2]: '2_infil(0.000337849)_light(7.154128)_peopl(10.17783)_equip(17.86...
 #> << Job has not been run before >>
 ```
 
@@ -499,20 +499,20 @@ Parameter values can be retrieved using `$samples()`.
 
 ``` r
 bc$samples()
-#>    case   infil_rate    lights    people equipment chiller1cop chiller2cop
-#> 1:    1 0.0006376304 19.246078  7.945347 13.844522    3.210830    2.166242
-#> 2:    2 0.0006869685  5.583451 10.120099  9.141765    2.854589    4.337313
+#>    case  infil_rate    lights    people equipment chiller1cop chiller2cop
+#> 1:    1 0.000916078 13.030666  6.531709  11.54473    4.573937    2.676008
+#> 2:    2 0.000337849  7.154128 10.177834  17.86929    1.584518    3.473444
 #>      fan1eff   fan2eff   fan3eff   fan5eff
-#> 1: 0.2937184 0.8133329 0.2716662 0.1057743
-#> 2: 0.5767808 0.2509174 0.8942518 0.7980554
+#> 1: 0.5566938 0.4408841 0.1127011 0.6567746
+#> 2: 0.4064859 0.7445753 0.5585626 0.3620933
 ```
 
 Generated `Idf`s can be retrieved using `$models()`.
 
 ``` r
 names(bc$models())
-#> [1] "1_infil(0.0006376304)_light(19.24608)_peopl(7.945347)_equip(13.84452)_chiller1(3.21083)_chiller2"
-#> [2] "2_infil(0.0006869685)_light(5.583451)_peopl(10.1201)_equip(9.141765)_chiller1(2.854589)_chiller2"
+#> [1] "1_infil(0.000916078)_light(13.03067)_peopl(6.531709)_equip(11.54473)_chiller1(4.573937)_chiller2"
+#> [2] "2_infil(0.000337849)_light(7.154128)_peopl(10.17783)_equip(17.86929)_chiller1(1.584518)_chiller2"
 ```
 
 ### Run simulations and gather data
@@ -533,9 +533,9 @@ bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 7), echo = F
 #> * EnergyPlus Path: '/usr/local/EnergyPlus-8-8-0'
 #> Applied Measure: ''
 #> Parametric Models [2]: 
-#> [1]: '1_infil(0.0006376304)_light(19.24608)_peopl(7.9453... <-- SUCCEEDED
-#> [2]: '2_infil(0.0006869685)_light(5.583451)_peopl(10.120... <-- SUCCEEDED
-#>  Simulation started at '2019-10-18 01:30:32' and completed successfully after 24.46 secs.
+#> [1]: '1_infil(0.000916078)_light(13.03067)_peopl(6.53170... <-- SUCCEEDED
+#> [2]: '2_infil(0.000337849)_light(7.154128)_peopl(10.1778... <-- SUCCEEDED
+#>  Simulation started at '2019-11-20 22:08:20' and completed successfully after 44.97 secs.
 ```
 
 `$data_sim()` returns a `data.table` (when `merge` is `TRUE`) or a list
@@ -656,7 +656,7 @@ bc$data_field(fan_power[, -c("case", "Date/Time")])
 ### Specify Input Data for Stan
 
 `$data_bc()` takes a list of field data and simulated data, and returns
-a list that contains data input for Bayesican calibration using the Stan
+a list that contains data input for Bayesian calibration using the Stan
 model
 
   - `n`: Number of measured parameter observations.
@@ -680,20 +680,20 @@ str(bc$data_bc())
 #>  $ p : int 15
 #>  $ q : int 10
 #>  $ yf:Classes 'data.table' and 'data.frame': 168 obs. of  7 variables:
-#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:168] -0.248 -0.248 -0.248 -0.248 -0.248 ...
-#>   ..$ Electricity:Building [J](Hourly)         : num [1:168] -0.817 -0.817 -0.817 -0.817 -0.817 ...
-#>   ..$ Fans:Electricity [J](Hourly)             : num [1:168] -1.07 -1.08 -1.07 -1.08 -1.07 ...
+#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:168] -0.251 -0.251 -0.251 -0.251 -0.251 ...
+#>   ..$ Electricity:Building [J](Hourly)         : num [1:168] -1.12 -1.12 -1.12 -1.12 -1.12 ...
+#>   ..$ Fans:Electricity [J](Hourly)             : num [1:168] -1.03 -1.04 -1.03 -1.04 -1.03 ...
 #>   ..$ Heating:Electricity [J](Hourly)          : num [1:168] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-#>   ..$ Heating:Gas [J](Hourly)                  : num [1:168] -0.643 -0.651 -0.636 -0.642 -0.615 ...
-#>   ..$ InteriorEquipment:Electricity [J](Hourly): num [1:168] -0.989 -0.989 -0.989 -0.989 -0.989 ...
-#>   ..$ InteriorLights:Electricity [J](Hourly)   : num [1:168] -0.71 -0.71 -0.71 -0.71 -0.71 ...
+#>   ..$ Heating:Gas [J](Hourly)                  : num [1:168] -0.588 -0.595 -0.582 -0.587 -0.563 ...
+#>   ..$ InteriorEquipment:Electricity [J](Hourly): num [1:168] -1.21 -1.21 -1.21 -1.21 -1.21 ...
+#>   ..$ InteriorLights:Electricity [J](Hourly)   : num [1:168] -0.808 -0.808 -0.808 -0.808 -0.808 ...
 #>   ..- attr(*, ".internal.selfref")=<externalptr> 
 #>  $ yc:Classes 'data.table' and 'data.frame': 336 obs. of  7 variables:
-#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:336] -0.248 -0.248 -0.248 -0.248 -0.248 ...
-#>   ..$ Electricity:Building [J](Hourly)         : num [1:336] -0.66 -0.66 -0.66 -0.66 -0.66 ...
-#>   ..$ Fans:Electricity [J](Hourly)             : num [1:336] -0.947 -0.969 -0.925 -0.969 -0.925 ...
+#>   ..$ Cooling:Electricity [J](Hourly)          : num [1:336] -0.251 -0.251 -0.251 -0.251 -0.251 ...
+#>   ..$ Electricity:Building [J](Hourly)         : num [1:336] -1.07 -1.07 -1.07 -1.07 -1.07 ...
+#>   ..$ Fans:Electricity [J](Hourly)             : num [1:336] -0.652 -0.712 -0.613 -0.712 -0.613 ...
 #>   ..$ Heating:Electricity [J](Hourly)          : num [1:336] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-#>   ..$ Heating:Gas [J](Hourly)                  : num [1:336] -0.63 -0.629 -0.599 -0.603 -0.557 ...
+#>   ..$ Heating:Gas [J](Hourly)                  : num [1:336] -0.524 -0.532 -0.492 -0.51 -0.449 ...
 ....
 ```
 
@@ -712,26 +712,26 @@ returned.
 
 ``` r
 bc$stan_file()
-#>   [1] "/*"                                                                      
-#>   [2] "    epluspar is free software: you can redistribute it and/or modify"      
-#>   [3] "    it under the terms of the GNU General Public License as published by"
-#>   [4] "    the Free Software Foundation, either version 3 of the License, or"   
-#>   [5] "    (at your option) any later version."                                 
-#>   [6] ""                                                                        
-#>   [7] "    epluspar is distributed in the hope that it will be useful,"           
-#>   [8] "    but WITHOUT ANY WARRANTY; without even the implied warranty of"      
-#>   [9] "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"       
-#>  [10] "    GNU General Public License for more details."                        
-#>  [11] ""                                                                        
-#>  [12] "    You should have received a copy of the GNU General Public License"   
-#>  [13] "    along with epluspar.  If not, see <http://www.gnu.org/licenses/>."     
-#>  [14] "*/"                                                                      
-#>  [15] ""                                                                        
-#>  [16] "data {"                                                                  
-#>  [17] "  int<lower=1> n; // number of field data"                               
-#>  [18] "  int<lower=1> m; // number of computer simulation"                      
-#>  [19] "  int<lower=1> n_pred; // number of predictions"                         
-#>  [20] "  int<lower=1> p; // number of observable inputs x"                      
+#>   [1] "/*"                                                                               
+#>   [2] "    epluspar is free software: you can redistribute it and/or modify"             
+#>   [3] "    it under the terms of the GNU General Public License as published by"         
+#>   [4] "    the Free Software Foundation, either version 3 of the License, or"            
+#>   [5] "    (at your option) any later version."                                          
+#>   [6] ""                                                                                 
+#>   [7] "    epluspar is distributed in the hope that it will be useful,"                  
+#>   [8] "    but WITHOUT ANY WARRANTY; without even the implied warranty of"               
+#>   [9] "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"                
+#>  [10] "    GNU General Public License for more details."                                 
+#>  [11] ""                                                                                 
+#>  [12] "    You should have received a copy of the GNU General Public License"            
+#>  [13] "    along with epluspar.  If not, see <http://www.gnu.org/licenses/>."            
+#>  [14] "*/"                                                                               
+#>  [15] ""                                                                                 
+#>  [16] "data {"                                                                           
+#>  [17] "  int<lower=1> n; // number of field data"                                        
+#>  [18] "  int<lower=1> m; // number of computer simulation"                               
+#>  [19] "  int<lower=1> n_pred; // number of predictions"                                  
+#>  [20] "  int<lower=1> p; // number of observable inputs x"                               
 ....
 ```
 
@@ -740,7 +740,7 @@ bc$stan_file()
 You can run Bayesian calibration using Stan using `$stan_run()`.
 
 If `data` argument is not specified, the output of `$data_bc()` is
-directlyed used.
+directly used.
 
 ``` r
 options(mc.cores = parallel::detectCores())
