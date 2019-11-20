@@ -80,11 +80,11 @@ param$seed()
 param$weather()
 }
 
-\code{$version()} returns the version of input \link{Idf} object.
+\verb{$version()} returns the version of input \link{Idf} object.
 
-\code{$seed()} returns the input \link{Idf} object.
+\verb{$seed()} returns the input \link{Idf} object.
 
-\code{$weather()} returns the input \link{Epw} object.
+\verb{$weather()} returns the input \link{Epw} object.
 }
 
 \section{Get RDD amd MDD Data of Seed Model}{
@@ -92,16 +92,16 @@ param$weather()
 param$read_mdd(update = FALSE)
 }
 
-\code{$read_rdd()} and \code{$read_mdd()} silently runs EnergyPlus using input seed
+\verb{$read_rdd()} and \verb{$read_mdd()} silently runs EnergyPlus using input seed
 model with design-day-only mode to create \code{.rdd} and \code{.mdd} file and returns
 the corresponding \link[eplusr:read_rdd]{RddFile} and
 \link[eplusr:read_mdd]{MddFile} object, respectively. The \code{RddFile} and
 \code{MddFile} object is stored internally and will be directly returned whenever
-you call \code{$read_rdd()} and \code{$read_mdd()} again. You can force to run the
+you call \verb{$read_rdd()} and \verb{$read_mdd()} again. You can force to run the
 design-day-only simulation again to update the contents by setting \code{update}
 to \code{TRUE}.
 
-\code{$read_rdd()} and \code{read_mdd()} is useful when adding input and output
+\verb{$read_rdd()} and \code{read_mdd()} is useful when adding input and output
 parameters.
 
 \strong{Arguments}
@@ -116,11 +116,11 @@ and \code{.mdd} file again. Default: \code{FALSE}.
 bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
 }
 
-\code{$input()} and \code{$output()} takes input and output parameter definitions in a
+\verb{$input()} and \verb{$output()} takes input and output parameter definitions in a
 similar pattern as you set output variables in \code{Output:Variable} and
 \code{Output:Meter} class and returns a \link[data.table:data.table]{data.table}
-containing the information of input and output parameters. For \code{$input()},
-only variables in RDD are allowed. For \code{$output()}, both variables in RDD and
+containing the information of input and output parameters. For \verb{$input()},
+only variables in RDD are allowed. For \verb{$output()}, both variables in RDD and
 MDD are allowd. The returned data.table has 5 columns:
 \itemize{
 \item \code{index}: Indices of input or output parameters.
@@ -141,7 +141,7 @@ You can remove all existing input and output parameter by setting \code{append} 
 \itemize{
 \item A character vector.
 \item An \code{RddFile} or an \code{MddFile} object. They can be retrieved using
-\code{$read_rdd()} and \code{$read_mdd()}. In this case, \code{name} argument will be
+\verb{$read_rdd()} and \verb{$read_mdd()}. In this case, \code{name} argument will be
 ignored, as its values are directly taken from variable names in input
 \code{RddFile} and \code{MddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
 bc$output(bc$read_mdd()[1:5])
@@ -177,19 +177,19 @@ bc$models()
 }
 
 There are 2 ways to set calibration parameters in \code{BayesCalibJob} class,
-i.e. \code{$param()} and \code{$apply_measure()}.
+i.e. \verb{$param()} and \verb{$apply_measure()}.
 
-\code{$param()} takes parameter definitions in list format, which is similar to
-\code{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
+\verb{$param()} takes parameter definitions in list format, which is similar to
+\verb{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
 single value, but a numeric vector of length 2, indicating the minimum and
-maximum of the parameter. Every list in \code{$param()} should be named with a
+maximum of the parameter. Every list in \verb{$param()} should be named with a
 valid object name. Object ID can also be used but have to be combined with
 prevailing two periods \code{..}, e.g. \code{..10} indicates the object with ID \code{10}.
 
-There is two special syntax in \code{$param()}:
+There is two special syntax in \verb{$param()}:
 \itemize{
-\item \code{class := list(field = value)}: Note the use of \code{:=} instead of \code{=}. The
-main difference is that, unlike \code{=}, the left hand side of \code{:=} should be a
+\item \code{class := list(field = value)}: Note the use of \verb{:=} instead of \verb{=}. The
+main difference is that, unlike \verb{=}, the left hand side of \verb{:=} should be a
 valid class name in the seed model. It will treat the specified field of
 all objects in specified class to as a single calibration parameter.
 \item \code{.(object, object) := list(field = value)}: Simimar like above, but note
@@ -200,14 +200,14 @@ single calibration parameter.
 
 For example, the code block below defines 4 calibration parameters:
 \itemize{
-\item Field \code{Fan Total Efficiency} in object named \code{Supply Fan 1} in class
+\item Field \verb{Fan Total Efficiency} in object named \verb{Supply Fan 1} in class
 \code{Fan:VariableVolume} class, with minimum and maximum being 0.1 and 1.0,
 respectively.
 \item Field \code{Thickness} in all objects in class \code{Material}, with minimum and
 maximum being 0.01 and 1.0, respectively.
 \item Field \code{Conductivity} in all objects in class \code{Material}, with minimum and
 maximum being 0.1 and 0.6, respectively.
-\item Field \code{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2} in class
+\item Field \verb{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2} in class
 \code{Lights}, with minimum and maximum being 10 and 30, respectively.
 }\preformatted{bc$param(
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
@@ -221,8 +221,8 @@ maximum being 0.1 and 0.6, respectively.
 \item \code{...}: Lists of paramter definitions. Each list should be named with a valid
 object name or a valid object ID denoted in style \code{..1}, \code{..2} and etc. For
 specifying the fields for all objects in a class, the class name instead of
-the object name should be used, and a special notation \code{:=} should be used
-instead of \code{=}, e.g. \code{class := list(field = value)}. For grouping fields
+the object name should be used, and a special notation \verb{:=} should be used
+instead of \verb{=}, e.g. \code{class := list(field = value)}. For grouping fields
 from different objects in the same class, use \code{.()} in the left hand side
 and put object ID or names inside., .e.g \code{.(object1, object2) := list(field = value)}.
 \item \code{.num_sim}: An positive integer specifying the number of simulations to run
@@ -232,16 +232,16 @@ for each combination of calibration parameter value. Default:
 the parameter will be named in format \code{t + number}. Default: \code{NULL}.
 }
 
-\code{$apply_measure()} works in a similar way as the \code{$apply_measure} in
+\verb{$apply_measure()} works in a similar way as the \verb{$apply_measure} in
 \link[eplusr:ParametricJob]{eplusr::ParametricJob} class, with only exception that each argument
 supplied in \code{...} should be a numeric vector of length 2, indicating the
 minimum and maximum of the calibration parameter.
-Basically \code{$apply_measure()} allows to apply a measure to an \link{Idf}.
+Basically \verb{$apply_measure()} allows to apply a measure to an \link{Idf}.
 A measure here is just a function that takes an \link{Idf} object and other
 arguments as input, and returns a modified \link{Idf} object as output. The names
 of function parameter will be used as the names of calibration parameter. For
 example, the equivalent version of specifying parameters described above
-using \code{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
+using \verb{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy, lpd) \{
     idf$set(
         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
         Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -249,7 +249,7 @@ using \code{$apply_measure()} can be:\preformatted{measure <- function (idf, eff
     )
 
     idf
-}
+\}
 
 bc$apply_measure(measure,
     efficiency = c(min = 0.1, max = 1.0),
@@ -269,31 +269,31 @@ for each value of calibration parameter value. (NOT CORRECT). Default:
 \code{30L}.
 }
 
-All models created using \code{$param()} and \code{$apply_measure()} will be named in
-the same pattern, i.e. \code{Case_ParameterName(ParamterValue)...}. Note that only
+All models created using \verb{$param()} and \verb{$apply_measure()} will be named in
+the same pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
 paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength}
 being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain duplications,
 \code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
 
-\code{$samples()} returns a \link[data.table:data.table]{data.table} which contains
+\verb{$samples()} returns a \link[data.table:data.table]{data.table} which contains
 the sampled value for each parameter using \link[lhs:randomLHS]{Random Latin Hypercube Sampling} method. The returned data.table has \code{1 + n}
 columns, where \code{n} is the parameter number, and \code{1} indicates an extra column
-named \code{case} giving the index of each sample. Note that if \code{$samples()} is
-called before input and output parameters being set using \code{$input()} and
-\code{$output()}, only the sampling will be performed and no parametric models
+named \code{case} giving the index of each sample. Note that if \verb{$samples()} is
+called before input and output parameters being set using \verb{$input()} and
+\verb{$output()}, only the sampling will be performed and no parametric models
 will be created. This is because information of input and output parameters
 are needed in order to make sure that corresponding variables will be
-reported during simulations. In this case, you can use \code{$models()} to create
+reported during simulations. In this case, you can use \verb{$models()} to create
 those models.
 
-\code{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
+\verb{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
 using calibration parameter values genereated using Random Latin Hypercube
 Sampling. As stated above, parametric models can only be created after input,
-output and calibration parameters have all be set using \code{$input()},
-\code{$output()} and \code{$param()} (or \code{$apply_measure()}), respectively.
+output and calibration parameters have all be set using \verb{$input()},
+\verb{$output()} and \verb{$param()} (or \verb{$apply_measure()}), respectively.
 
 All models will be named in the same pattern, i.e.
-\code{Case_ParameterName(ParamterValue)...}. Note that paramter names will be
+\verb{Case_ParameterName(ParamterValue)...}. Note that paramter names will be
 abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength} being \code{5L} and
 \code{use.classes} being \code{TRUE}.
 }
@@ -303,11 +303,11 @@ abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength} 
              copy_external = FALSE, echo = wait)
 }
 
-\code{$eplus_run()} runs all parametric models in parallel. Parameter \code{run_period}
+\verb{$eplus_run()} runs all parametric models in parallel. Parameter \code{run_period}
 can be given to insert a new \code{RunPeriod} object. In this case, all existing
 \code{RunPeriod} objects in the seed model will be commented out.
 
-Note that when \code{run_period} is given, value of field \code{Run Simulation for Weather File Run Periods} in \code{SimulationControl} class will be reset to \code{Yes}
+Note that when \code{run_period} is given, value of field \verb{Run Simulation for Weather File Run Periods} in \code{SimulationControl} class will be reset to \code{Yes}
 to make sure input run period can take effect.
 
 \strong{Arguments}
@@ -340,7 +340,7 @@ status. Default: the value of \code{wait}.
 \preformatted{bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
 }
 
-\code{$data_sim()} returns a list of 2 \link[data.table:data.table]{data.table}
+\verb{$data_sim()} returns a list of 2 \link[data.table:data.table]{data.table}
 which contains the simulated data of input and output parameters. These data
 will be stored internally and used during Bayesian calibration using Stan.
 
@@ -351,7 +351,7 @@ reporting frequency, otherwise an error will be issued.
 The parameter is named in the same way as standard EnergyPlus csv output
 file, i.e. \code{KeyValue:VariableName[Unit](Frequency)}.
 
-By default, \code{$data_sim()} returns minimal columns, i.e. the \code{Date/Time}
+By default, \verb{$data_sim()} returns minimal columns, i.e. the \code{Date/Time}
 column together with all input and output parameters are returned. You can
 retrieve extra columns by setting \code{all} to \code{TRUE}. Those column include:
 \itemize{
@@ -376,7 +376,7 @@ etc. Note that \code{day_type} will always be \code{NA} if \code{resolution} is 
 \item \code{resolution}: A character string specifying a time unit or a multiple of a
 unit to change the time resolution of returned simulation data. Valid base
 units are \code{min}, \code{hour}, \code{day}, \code{week}, \code{month}, and \code{year}.
-Example: \code{10 mins}, \code{2 hours}, \code{1 day}. If \code{NULL}, the variable reporting
+Example: \verb{10 mins}, \verb{2 hours}, \verb{1 day}. If \code{NULL}, the variable reporting
 frequency is used. Default: \code{NULL}.
 \item \code{exclude_ddy}: Whether to exclude design day data. Default: \code{TRUE}.
 Default: \code{FALSE}.
@@ -390,7 +390,7 @@ datetime components. Default: \code{FALSE}.
 \preformatted{bc$data_field(output, new_input = NULL, all = FALSE)
 }
 
-\code{$data_field()} takes a \code{\link[=data.frame]{data.frame()}} of measured value of output
+\verb{$data_field()} takes a \code{\link[=data.frame]{data.frame()}} of measured value of output
 parameters and returns a list of \link[data.table:data.table]{data.table}s
 which contains the measured value of input and output parameters, and newly
 measured value of input if applicable.
@@ -398,9 +398,9 @@ measured value of input if applicable.
 The specified \code{output} \code{\link[=data.frame]{data.frame()}} is validated using criteria below:
 \itemize{
 \item The column number should be the same as the number of output specified in
-\code{$output()}.
+\verb{$output()}.
 \item The row number should be the same as the number of simulated values for
-each case extracted using \code{$data_sim()}.
+each case extracted using \verb{$data_sim()}.
 }
 
 For input parameters, the values of simulation data for the first case are
@@ -408,17 +408,17 @@ directly used as the measured values.
 
 Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly measured
 value of input parameters. The column number of input \code{\link[=data.frame]{data.frame()}} should
-be the same as the number of input parameters specified in \code{$input()}. If not
+be the same as the number of input parameters specified in \verb{$input()}. If not
 specified, the measured values of input parameters will be used for
 predictions.
 
 All the data will be stored internally and used during Bayesian calibration
 using Stan.
 
-Note that as \code{$data_field()} relies on the output of \code{$data_sim()} to
-perform validation on the specified data, \code{$data_field()} cannot be called
-before \code{$data_sim()} and internally stored data will be removed whenever
-\code{$data_sim()} is called. This aims to make sure that simulated data and field
+Note that as \verb{$data_field()} relies on the output of \verb{$data_sim()} to
+perform validation on the specified data, \verb{$data_field()} cannot be called
+before \verb{$data_sim()} and internally stored data will be removed whenever
+\verb{$data_sim()} is called. This aims to make sure that simulated data and field
 data can be matched whenever the calibration is performed.
 
 \strong{Arguments}
@@ -428,7 +428,7 @@ data can be matched whenever the calibration is performed.
 parameters.
 \item \code{all}: If \code{TRUE}, extra columns are also included in the returned
 \link[data.table:data.table]{data.table} describing the simulation case and
-datetime components. For details, please see \code{$data_sim()}. Default:
+datetime components. For details, please see \verb{$data_sim()}. Default:
 \code{FALSE}.
 }
 }
@@ -440,7 +440,7 @@ bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
 bc$stan_file(path = NULL)
 }
 
-\code{$data_bc()} takes a list of field data and simulated data, and returns a
+\verb{$data_bc()} takes a list of field data and simulated data, and returns a
 list that contains data input for Bayesican calibration using the Stan model
 from Chong (2018):
 \itemize{
@@ -460,11 +460,11 @@ normalization.
 }
 
 Input \code{data_field} and \code{data_sim} should have the same structure as the
-output from \code{$data_field()} and \code{$data_sim()}. If \code{data_field} and
-\code{data_sim} is not specified, the output from \code{$data_field()} and
-\code{$data_sim()} will be used.
+output from \verb{$data_field()} and \verb{$data_sim()}. If \code{data_field} and
+\code{data_sim} is not specified, the output from \verb{$data_field()} and
+\verb{$data_sim()} will be used.
 
-\code{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
+\verb{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
 returns a list of 2 elements:
 \itemize{
 \item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
@@ -472,7 +472,7 @@ returns a list of 2 elements:
 values.
 }
 
-\code{$stan_file()} saves the Stan file used internally for Bayesican calibration.
+\verb{$stan_file()} saves the Stan file used internally for Bayesican calibration.
 If no path is given, a character vector of the Stan code is returned. If
 given, the code will be save to the path and the file path is returned.
 
@@ -481,7 +481,7 @@ given, the code will be save to the path and the file path is returned.
 \item \code{file}: The path to the Stan program to use. If \code{NULL}, the pre-compiled
 Stan code from Chong (2018) will be used. Default: \code{NULL}.
 \item \code{data}: Only applicable when \code{file} is not \code{NULL}. The data to be used for
-Bayesican calibration. If \code{NULL}, the data that \code{$data_bc()} returns is
+Bayesican calibration. If \code{NULL}, the data that \verb{$data_bc()} returns is
 used. Default: \code{NULL}.
 \item \code{path}: A path to save the Stan code. If \code{NULL}, a character vector of the
 Stan code is returned.
@@ -517,8 +517,8 @@ bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
 
 All methods listed above are inherited from eplusr's
 \code{\link[eplusr:ParametricJob]{ParametricJob}}. Each method has been renamed with a
-prefix \code{eplus_}, e.g. \code{$output_dir()} in \link[eplusr:ParametricJob]{eplusr::ParametricJob} becomes
-\code{$eplus_output_dir()}. For detailed documentation on each
+prefix \code{eplus_}, e.g. \verb{$output_dir()} in \link[eplusr:ParametricJob]{eplusr::ParametricJob} becomes
+\verb{$eplus_output_dir()}. For detailed documentation on each
 method, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
 }
 
