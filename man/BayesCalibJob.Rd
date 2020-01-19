@@ -73,18 +73,6 @@ bc$read_rdd()
 bc$read_rdd(update = TRUE)
 }
 
-`$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
-model with design-day-only mode to create `.rdd` and `.mdd` file and returns
-the corresponding [RddFile][eplusr::read_rdd()] and
-[MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
-`MddFile` object is stored internally and will be directly returned whenever
-you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
-design-day-only simulation again to update the contents by setting `update`
-to `TRUE`.
-
-`$read_rdd()` and `read_mdd()` is useful when adding input and output
-parameters.
-
 
 ## ------------------------------------------------
 ## Method `BayesCalibJob$read_mdd`
@@ -201,6 +189,15 @@ bc$models()
 
 \dontrun{
 bc$data_sim()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$data_bc`
+## ------------------------------------------------
+
+\dontrun{
+bc$data_bc()
 }
 
 
@@ -544,18 +541,6 @@ bc$read_rdd()
 bc$read_rdd(update = TRUE)
 }
 
-`$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
-model with design-day-only mode to create `.rdd` and `.mdd` file and returns
-the corresponding [RddFile][eplusr::read_rdd()] and
-[MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
-`MddFile` object is stored internally and will be directly returned whenever
-you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
-design-day-only simulation again to update the contents by setting `update`
-to `TRUE`.
-
-`$read_rdd()` and `read_mdd()` is useful when adding input and output
-parameters.
-
 }
 \if{html}{\out{</div>}}
 
@@ -851,8 +836,8 @@ indicating the minimum and maximum value of each
 parameter.
 
 Similar like the way of modifying object field values in
-\code{\link[eplusr:Idf$set]{eplusr::Idf$set()}}, there are 3 different ways of defining a
-parameter in epluspar:
+\link[eplusr:Idf]{eplusr::Idf$set()}, there are 3 different ways of
+defining a parameter in epluspar:
 \itemize{
 \item \code{object = list(field = c(min, max))}: Where \code{object} is a
 valid object ID or name. Note object ID should be denoted with two
@@ -1309,10 +1294,18 @@ output from \verb{$data_field()} and \verb{$data_sim()}. If \code{data_field} an
 
 \subsection{Returns}{
 A list of 11 elements.
-\dontrun{
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
 bc$data_bc()
 }
+
 }
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_run"></a>}}

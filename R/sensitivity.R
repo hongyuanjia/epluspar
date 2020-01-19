@@ -29,7 +29,7 @@ NULL
 #'    \href{../../epluspar/html/SensitivityJob#method-run}{\code{$run()}},
 #' 1. Gather EnergyPlus simulated data using
 #'    [$report_data()][eplusr::EplusGroupJob] or
-#'    [$tabular_data()][eplus::EplusGroupJob].
+#'    [$tabular_data()][eplusr::EplusGroupJob].
 #' 1. Evaluate parameter sensitivity using
 #'    \href{../../epluspar/html/SensitivityJob#method-evaluate}{\code{$evaluate()}}.
 #'
@@ -56,8 +56,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' each parameter.
         #'
         #' Similar like the way of modifying object field values in
-        #' [eplusr::Idf$set()], there are 3 different ways of defining a
-        #' parameter in epluspar:
+        #' [eplusr::Idf$set()][eplusr::Idf], there are 3 different ways of
+        #' defining a parameter in epluspar:
         #'
         #' * `object = list(field = c(min, max, levels))`: Where `object` is a
         #'   valid object ID or name. Note object ID should be denoted with two
@@ -104,7 +104,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #'        [sensitivity::morris].
         #' @param .scale If `TRUE`, the input design of experiments is scaled
         #'        after building the design and before computing the elementary
-        #'        effects so that all factors vary within the range [0,1].
+        #'        effects so that all factors vary within the range \\[0,1\\].
         #'        Default: `TRUE`. For details, see [sensitivity::morris].
         #'
         #' @return The modified `SensitivityJob` object itself.
@@ -174,7 +174,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #'        [sensitivity::morris].
         #' @param .scale If `TRUE`, the input design of experiments is scaled
         #'        after building the design and before computing the elementary
-        #'        effects so that all factors vary within the range [0,1].
+        #'        effects so that all factors vary within the range \\[0,1\\].
         #'        Default: `TRUE`. For details, see [sensitivity::morris].
         #'
         #'
@@ -346,6 +346,8 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
 
     # handle whole-class case
     cls <- l$dot[class == TRUE, rleid]
+    # get rid of R CMD check NOTE
+    dep <- V1 <- NULL
     # handle .() case
     flat <- l$dot[dep == 2L & class == FALSE, rleid]
     multi <- l$object[J(flat), on = "rleid", .N > 1L, by = "rleid"][V1 == TRUE, rleid]

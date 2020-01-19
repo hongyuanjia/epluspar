@@ -29,7 +29,7 @@ respectively.
 \href{../../epluspar/html/SensitivityJob#method-run}{\code{$run()}},
 \item Gather EnergyPlus simulated data using
 \link[eplusr:EplusGroupJob]{$report_data()} or
-\link[eplus:EplusGroupJob]{$tabular_data()}.
+\link[eplusr:EplusGroupJob]{$tabular_data()}.
 \item Evaluate parameter sensitivity using
 \href{../../epluspar/html/SensitivityJob#method-evaluate}{\code{$evaluate()}}.
 }
@@ -185,7 +185,7 @@ the elementary effects. Default: \code{1L}. For details, see
 
 \item{\code{.scale}}{If \code{TRUE}, the input design of experiments is scaled
 after building the design and before computing the elementary
-effects so that all factors vary within the range \link{0,1}.
+effects so that all factors vary within the range \[0,1\].
 Default: \code{TRUE}. For details, see \link[sensitivity:morris]{sensitivity::morris}.}
 }
 \if{html}{\out{</div>}}
@@ -198,8 +198,8 @@ indicating the minimum value, maximum value and number of levels of
 each parameter.
 
 Similar like the way of modifying object field values in
-\code{\link[eplusr:Idf$set]{eplusr::Idf$set()}}, there are 3 different ways of defining a
-parameter in epluspar:
+\link[eplusr:Idf]{eplusr::Idf$set()}, there are 3 different ways of
+defining a parameter in epluspar:
 \itemize{
 \item \code{object = list(field = c(min, max, levels))}: Where \code{object} is a
 valid object ID or name. Note object ID should be denoted with two
@@ -285,7 +285,7 @@ the elementary effects.  For details, see
 
 \item{\code{.scale}}{If \code{TRUE}, the input design of experiments is scaled
 after building the design and before computing the elementary
-effects so that all factors vary within the range \link{0,1}.
+effects so that all factors vary within the range \[0,1\].
 Default: \code{TRUE}. For details, see \link[sensitivity:morris]{sensitivity::morris}.}
 }
 \if{html}{\out{</div>}}
