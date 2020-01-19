@@ -137,10 +137,12 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' @return An [RddFile][eplusr::read_rdd()] object.
         #'
         #' @examples
+        #' \dontrun{
         #' bc$read_rdd()
         #'
         #' # force to rerun
         #' bc$read_rdd(update = TRUE)
+        #' }
         #'
         read_rdd = function (update = FALSE)
             bc_read_rdd(super, self, private, update),
@@ -187,10 +189,12 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' @return An [MddFile][eplusr::read_mdd()] object.
         #'
         #' @examples
+        #' \dontrun{
         #' bc$read_mdd()
         #'
         #' # force to rerun
         #' bc$read_mdd(update = TRUE)
+        #' }
         #'
         read_mdd = function (update = FALSE)
             bc_read_mdd(super, self, private, update),
@@ -502,6 +506,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' @return The modified `BayesCalibJob` object itself.
         #'
         #' @examples
+        #' \dontrun{
         #' # set calibration parameters using $apply_measure()
         #' # (a) first define a "measure"
         #' measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
@@ -521,6 +526,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
         #'     lpd = c(10, 30)
         #' )
+        #' }
         #'
         apply_measure = function (measure, ..., .num_sim = 30L)
             bc_apply_measure(super, self, private, ..., .num_sum = .num_sum),
@@ -761,6 +767,9 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'        will be used. Default: `NULL`.
         #'
         #' @return A list of 11 elements.
+        #' \dontrun{
+        #' bc$data_bc()
+        #' }
         #'
         data_bc = function (data_field = NULL, data_sim = NULL)
             bc_data_bc(super, self, private, data_field, data_sim),
@@ -1355,6 +1364,11 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'        `NULL`).
         #'
         #' @return A list of 2 elements.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$stan_run()
+        #' }
         #'
         stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE, ...)
             bc_stan_run(super, self, private, file, data, iter, chains, echo, ...),

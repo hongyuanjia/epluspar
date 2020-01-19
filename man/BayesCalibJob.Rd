@@ -66,10 +66,12 @@ if (eplusr::is_avail_eplus(8.8)) {
 ## Method `BayesCalibJob$read_rdd`
 ## ------------------------------------------------
 
+\dontrun{
 bc$read_rdd()
 
 # force to rerun
 bc$read_rdd(update = TRUE)
+}
 
 `$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
 model with design-day-only mode to create `.rdd` and `.mdd` file and returns
@@ -88,10 +90,12 @@ parameters.
 ## Method `BayesCalibJob$read_mdd`
 ## ------------------------------------------------
 
+\dontrun{
 bc$read_mdd()
 
 # force to rerun
 bc$read_mdd(update = TRUE)
+}
 
 
 ## ------------------------------------------------
@@ -150,6 +154,7 @@ bc$param(
 ## Method `BayesCalibJob$apply_measure`
 ## ------------------------------------------------
 
+\dontrun{
 # set calibration parameters using $apply_measure()
 # (a) first define a "measure"
 measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
@@ -169,6 +174,7 @@ bc$apply_measure(measure,
     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
     lpd = c(10, 30)
 )
+}
 
 
 ## ------------------------------------------------
@@ -352,6 +358,15 @@ bc$save(tempdir(), separate = FALSE)
 
 
 ## ------------------------------------------------
+## Method `BayesCalibJob$stan_run`
+## ------------------------------------------------
+
+\dontrun{
+bc$stan_run()
+}
+
+
+## ------------------------------------------------
 ## Method `BayesCalibJob$stan_file`
 ## ------------------------------------------------
 
@@ -522,10 +537,12 @@ An \link[eplusr:read_rdd]{RddFile} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{bc$read_rdd()
+\preformatted{\dontrun{
+bc$read_rdd()
 
 # force to rerun
 bc$read_rdd(update = TRUE)
+}
 
 `$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
 model with design-day-only mode to create `.rdd` and `.mdd` file and returns
@@ -586,10 +603,12 @@ An \link[eplusr:read_mdd]{MddFile} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{bc$read_mdd()
+\preformatted{\dontrun{
+bc$read_mdd()
 
 # force to rerun
 bc$read_mdd(update = TRUE)
+}
 
 }
 \if{html}{\out{</div>}}
@@ -969,7 +988,8 @@ The modified \code{BayesCalibJob} object itself.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{# set calibration parameters using $apply_measure()
+\preformatted{\dontrun{
+# set calibration parameters using $apply_measure()
 # (a) first define a "measure"
 measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
     idf$set(
@@ -988,6 +1008,7 @@ bc$apply_measure(measure,
     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
     lpd = c(10, 30)
 )
+}
 
 }
 \if{html}{\out{</div>}}
@@ -1288,6 +1309,9 @@ output from \verb{$data_field()} and \verb{$data_sim()}. If \code{data_field} an
 
 \subsection{Returns}{
 A list of 11 elements.
+\dontrun{
+bc$data_bc()
+}
 }
 }
 \if{html}{\out{<hr>}}
@@ -2071,6 +2095,17 @@ values.
 \subsection{Returns}{
 A list of 2 elements.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$stan_run()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-stan_file"></a>}}
