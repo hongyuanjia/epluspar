@@ -36,10 +36,10 @@ script:
   - R -q -e "eplusr::install_eplus(8.8)"
   - |
     travis_wait 20 R CMD build .
-    R CMD check epScan*tar.gz
+    R CMD check epluspar*tar.gz
 
 after_script:
-  - tar -ztvf epScan_*.tar.gz
+  - tar -ztvf epluspar*.tar.gz
 
 after_success:
   - travis_wait 20 tar -C .. -xf $PKG_TARBALL
@@ -48,7 +48,7 @@ after_success:
     Rscript -e 'pkgdown::build_site(install = TRUE)'
 
 after_failure:
-  - cat epScan.Rcheck/00*
+  - cat epluspar.Rcheck/00*
 
 deploy:
   provider: pages
