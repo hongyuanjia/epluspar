@@ -3,614 +3,42 @@
 #' @importFrom data.table setnames setorderv melt.data.table rleidv setattr
 NULL
 
-## sampleQuality {{{
-#sampleQuality <- function(sample, population, k) {
-#    # k: ncol(population)
-#    KL <- rep(NA,k)
-#    for(ii in (1:k)){
-#        Y1 <- sample[,ii]
-#        Y2 <- population[,ii]
-#        nr <- length(Y2)
-#        r <- range(Y2)
-#        Y1.dis <- entropy::discretize(Y1,numBins = nr^(1/3), r=r)
-#        Y2.dis <- entropy::discretize(Y2,numBins = nr^(1/3), r=r)
-#        #KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1/length(Y1),a2=1/length(Y2)) # Schurmann-Grassberger (1996) entropy estimator
-#        KL[ii] <- KL.Dirichlet(Y1.dis,Y2.dis,a1=1,a2=1) # KL divergence with laplace prior
-#        #p1 <- as.data.frame(freqs.Dirichlet(Y1.dis+1, 0))$Freq
-#        #p2 <- as.data.frame(freqs.Dirichlet(Y2.dis+1, 0))$Freq
-#        #KL[ii] <- sum((p1-p2)*(log(p1)-log(p2)))
-#    }
-#    return(exp(-mean(KL)))
-#}
-## }}}
-
 #' Conduct Bayesian Calibration on An EnergyPlus Model
 #'
-#' `bayes_job()` takes an IDF and EPW as input and returns a `BayesCalibJob`,
-#' which provides a prototype of conducting Bayesian calibration of EnergyPlus
-#' model.
+#' `BayesCalibJob` class provides a prototype of conducting Bayesian calibration
+#' of EnergyPlus model.
+#'
+#' The basic workflow is basically:
+#'
+#' 1. Setting input and output variables using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+#'    and
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+#'    respectively.
+#'    Input variables should be variables listed in RDD while output variables
+#'    should be variables listed in RDD and MDD.
+#' 1. Adding parameters to calibrate using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
+#'    or
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}.
+#' 1. Check parameter sampled values and generated parametric models using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-samples}{\code{$samples()}}
+#'    and
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
+#'    respectively.
+#' 1. Run EnergyPlus simulations in parallel using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-eplus_run}{\code{$eplus_run()}},
+#' 1. Gather simulated data of input and output parameters using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+#' 1. Specify field measured data of input and output parameters using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+#' 1.  Specify field measured data of input and output parameters using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+#' 1. Specify input data for Stan for Bayesian calibration using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-data_bc}{\code{$data_bc()}}.
+#' 1. Run bayesian calibration using stan using
+#'    \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}.
 #'
-#' @section Usage:
-#' ```
-#' bc <- bayes_job(idf, epw)
-#' bc$version()
-#' bc$seed()
-#' bc$weather()
-#' bc$read_rdd(update = FALSE)
-#' bc$read_mdd(update = FALSE)
-#' bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-#' bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-#' bc$param(..., .names = NULL, .num_sim = 30L)
-#' bc$apply_measure(measure, ..., .num_sim = 30L)
-#' bc$samples()
-#' bc$models()
-#' bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-#'              copy_external = FALSE, echo = wait)
-#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-#' bc$data_field(output, new_input = NULL, all = FALSE)
-#' bc$data_bc(data_field = NULL, data_sim = NULL)
-#' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-#'             mc.cores = parallel::detectCores(), ...)
-#' bc$stan_file(path = NULL)
-#' bc$eplus_kill()
-#' bc$eplus_status()
-#' bc$eplus_output_dir(which = NULL)
-#' bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-#' bc$eplus_errors(which = NULL, info = FALSE)
-#' bc$eplus_report_data_dict(which = NULL)
-#' bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-#'                      year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-#'                      period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-#'                      interval = NULL, simulation_days = NULL, day_type = NULL,
-#'                      environment_name = NULL)
-#' bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-#'                       table_name = NULL, column_name = NULL, row_name = NULL)
-#' bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-#' bc$print()
-#' ```
-#'
-#' @section Create:
-#' ```
-#' bc <- bayes_job(idf, epw)
-#' ```
-#'
-#' When calling `bayes_job()`, the objects of classes related in output variable
-#' reporting will be deleted, in order to make sure all input and output
-#' variable specifications can be achieved using `Output:Variable` and
-#' `Output:Meter`. Classes to be deleted include:
-#'
-#' * `Output:Variable`
-#' * `Output:Meter`
-#' * `Output:Meter:MeterFileOnly`
-#' * `Output:Meter:Cumulative`
-#' * `Output:Meter:Cumulative:MeterFileOnly`
-#' * `Meter:Custom`
-#' * `Meter:CustomDecrement`
-#' * `Output:EnvironmentalImpactFactors`
-#'
-#' **Arguments**
-#'
-#' * `idf`: Path to EnergyPlus IDF file or an `Idf` object.
-#' * `epw`: Path to EnergyPlus EPW file or an `Epw` object.
-#'
-#' @section Get Seed Model and Weather:
-#' ```
-#' param$version()
-#' param$seed()
-#' param$weather()
-#' ```
-#'
-#' `$version()` returns the version of input [Idf] object.
-#'
-#' `$seed()` returns the input [Idf] object.
-#'
-#' `$weather()` returns the input [Epw] object.
-#'
-#' @section Get RDD amd MDD Data of Seed Model:
-#' ```
-#' param$read_rdd(update = FALSE)
-#' param$read_mdd(update = FALSE)
-#' ```
-#'
-#' `$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
-#' model with design-day-only mode to create `.rdd` and `.mdd` file and returns
-#' the corresponding [RddFile][eplusr::read_rdd()] and
-#' [MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
-#' `MddFile` object is stored internally and will be directly returned whenever
-#' you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
-#' design-day-only simulation again to update the contents by setting `update`
-#' to `TRUE`.
-#'
-#' `$read_rdd()` and `read_mdd()` is useful when adding input and output
-#' parameters.
-#'
-#' **Arguments**
-#'
-#' * `update`: Whether to run the design-day-only simulation and parse `.rdd`
-#'   and `.mdd` file again. Default: `FALSE`.
-#'
-#' @section Set Input and Output Parameters:
-#' ```
-#' bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-#' bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-#' ```
-#'
-#' `$input()` and `$output()` takes input and output parameter definitions in a
-#' similar pattern as you set output variables in `Output:Variable` and
-#' `Output:Meter` class and returns a [data.table][data.table::data.table()]
-#' containing the information of input and output parameters. For `$input()`,
-#' only variables in RDD are allowed. For `$output()`, both variables in RDD and
-#' MDD are allowd. The returned data.table has 5 columns:
-#'
-#' * `index`: Indices of input or output parameters.
-#' * `class`: The class that parameters belong to. Will be either
-#'   `Output:Variable` or `Output:Meter`.
-#' * `key_value`: Key value name for variables.
-#' * `variable_name`: Variable names listed in RDD or MDD.
-#' * `reporting_frequency`: Variable reporting frequency.
-#'
-#' If calling without any argument, the existing input and output parameters are
-#' directly returned, e.g. `bc$input()` and `bc$output()`.
-#'
-#' You can remove all existing input and output parameter by setting `append` to
-#' `NULL`, e.g. `bc$input(append = NULL)` and `bc$output(append = NULL)`.
-#'
-#' `key_value` accepts 3 different formats:
-#'
-#' * A character vector.
-#' * An `RddFile` or an `MddFile` object. They can be retrieved using
-#'   `$read_rdd()` and `$read_mdd()`. In this case, `name` argument will be
-#'   ignored, as its values are directly taken from variable names in input
-#'   `RddFile` and `MddFile` object. For example:
-#'   ```
-#'   bc$input(bc$read_rdd()[1:5])
-#'   bc$output(bc$read_mdd()[1:5])
-#'   ```
-#' * A [data.frame()] with valid format for adding `Output:Variable` and
-#'  `Output:Meter` objects using [Idf$load()][eplusr::Idf]. In this case, `name`
-#'  argument will be ignored. For example:
-#'  ```
-#'  bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
-#'  bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
-#'  ```
-#'
-#' **Arguments**
-#'
-#' * `key_value`: Key value name for variables. If not specified, `"*"` are used
-#'   for all variables. `key_value` can also be an `RddFile`, `MddFile` or a
-#'   [data.frame()]. Please see description above.
-#' * `name`: Variable names listed in RDD or MDD.
-#' * `reporting_frequency`: Variable reporting frequency for **all** variables.
-#'   If `NULL`, `"Timestep"` are used for all variables. All possible
-#'   values: `"Detailed"`, `"Timestep"`, `"Hourly"`, `"Daily"`, `"Monthly"`,
-#'   `"RunPeriod"`, `"Environment"`, and `"Annual"`. Default: `NULL`.
-#' * `append`: Whether to append input variables at the end of
-#'   existing ones. A special value `NULL` can be given to remove all existing
-#'   parameters. Default: `FALSE`.
-#'
-#' @section Set Parameters:
-#' ```
-#' bc$param(..., .names = NULL, .num_sim = 30L)
-#' bc$apply_measure(measure, ..., .num_sim = 30L)
-#' bc$samples()
-#' bc$models()
-#' ```
-#'
-#' There are 2 ways to set calibration parameters in `BayesCalibJob` class,
-#' i.e. `$param()` and `$apply_measure()`.
-#'
-#' `$param()` takes parameter definitions in list format, which is similar to
-#' `$set()` in [eplusr::Idf] class except that each field is not assigned with a
-#' single value, but a numeric vector of length 2, indicating the minimum and
-#' maximum of the parameter. Every list in `$param()` should be named with a
-#' valid object name. Object ID can also be used but have to be combined with
-#' prevailing two periods `..`, e.g. `..10` indicates the object with ID `10`.
-#'
-#' There is two special syntax in `$param()`:
-#'
-#' * `class := list(field = value)`: Note the use of `:=` instead of `=`. The
-#'   main difference is that, unlike `=`, the left hand side of `:=` should be a
-#'   valid class name in the seed model. It will treat the specified field of
-#'   all objects in specified class to as a single calibration parameter.
-#' * `.(object, object) := list(field = value)`: Simimar like above, but note
-#'   the use of `.()` in the left hand side. You can put multiple object ID or
-#'   names in `.()`. It will treat the field of all specified objects to as a
-#'   single calibration parameter.
-#'
-#' For example, the code block below defines 4 calibration parameters:
-#'
-#' * Field `Fan Total Efficiency` in object named `Supply Fan 1` in class
-#'   `Fan:VariableVolume` class, with minimum and maximum being 0.1 and 1.0,
-#'   respectively.
-#' * Field `Thickness` in all objects in class `Material`, with minimum and
-#'   maximum being 0.01 and 1.0, respectively.
-#' * Field `Conductivity` in all objects in class `Material`, with minimum and
-#'   maximum being 0.1 and 0.6, respectively.
-#' * Field `Watts per Zone Floor Area` in objects `Light1` and `Light2` in class
-#'   `Lights`, with minimum and maximum being 10 and 30, respectively.
-#'
-#' ```
-#' bc$param(
-#'     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
-#'     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
-#'    .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
-#' )
-#' ```
-#'
-#' **Arguments**
-#'
-#' * `...`: Lists of paramter definitions. Each list should be named with a valid
-#'   object name or a valid object ID denoted in style `..1`, `..2` and etc. For
-#'   specifying the fields for all objects in a class, the class name instead of
-#'   the object name should be used, and a special notation `:=` should be used
-#'   instead of `=`, e.g. `class := list(field = value)`. For grouping fields
-#'   from different objects in the same class, use `.()` in the left hand side
-#'   and put object ID or names inside., .e.g `.(object1, object2) := list(field
-#'   = value)`.
-#' * `.num_sim`: An positive integer specifying the number of simulations to run
-#'   for each combination of calibration parameter value. Default:
-#'   `30L`.
-#' * `.names`: A character vector of the parameter names. If `NULL`,
-#'   the parameter will be named in format `t + number`. Default: `NULL`.
-#'
-#' `$apply_measure()` works in a similar way as the `$apply_measure` in
-#' [eplusr::ParametricJob] class, with only exception that each argument
-#' supplied in `...` should be a numeric vector of length 2, indicating the
-#' minimum and maximum of the calibration parameter.
-#' Basically `$apply_measure()` allows to apply a measure to an [Idf].
-#' A measure here is just a function that takes an [Idf] object and other
-#' arguments as input, and returns a modified [Idf] object as output. The names
-#' of function parameter will be used as the names of calibration parameter. For
-#' example, the equivalent version of specifying parameters described above
-#' using `$apply_measure()` can be:
-#'
-#' ```
-#' measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
-#'     idf$set(
-#'         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
-#'         Material := list(Thickness = thickness, Conductivity = conducivity)
-#'         .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
-#'     )
-#'
-#'     idf
-#' }
-#'
-#' bc$apply_measure(measure,
-#'     efficiency = c(min = 0.1, max = 1.0),
-#'     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
-#'     lpd = c(10, 30)
-#' )
-#' ```
-#'
-#' **Arguments**
-#'
-#' * `measure`: A function that takes an `Idf` and other arguments as input and
-#'     returns an `Idf` object as output.
-#' * `...`: Arguments **except first `Idf` argument** that are passed to that
-#'   `measure`.
-#' * `.num_sim`: An positive integer specifying the number of simulations to run
-#'   for each value of calibration parameter value. (NOT CORRECT). Default:
-#'   `30L`.
-#'
-#' All models created using `$param()` and `$apply_measure()` will be named in
-#' the same pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
-#' paramter names will be abbreviated using [abbreviate()] with `minlength`
-#' being `5L` and `use.classes` being `TRUE`. If samples contain duplications,
-#' [make.unique()] will be called to make sure every model has a unique name.
-#'
-#' `$samples()` returns a [data.table][data.table::data.table()] which contains
-#' the sampled value for each parameter using [Random Latin Hypercube
-#' Sampling][lhs::randomLHS] method. The returned data.table has `1 + n`
-#' columns, where `n` is the parameter number, and `1` indicates an extra column
-#' named `case` giving the index of each sample. Note that if `$samples()` is
-#' called before input and output parameters being set using `$input()` and
-#' `$output()`, only the sampling will be performed and no parametric models
-#' will be created. This is because information of input and output parameters
-#' are needed in order to make sure that corresponding variables will be
-#' reported during simulations. In this case, you can use `$models()` to create
-#' those models.
-#'
-#' `$models()` returns a list of parametric [Idf][eplusr::Idf] objects created
-#' using calibration parameter values genereated using Random Latin Hypercube
-#' Sampling. As stated above, parametric models can only be created after input,
-#' output and calibration parameters have all be set using `$input()`,
-#' `$output()` and `$param()` (or `$apply_measure()`), respectively.
-#'
-#' All models will be named in the same pattern, i.e.
-#' `Case_ParameterName(ParamterValue)...`. Note that paramter names will be
-#' abbreviated using [abbreviate()] with `minlength` being `5L` and
-#' `use.classes` being `TRUE`.
-#'
-#' @section Run Parametric Simulations:
-#' ```
-#' bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-#'              copy_external = FALSE, echo = wait)
-#' ```
-#'
-#' `$eplus_run()` runs all parametric models in parallel. Parameter `run_period`
-#' can be given to insert a new `RunPeriod` object. In this case, all existing
-#' `RunPeriod` objects in the seed model will be commented out.
-#'
-#' Note that when `run_period` is given, value of field `Run Simulation for
-#' Weather File Run Periods` in `SimulationControl` class will be reset to `Yes`
-#' to make sure input run period can take effect.
-#'
-#' **Arguments**
-#'
-#' * `dir`: The parent output directory for specified simulations. Outputs of
-#'   each simulation are placed in a separate folder under the parent directory.
-#'   If `NULL`, directory of seed model will be used. Default: `NULL`.
-#' * `run_period`: A list giving a new `RunPeriod` object definition. If not
-#'   `NULL`, only this new RunPeriod will take effect with all existing
-#'   RunPeriod objects in the seed model being commented out. If `NULL`,
-#'   existing run period in the seed model will be used. Default: `NULL`.
-#' * `wait`: If `TRUE`, R will hang on and wait all EnergyPlus simulations
-#'   finish. If `FALSE`, all EnergyPlus simulations are run in the background.
-#'   Default: `TRUE`.
-#' * `force`: Only applicable when the last simulation runs with `wait` equals
-#'   to `FALSE` and is still running. If `TRUE`, current running job is
-#'   forced to stop and a new one will start. Default: `FALSE`.
-#' * `copy_external`: If `TRUE`, the external files that every `Idf` object
-#'   depends on will also be copied into the simulation output directory. The
-#'   values of file paths in the Idf will be changed automatically. Currently,
-#'   only `Schedule:File` class is supported.  This ensures that the output
-#'   directory will have all files needed for the model to run. Default is
-#'   `FALSE`.
-#' * `echo`: Only applicable when `wait` is `TRUE`. Whether to print simulation
-#'   status. Default: the value of `wait`.
-#'
-#' @section Collect Simulation Data:
-#' ```
-#' bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-#' ```
-#'
-#' `$data_sim()` returns a list of 2 [data.table][data.table::data.table()]
-#' which contains the simulated data of input and output parameters. These data
-#' will be stored internally and used during Bayesian calibration using Stan.
-#'
-#' The `resolution` parameter can be used to specify the time resolution of
-#' returned data. Note that input time resolution cannot be smaller than the
-#' reporting frequency, otherwise an error will be issued.
-#'
-#' The parameter is named in the same way as standard EnergyPlus csv output
-#' file, i.e. `KeyValue:VariableName[Unit](Frequency)`.
-#'
-#' By default, `$data_sim()` returns minimal columns, i.e. the `Date/Time`
-#' column together with all input and output parameters are returned. You can
-#' retrieve extra columns by setting `all` to `TRUE`. Those column include:
-#'
-#' * `case`: Integer type. Indices of parametric simulations.
-#' * `environment_period_index`: Integer type. The indice of environment.
-#' * `environment_name`: Character type. A text string identifying the
-#'   simulation environment.
-#' * `simulation_days`: Integer type. Day of simulation.
-#' * `datetime`: DateTime type. The date time of simulation result. Note that
-#'   the year valueas are automatically calculated to meets the start day of
-#'   week restriction for each simulation environment.
-#' * `month`: Integer type. The month of reported date time.
-#' * `day`: Integer type. The day of month of reported date time.
-#' * `hour`: Integer type. The hour of reported date time.
-#' * `minute`: Integer type. The minute of reported date time.
-#' * `day_type`: Character type. The type of day, e.g. `Monday`, `Tuesday` and
-#'   etc. Note that `day_type` will always be `NA` if `resolution` is specified.
-#'
-#' **Arguments**
-#'
-#' * `resolution`: A character string specifying a time unit or a multiple of a
-#'   unit to change the time resolution of returned simulation data. Valid base
-#'   units are `min`, `hour`, `day`, `week`, `month`, and `year`.
-#'   Example: `10 mins`, `2 hours`, `1 day`. If `NULL`, the variable reporting
-#'   frequency is used. Default: `NULL`.
-#' * `exclude_ddy`: Whether to exclude design day data. Default: `TRUE`.
-#'   Default: `FALSE`.
-#' * `all`: If `TRUE`, extra columns are also included in the returned
-#'   [data.table][data.table::data.table()] describing the simulation case and
-#'   datetime components. Default: `FALSE`.
-#'
-#' @section Specify Measured Data:
-#' ```
-#' bc$data_field(output, new_input = NULL, all = FALSE)
-#' ```
-#'
-#' `$data_field()` takes a [data.frame()] of measured value of output
-#' parameters and returns a list of [data.table][data.table::data.table()]s
-#' which contains the measured value of input and output parameters, and newly
-#' measured value of input if applicable.
-#'
-#' The specified `output` [data.frame()] is validated using criteria below:
-#'
-#' * The column number should be the same as the number of output specified in
-#'   `$output()`.
-#' * The row number should be the same as the number of simulated values for
-#'   each case extracted using `$data_sim()`.
-#'
-#' For input parameters, the values of simulation data for the first case are
-#' directly used as the measured values.
-#'
-#' Parameter `new_input` can be used to give a [data.frame()] of newly measured
-#' value of input parameters. The column number of input [data.frame()] should
-#' be the same as the number of input parameters specified in `$input()`. If not
-#' specified, the measured values of input parameters will be used for
-#' predictions.
-#'
-#' All the data will be stored internally and used during Bayesian calibration
-#' using Stan.
-#'
-#' Note that as `$data_field()` relies on the output of `$data_sim()` to
-#' perform validation on the specified data, `$data_field()` cannot be called
-#' before `$data_sim()` and internally stored data will be removed whenever
-#' `$data_sim()` is called. This aims to make sure that simulated data and field
-#' data can be matched whenever the calibration is performed.
-#'
-#' **Arguments**
-#'
-#' * `output`: A [data.frame()] containing measured value of output parameters.
-#' * `new_input`: A [data.frame()] containing newly measured value of input
-#'   parameters.
-#' * `all`: If `TRUE`, extra columns are also included in the returned
-#'   [data.table][data.table::data.table()] describing the simulation case and
-#'   datetime components. For details, please see `$data_sim()`. Default:
-#'   `FALSE`.
-#'
-#' @section Run Bayesian Calibration Using Stan:
-#' ```
-#' bc$data_bc(data_field = NULL, data_sim = NULL)
-#' bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-#'             mc.cores = parallel::detectCores(), ...)
-#' bc$stan_file(path = NULL)
-#' ```
-#'
-#' `$data_bc()` takes a list of field data and simulated data, and returns a
-#' list that contains data input for Bayesican calibration using the Stan model
-#' from Chong (2018):
-#'
-#' * `n`: Number of measured parameter observations.
-#' * `n_pred`: Number of newly design points for predictions.
-#' * `m`: Number of simulated observations.
-#' * `p`: Number of input parameters.
-#' * `q`: Number of calibration parameters.
-#' * `yf`: Data of measured output after z-score standardization using data of
-#'   simulated output.
-#' * `yc`: Data of simulated output after z-score standardization.
-#' * `xf`: Data of measured input after min-max normalization.
-#' * `xc`: Data of simulated input after min-max normalization.
-#' * `x_pred`: Data of new design points for predictions after min-max
-#'   normalization.
-#' * `tc`: Data of calibration parameters after min-max normalization.
-#'
-#' Input `data_field` and `data_sim` should have the same structure as the
-#' output from `$data_field()` and `$data_sim()`. If `data_field` and
-#' `data_sim` is not specified, the output from `$data_field()` and
-#' `$data_sim()` will be used.
-#'
-#' `$stan_run()` runs Bayesian calibration using [Stan][rstan::stan] and
-#' returns a list of 2 elements:
-#'
-#' * `fit`: An object of S4 class [rstan::stanfit].
-#' * `y_pred`: A [data.table][data.table::data.table()] with predicted output
-#'   values.
-#'
-#' `$stan_file()` saves the Stan file used internally for Bayesican calibration.
-#' If no path is given, a character vector of the Stan code is returned. If
-#' given, the code will be save to the path and the file path is returned.
-#'
-#' **Arguments**
-#' * `file`: The path to the Stan program to use. If `NULL`, the pre-compiled
-#'   Stan code from Chong (2018) will be used. Default: `NULL`.
-#' * `data`: Only applicable when `file` is not `NULL`. The data to be used for
-#'   Bayesican calibration. If `NULL`, the data that `$data_bc()` returns is
-#'   used. Default: `NULL`.
-#' * `path`: A path to save the Stan code. If `NULL`, a character vector of the
-#'   Stan code is returned.
-#' * `iter`: A positive integer specifying the number of iterations for each
-#'   chain (including warmup). Default: `2000`.
-#' * `chains`: A positive integer specifying the number of Markov chains.
-#'   Default: `4`.
-#' * `echo`: Whether to print intermediate output from Stan on the console,
-#'   which might be helpful for model debugging. Default: `TRUE`.
-#' * `mc.cores`: An integer specifying how many cores to be used for Stan.
-#'   Default: `parallel::detectCores()`.
-#' * `...`: Additional arguments to pass to [rstan::sampling] (when `file` is
-#'   `NULL`) or [rstan::stan] (when `file` is not `NULL`).
-#'
-#' @section Inherited Methods from `ParametricJob`:
-#' ```
-#' bc$eplus_kill()
-#' bc$eplus_status()
-#' bc$eplus_output_dir(which = NULL)
-#' bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-#' bc$eplus_errors(which = NULL, info = FALSE)
-#' bc$eplus_report_data_dict(which = NULL)
-#' bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-#'                      year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-#'                      period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-#'                      interval = NULL, simulation_days = NULL, day_type = NULL,
-#'                      environment_name = NULL)
-#' bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-#'                       table_name = NULL, column_name = NULL, row_name = NULL)
-#' bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-#' ```
-#'
-#' All methods listed above are inherited from eplusr's
-#' [`ParametricJob`][eplusr::ParametricJob]. Each method has been renamed with a
-#' prefix `eplus_`, e.g. `$output_dir()` in [eplusr::ParametricJob] becomes
-#' `$eplus_output_dir()`. For detailed documentation on each
-#' method, please see [eplusr's documentation][eplusr::ParametricJob].
-#'
-#' @examples
-#' \dontrun{
-#' if (eplusr::is_avail_eplus(8.8)) {
-#'     idf_name <- "5Zone_Transformer.idf"
-#'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
-#'
-#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
-#'
-#'     # create from local files
-#'     bayes_job(idf_path, epw_path)
-#'
-#'     # create from an Idf and an Epw object
-#'     bc <- bayes_job(read_idf(idf_path), read_epw(epw_path))
-#'
-#'     # get the seed model
-#'     bc$seed()
-#'
-#'     # get the weather
-#'     bc$weather()
-#'
-#'     # read rdd
-#'     bc$read_rdd()
-#'
-#'     # read mdd
-#'     bc$read_mdd()
-#'
-#'     # set input and output parameters
-#'     bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
-#'     # set input parameters
-#'     bc$output(name = "fan electric power", reporting_frequency = "hourly")
-#'
-#'     # get existing input and output
-#'     bc$input()
-#'     bc$output()
-#'
-#'     # set sensitivity parameters using $param()
-#'     bc$param(`Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
-#'         .names = "faneff", .num_sim = 2
-#'     )
-#'
-#'     # extract samples
-#'     bc$samples()
-#'
-#'     # extract all models
-#'     bc$models()
-#'
-#'     # run parametric simulations
-#'     bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
-#'
-#'     # print simulation errors
-#'     bc$eplus_errors()
-#'
-#'     # extract simulation data
-#'     bc$data_sim()
-#'
-#'     # specify field data
-#'     # here use the seed model as an example
-#'     ## clone the seed model
-#'     seed <- bc$seed()$clone()
-#'     ## remove existing RunPeriod objects
-#'     seed$RunPeriod <- NULL
-#'     ## set run period as the same as in `$eplus_run()`
-#'     seed$add(RunPeriod = list("test", 1, 1, 1, 31))
-#'     ## save the model to tempdir
-#'     seed$save(tempfile(fileext = ".idf"))
-#'     job <- seed$run(epw_path, echo = FALSE)
-#'     fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
-#'     bc$data_field(fan_power[, -c("case", "Date/Time")])
-#'
-#'     # run stan
-#'     fit <- bc$stan_run()
-#' }
-#' }
 #' @docType class
 #' @name BayesCalibJob
 #' @author Hongyuan Jia, Adrian Chong
@@ -619,6 +47,1356 @@ NULL
 #' energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 #' 10.1016/j.enbuild.2018.06.028
 NULL
+
+# BayesCalibJob {{{
+BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
+    inherit = eplusr::ParametricJob, cloneable = FALSE, lock_objects = FALSE,
+
+    public = list(
+        # INITIALIZE {{{
+        #' @description
+        #' Create a `BayesCalibJob` object
+        #'
+        #' @details
+        #' When initialization, the objects of classes related in output variable
+        #' reporting in the original [eplusr::Idf] will be deleted, in order to
+        #' make sure all input and output variable specifications can be
+        #' achieved using `Output:Variable` and `Output:Meter`. Classes to be
+        #' deleted include:
+        #'
+        #' * `Output:Variable`
+        #' * `Output:Meter`
+        #' * `Output:Meter:MeterFileOnly`
+        #' * `Output:Meter:Cumulative`
+        #' * `Output:Meter:Cumulative:MeterFileOnly`
+        #' * `Meter:Custom`
+        #' * `Meter:CustomDecrement`
+        #' * `Output:EnvironmentalImpactFactors`
+        #'
+        #' @param idf A path to an local EnergyPlus IDF file or an [eplusr::Idf] object.
+        #' @param epw A path to an local EnergyPlus EPW file or an [eplusr::Epw] object.
+        #'
+        #' @return An `BayesCalibJob` object.
+        #'
+        #' @examples
+        #' if (eplusr::is_avail_eplus(8.8)) {
+        #'     idf_name <- "1ZoneUncontrolled.idf"
+        #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+        #'
+        #'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+        #'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+        #'
+        #'     # create from local files
+        #'     BayesCalibJob$new(idf_path, epw_path)
+        #'
+        #'     # create from an Idf and an Epw object
+        #'     bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+        #' }
+        #'
+        initialize = function (idf, epw) {
+            # do not allow NULL for epw
+            assert(!is.null(epw))
+
+            eplusr:::with_silent(super$initialize(idf, epw))
+
+            # remove all output variables and meters
+            private$m_seed <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
+
+            # init some logging variables
+            private$m_log$run_ddy <- FALSE
+            private$m_log$has_param <- FALSE
+        },
+        # }}}
+
+        # PUBLIC FUNCTIONS {{{
+        # read_rdd {{{
+        #' @description
+        #' Read EnergyPlus Report Data Dictionary (RDD) file
+        #'
+        #' @details
+        #' `$read_rdd()` silently runs EnergyPlus using input seed model with
+        #' design-day-only mode to create the `.rdd` file and returns the
+        #' corresponding [RddFile][eplusr::read_rdd()] object.
+        #'
+        #' The `RddFile` object is stored internally and will be directly
+        #' returned whenever you call `$read_rdd()` again. You can force to
+        #' rerun the design-day-only simulation again to update the contents by
+        #' setting `update` to `TRUE`.
+        #'
+        #' `$read_rdd()` and
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}}
+        #' are useful when adding input and output parameters using
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+        #' and
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+        #' respectively.
+        #'
+        #' @param update Whether to run the design-day-only simulation and parse
+        #'        `.rdd` and `.mdd` file again. Default: `FALSE`.
+        #'
+        #' @return An [RddFile][eplusr::read_rdd()] object.
+        #'
+        #' @examples
+        #' bc$read_rdd()
+        #'
+        #' # force to rerun
+        #' bc$read_rdd(update = TRUE)
+        #'
+        read_rdd = function (update = FALSE)
+            bc_read_rdd(super, self, private, update),
+        # }}}
+
+        # read_mdd {{{
+        #' `$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
+        #' model with design-day-only mode to create `.rdd` and `.mdd` file and returns
+        #' the corresponding [RddFile][eplusr::read_rdd()] and
+        #' [MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
+        #' `MddFile` object is stored internally and will be directly returned whenever
+        #' you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
+        #' design-day-only simulation again to update the contents by setting `update`
+        #' to `TRUE`.
+        #'
+        #' `$read_rdd()` and `read_mdd()` is useful when adding input and output
+        #' parameters.
+        #'
+        #' @description
+        #' Read EnergyPlus Meter Data Dictionary (MDD) file
+        #'
+        #' @details
+        #' `$read_mdd()` silently runs EnergyPlus using input seed model with
+        #' design-day-only mode to create the `.mdd` file and returns the
+        #' corresponding [MddFile][eplusr::read_mdd()] object.
+        #'
+        #' The `MddFile` object is stored internally and will be directly
+        #' returned whenever you call `$read_mdd()` again. You can force to
+        #' rerun the design-day-only simulation again to update the contents by
+        #' setting `update` to `TRUE`.
+        #'
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
+        #' and
+        #' `read_mdd()`
+        #' are useful when adding input and output parameters using
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+        #' and
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+        #' respectively.
+        #'
+        #' @param update Whether to run the design-day-only simulation and parse
+        #'        `.rdd` and `.mdd` file again. Default: `FALSE`.
+        #'
+        #' @return An [MddFile][eplusr::read_mdd()] object.
+        #'
+        #' @examples
+        #' bc$read_mdd()
+        #'
+        #' # force to rerun
+        #' bc$read_mdd(update = TRUE)
+        #'
+        read_mdd = function (update = FALSE)
+            bc_read_mdd(super, self, private, update),
+        # }}}
+
+        # input {{{
+        #' @description
+        #' Set input parameters
+        #'
+        #' @details
+        #' `$input()` takes input parameter definitions in a similar pattern as
+        #' you set output variables in `Output:Variable` and `Output:Meter`
+        #' class and returns a [data.table::data.table()] containing the
+        #' information of input parameters. Only variables in
+        #' [RDD][eplusr::read_rdd()] are
+        #' allowed.The returned [data.table::data.table()] has 5 columns:
+        #'
+        #' * `index`: Indices of input or output parameters.
+        #' * `class`: The class that parameters belong to. Will be either
+        #'   `Output:Variable` or `Output:Meter`.
+        #' * `key_value`: Key value name for variables.
+        #' * `variable_name`: Variable names listed in RDD or MDD.
+        #' * `reporting_frequency`: Variable reporting frequency.
+        #'
+        #' If calling without any argument, the existing input parameters are
+        #' directly returned, e.g. `bc$input()`.
+        #'
+        #' You can remove all existing input parameters by setting `append` to
+        #' `NULL`, e.g. `bc$input(append = NULL)`.
+        #'
+        #' `key_value` accepts 3 different formats:
+        #'
+        #' * A character vector.
+        #' * An [RddFile][eplusr::read_rdd()] object. It can be retrieved using
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}.
+        #'   In this case, `name` argument will be ignored, as its values are
+        #'   directly taken from variable names in input
+        #'   [RddFile][eplusr::read_rdd()] object. For example:
+        #'   ```
+        #'   bc$input(bc$read_rdd()[1:5])
+        #'   ```
+        #' * A [data.frame()] with valid format for adding `Output:Variable` and
+        #'  `Output:Meter` objects using [eplusr::Idf$load()][eplusr::Idf]. In
+        #'  this case, `name` argument will be ignored. For example:
+        #'  ```
+        #'  bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+        #'  ```
+        #'
+        #' @param key_value Key value name for variables. If not specified,
+        #'        `"*"` are used for all variables. `key_value` can also be an
+        #'        `RddFile`, `MddFile` or a [data.frame()]. Please see
+        #'        description above.
+        #' @param name Variable names listed in RDD or MDD.
+        #' @param reporting_frequency Variable reporting frequency for **all**
+        #'        variables.  If `NULL`, `"Timestep"` are used for all
+        #'        variables. All possible values: `"Detailed"`, `"Timestep"`,
+        #'        `"Hourly"`, `"Daily"`, `"Monthly"`, `"RunPeriod"`,
+        #'        `"Environment"`, and `"Annual"`. Default: `NULL`.
+        #' @param append Whether to append input variables at the end of
+        #'        existing ones. A special value `NULL` can be given to remove
+        #'        all existing parameters. Default: `FALSE`.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # explicitly specify input variable name
+        #' bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
+        #'
+        #' # use an RddFile
+        #' bc$input(bc$read_rdd()[1:5])
+        #'
+        #' # use a data.frame
+        #' bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+        #'
+        #' # get existing input
+        #' bc$input()
+        #' }
+        #'
+        input = function (key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
+            bc_input(super, self, private, key_value, name, reporting_frequency, append),
+        # }}}
+
+        # output {{{
+        #' @description
+        #' Set output parameters
+        #'
+        #' @details
+        #' `$output()` takes output parameter definitions in a
+        #' similar pattern as you set output variables in `Output:Variable` and
+        #' `Output:Meter` class and returns a [data.table::data.table()]
+        #' containing the information of output parameters. Unlike
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+        #' both variables in [RDD][eplusr::read_rdd()] and
+        #' [MDD][eplusr::read_mdd()] are allowd. The returned data.table has 5
+        #' columns:
+        #'
+        #' * `index`: Indices of input or output parameters.
+        #' * `class`: The class that parameters belong to. Will be either
+        #'   `Output:Variable` or `Output:Meter`.
+        #' * `key_value`: Key value name for variables.
+        #' * `variable_name`: Variable names listed in RDD or MDD.
+        #' * `reporting_frequency`: Variable reporting frequency.
+        #'
+        #' If calling without any argument, the existing output parameters are
+        #' directly returned, e.g. `bc$output()`.
+        #'
+        #' You can remove all existing parameter by setting `append` to `NULL`,
+        #' e.g. `bc$output(append = NULL)`.
+        #'
+        #' `key_value` accepts 3 different formats:
+        #'
+        #' * A character vector.
+        #' * An [RddFile][eplusr::read_rdd()] object or an
+        #'   [MddFile][eplusr::read_mdd()] object. They can be retrieved using
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
+        #'   and
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}},
+        #'   respectively.  In this case, `name` argument will be ignored, as
+        #'   its values are directly taken from variable names in input
+        #'   [RddFile][eplusr::read_rdd()] object or
+        #'   [MddFile][eplusr::read_mdd()] object. For example:
+        #'   ```
+        #'   bc$output(bc$read_mdd()[1:5])
+        #'   ```
+        #' * A [data.frame()] with valid format for adding `Output:Variable` and
+        #'  `Output:Meter` objects using [Idf$load()][eplusr::Idf]. In this
+        #'  case, `name` argument will be ignored. For example:
+        #'  ```
+        #'  bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
+        #'  ```
+        #'
+        #' @param key_value Key value name for variables. If not specified,
+        #'        `"*"` are used for all variables. `key_value` can also be an
+        #'        `RddFile`, `MddFile` or a [data.frame()]. Please see
+        #'        description above.
+        #' @param name Variable names listed in RDD or MDD.
+        #' @param reporting_frequency Variable reporting frequency for **all**
+        #'        variables.  If `NULL`, `"Timestep"` are used for all
+        #'        variables. All possible values: `"Detailed"`, `"Timestep"`,
+        #'        `"Hourly"`, `"Daily"`, `"Monthly"`, `"RunPeriod"`,
+        #'        `"Environment"`, and `"Annual"`. Default: `NULL`.
+        #' @param append Whether to append input variables at the end of
+        #'        existing ones. A special value `NULL` can be given to remove
+        #'        all existing parameters. Default: `FALSE`.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # explicitly specify input variable name
+        #' bc$output(name = "fan electric power", reporting_frequency = "hourly")
+        #'
+        #' # use an RddFile or MddFile
+        #' bc$output(bc$read_rdd()[6:10])
+        #' bc$output(bc$read_mdd()[6:10])
+        #'
+        #' # use a data.frame
+        #' bc$output(eplusr::rdd_to_load(bc$read_mdd()[6:10]))
+        #'
+        #' # get existing input
+        #' bc$output()
+        #' }
+        #'
+        output = function (key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
+            bc_output(super, self, private, key_value, name, reporting_frequency, append),
+        # }}}
+
+        # param {{{
+        #' @description
+        #' Set parameters for Bayesian calibration
+        #'
+        #' @details
+        #' `$param()` takes parameter definitions in list format, which is
+        #' similar to `$set()` in [eplusr::Idf] class except that each field is
+        #' not assigned with a single value, but a numeric vector of length 2,
+        #' indicating the minimum and maximum value of each
+        #' parameter.
+        #'
+        #' Similar like the way of modifying object field values in
+        #' [eplusr::Idf$set()], there are 3 different ways of defining a
+        #' parameter in epluspar:
+        #'
+        #' * `object = list(field = c(min, max))`: Where `object` is a
+        #'   valid object ID or name. Note object ID should be denoted with two
+        #'   periods `..`, e.g. `..10` indicates the object with ID `10`, It
+        #'   will set that specific field in that object as one parameter.
+        #' * `.(object, object) := list(field = c(min, max))`: Simimar like
+        #'   above, but note the use of `.()` in the left hand side. You can put
+        #'   multiple object ID or names in `.()`. It will set the field of all
+        #'   specified objects as one parameter.
+        #' * `class := list(field = c(min, max, levels))`: Note the use of `:=`
+        #'   instead of `=`. The main difference is that, unlike `=`, the left
+        #'   hand side of `:=` should be a valid class name in current
+        #'   [eplusr::Idf]. It will set that field of all objects in specified
+        #'   class as one parameter.
+        #'
+        #' For example, the code block below defines 4 calibration parameters:
+        #'
+        #' * Field `Fan Total Efficiency` in object named `Supply Fan 1` in
+        #'   class `Fan:VariableVolume` class, with minimum and maximum being
+        #'   0.1 and 1.0, respectively.
+        #' * Field `Thickness` in all objects in class `Material`, with minimum
+        #'   and maximum being 0.01 and 1.0, respectively.
+        #' * Field `Conductivity` in all objects in class `Material`, with
+        #'   minimum and maximum being 0.1 and 0.6, respectively.
+        #' * Field `Watts per Zone Floor Area` in objects `Light1` and `Light2`
+        #'   in class `Lights`, with minimum and maximum being 10 and 30,
+        #'   respectively.
+        #'
+        #' ```
+        #' bc$param(
+        #'     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
+        #'     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
+        #'    .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
+        #' )
+        #' ```
+        #'
+        #' All models created using `$param()` will be named in the same
+        #' pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
+        #' paramter names will be abbreviated using [abbreviate()] with
+        #' `minlength` being `5L` and `use.classes` being `TRUE`. If samples
+        #' contain duplications, [make.unique()] will be called to make sure
+        #' every model has a unique name.
+        #'
+        #' @param ... Lists of paramter definitions. Please see above on the
+        #'        syntax.
+        #' @param .names A character vector of the parameter names. If `NULL`,
+        #'        the parameter will be named in format `t + number`, where
+        #'        `number` is the index of parameter. Default: `NULL`.
+        #' @param .num_sim An positive integer specifying the number of
+        #'        simulations to run for each combination of calibration
+        #'        parameter value. Default: `30L`.
+        #'
+        #' @return The modified `BayesCalibJob` object itself.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$param(
+        #'     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
+        #'     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
+        #'    .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
+        #' )
+        #' }
+        #'
+        param = function (..., .names = NULL, .num_sim = 30L)
+            bc_param(super, self, private, ..., .names = .names, .num_sim = .num_sim),
+        # }}}
+
+        # apply_measure {{{
+        #' @description
+        #' Set parameters for Bayesian calibration using function
+        #'
+        #' @details
+        #' `$apply_measure()` works in a similar way as the `$apply_measure` in
+        #' [eplusr::ParametricJob] class, with only exception that each argument
+        #' supplied in `...` should be a numeric vector of length 2, indicating
+        #' the minimum value and maximum value of each parameter.
+        #'
+        #' Basically `$apply_measure()` allows to apply a measure to an
+        #' [eplusr::Idf]. A measure here is just a function that takes an
+        #' [eplusr::Idf] object and other arguments as input, and returns a
+        #' modified [eplusr::Idf] object as output.
+        #'
+        #' The names of function parameter will be used as the names of
+        #' calibration parameter. For example, the equivalent version of
+        #' specifying parameters described in
+        #' \href{../../epluspar/html/SensitivityJob.html#method-param}{\code{$param()}}
+        #' using `$apply_measure()` can be:
+        #'
+        #' ```
+        #' # set calibration parameters using $apply_measure()
+        #' # (a) first define a "measure"
+        #' measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
+        #'     idf$set(
+        #'         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        #'         Material := list(Thickness = thickness, Conductivity = conducivity)
+        #'         .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
+        #'     )
+        #'
+        #'     idf
+        #' }
+        #'
+        #' # (b) then apply that measure with parameter space definitions as
+        #' # function arguments
+        #' bc$apply_measure(measure,
+        #'     efficiency = c(min = 0.1, max = 1.0),
+        #'     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
+        #'     lpd = c(10, 30)
+        #' )
+        #' ```
+        #'
+        #' All models created using `$apply_measure()` will be named in the same
+        #' pattern, i.e. `Case_ParameterName(ParamterValue)...`. Note that only
+        #' paramter names will be abbreviated using [abbreviate()] with
+        #' `minlength` being `5L` and `use.classes` being `TRUE`. If samples
+        #' contain duplications, [make.unique()] will be called to make sure
+        #' every model has a unique name.
+        #'
+        #' @param measure A function that takes an [eplusr::Idf] and other
+        #'        arguments as input and returns an [eplusr::Idf] object as
+        #'        output.
+        #' @param ... Arguments **except first `Idf` argument** that are passed
+        #'        to that `measure`.
+        #' @param .num_sim An positive integer specifying the number of
+        #'        simulations to run taking into account of all parameter
+        #'        combinations. Default: `30L`.
+        #'
+        #' @return The modified `BayesCalibJob` object itself.
+        #'
+        #' @examples
+        #' # set calibration parameters using $apply_measure()
+        #' # (a) first define a "measure"
+        #' measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
+        #'     idf$set(
+        #'         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        #'         Material := list(Thickness = thickness, Conductivity = conducivity)
+        #'         .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
+        #'     )
+        #'
+        #'     idf
+        #' }
+        #'
+        #' # (b) then apply that measure with parameter space definitions as
+        #' # function arguments
+        #' bc$apply_measure(measure,
+        #'     efficiency = c(min = 0.1, max = 1.0),
+        #'     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
+        #'     lpd = c(10, 30)
+        #' )
+        #'
+        apply_measure = function (measure, ..., .num_sim = 30L)
+            bc_apply_measure(super, self, private, ..., .num_sum = .num_sum),
+        # }}}
+
+        # samples {{{
+        #' @description
+        #' Get sampled parameter values
+        #'
+        #' @details
+        #' `$samples()` returns a [data.table::data.table()] which contains the
+        #' sampled value for each parameter using [Random Latin Hypercube
+        #' Sampling][lhs::randomLHS] method. The returned
+        #' [data.table::data.table()] has `1 + n` columns, where `n` is the
+        #' parameter number, and `1` indicates an extra column named `case`
+        #' giving the index of each sample.
+        #'
+        #' Note that if `$samples()` is called before input and output
+        #' parameters being set using
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
+        #' and
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+        #' only the sampling will be performed and no parametric models will be
+        #' created.  This is because information of input and output parameters
+        #' are needed in order to make sure that corresponding variables will be
+        #' reported during simulations. In this case, you can use
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
+        #' to create those models.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$samples()
+        #' }
+        #'
+        samples = function ()
+            bc_samples(super, self, private),
+        # }}}
+
+        # models {{{
+        #' @description
+        #' Get parametric models
+        #'
+        #' @details
+        #' `$models()` returns a list of parametric [eplusr::Idf] objects
+        #' created using calibration parameter values genereated using Random
+        #' Latin Hypercube Sampling. As stated above, parametric models can only
+        #' be created after input, output and calibration parameters have all be
+        #' set using
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}
+        #' and
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
+        #' (or
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}
+        #' ), respectively.
+        #'
+        #' All models will be named in the same pattern, i.e.
+        #' `Case_ParameterName(ParamterValue)...`. Note that paramter names will
+        #' be abbreviated using [abbreviate()] with `minlength` being `5L` and
+        #' `use.classes` being `TRUE`.
+        #'
+        #' @return A named list of [eplusr::Idf] objects.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$models()
+        #' }
+        #'
+        models = function ()
+            bc_models(super, self, private),
+        # }}}
+
+        # data_sim {{{
+        #' @description
+        #' Collect simulation data
+        #'
+        #' @details
+        #' `$data_sim()` returns a list of 2 [data.table::data.table()] which
+        #' contains the simulated data of input and output parameters. These
+        #' data will be stored internally and used during Bayesian calibration
+        #' using Stan.
+        #'
+        #' The `resolution` parameter can be used to specify the time resolution
+        #' of returned data. Note that input time resolution cannot be smaller
+        #' than the reporting frequency, otherwise an error will be issued.
+        #'
+        #' The parameter is named in the same way as standard EnergyPlus csv
+        #' output file, i.e. `KeyValue:VariableName [Unit](Frequency)`.
+        #'
+        #' By default, `$data_sim()` returns minimal columns, i.e. the
+        #' `Date/Time` column together with all input and output parameters are
+        #' returned. You can retrieve extra columns by setting `all` to `TRUE`.
+        #' Those column include:
+        #'
+        #' * `case`: Integer type. Indices of parametric simulations.
+        #' * `environment_period_index`: Integer type. The indice of environment.
+        #' * `environment_name`: Character type. A text string identifying the
+        #'   simulation environment.
+        #' * `simulation_days`: Integer type. Day of simulation.
+        #' * `datetime`: DateTime type. The date time of simulation result. Note
+        #'   that the year valueas are automatically calculated to meets the
+        #'   start day of week restriction for each simulation environment.
+        #' * `month`: Integer type. The month of reported date time.
+        #' * `day`: Integer type. The day of month of reported date time.
+        #' * `hour`: Integer type. The hour of reported date time.
+        #' * `minute`: Integer type. The minute of reported date time.
+        #' * `day_type`: Character type. The type of day, e.g. `Monday`,
+        #'   `Tuesday` and etc. Note that `day_type` will always be `NA` if
+        #'   `resolution` is specified.
+        #'
+        #' @param resolution A character string specifying a time unit or a
+        #'        multiple of a unit to change the time resolution of returned
+        #'        simulation data. Valid base units are `min`, `hour`, `day`,
+        #'        `week`, `month`, and `year`.  Example: `10 mins`, `2 hours`,
+        #'        `1 day`. If `NULL`, the variable reporting frequency is used.
+        #'        Default: `NULL`.
+        #' @param exclude_ddy Whether to exclude design day data. Default:
+        #'        `TRUE`. Default: `FALSE`.
+        #' @param all If `TRUE`, extra columns are also included in the returned
+        #'        [data.table::data.table()] describing the simulation case and
+        #'        datetime components. Default: `FALSE`.
+        #'
+        #' @return A list of 2 [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$data_sim()
+        #' }
+        #'
+        data_sim = function (resolution = NULL, exclude_ddy = TRUE, all = FALSE)
+            bc_data_sim(super, self, private, resolution, exclude_ddy, all),
+        # }}}
+
+        # data_field {{{
+        #' @description
+        #' Specify field measured data
+        #'
+        #' @details
+        #' `$data_field()` takes a [data.frame()] of measured value of output
+        #' parameters and returns a list of [data.table::data.table()]s which
+        #' contains the measured value of input and output parameters, and newly
+        #' measured value of input if applicable.
+        #'
+        #' The specified `output` [data.frame()] is validated using criteria
+        #' below:
+        #'
+        #' * The column number should be the same as the number of output
+        #'   specified in
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}.
+        #' * The row number should be the same as the number of simulated values
+        #'   for each case extracted using
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #'
+        #' For input parameters, the values of simulation data for the first
+        #' case are directly used as the measured values.
+        #'
+        #' Parameter `new_input` can be used to give a [data.frame()] of newly
+        #' measured value of input parameters. The column number of input
+        #' [data.frame()] should be the same as the number of input parameters
+        #' specified in
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}.
+        #' If not specified, the measured values of
+        #' input parameters will be used for predictions.
+        #'
+        #' All the data will be stored internally and used during Bayesian
+        #' calibration using Stan.
+        #'
+        #' Note that as `$data_field()` relies on the output of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #' to
+        #' perform validation on the specified data, `$data_field()` cannot be
+        #' called before
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #' and internally stored data will be
+        #' removed whenever
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #' is called. This aims to make sure that
+        #' simulated data and field data can be matched whenever the calibration
+        #' is performed.
+        #'
+        #' @param output A [data.frame()] containing measured value of output
+        #'        parameters.
+        #' @param new_input A [data.frame()] containing newly measured value of
+        #'        input parameters.
+        #' @param all If `TRUE`, extra columns are also included in the returned
+        #'        [data.table::data.table()] describing the simulation case and
+        #'        datetime components. For details, please see
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #'        Default: `FALSE`.
+        #'
+        #' @return A list of [data.table::data.table()].
+        #'
+        data_field = function (output, new_input = NULL, all = FALSE)
+            bc_data_field(super, self, private, output, new_input, all),
+        # }}}
+
+        # data_bc {{{
+        #' @description
+        #' Combine simulation data and field measured data
+        #'
+        #' @details
+        #' `$data_bc()` takes a list of field data and simulated data, and
+        #' returns a list that contains data input for Bayesian calibration
+        #' using the Stan model from Chong (2018):
+        #'
+        #' * `n`: Number of measured parameter observations.
+        #' * `n_pred`: Number of newly design points for predictions.
+        #' * `m`: Number of simulated observations.
+        #' * `p`: Number of input parameters.
+        #' * `q`: Number of calibration parameters.
+        #' * `yf`: Data of measured output after z-score standardization using data of
+        #'   simulated output.
+        #' * `yc`: Data of simulated output after z-score standardization.
+        #' * `xf`: Data of measured input after min-max normalization.
+        #' * `xc`: Data of simulated input after min-max normalization.
+        #' * `x_pred`: Data of new design points for predictions after min-max
+        #'   normalization.
+        #' * `tc`: Data of calibration parameters after min-max normalization.
+        #'
+        #' Input `data_field` and `data_sim` should have the same structure as the
+        #' output from `$data_field()` and `$data_sim()`. If `data_field` and
+        #' `data_sim` is not specified, the output from `$data_field()` and
+        #' `$data_sim()` will be used.
+        #'
+        #' @param data_field A [data.frame()] specifying field measured data.
+        #'        Should have the same structure as the output from
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+        #'        If `NULL`, the output from
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+        #'        will be used. Default: `NULL`.
+        #' @param data_sim A [data.frame()] specifying field measured data.
+        #'        Should have the same structure as the output from
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #'        If `NULL`, the output from
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
+        #'        will be used. Default: `NULL`.
+        #'
+        #' @return A list of 11 elements.
+        #'
+        data_bc = function (data_field = NULL, data_sim = NULL)
+            bc_data_bc(super, self, private, data_field, data_sim),
+        # }}}
+
+        # eplus_run {{{
+        #' @description
+        #' Run parametric simulations
+        #'
+        #' @details
+        #' `$eplus_run()` runs all parametric models in parallel. Parameter
+        #' `run_period` can be given to insert a new `RunPeriod` object. In this
+        #' case, all existing `RunPeriod` objects in the seed model will be
+        #' commented out.
+        #'
+        #' Note that when `run_period` is given, value of field `Run Simulation
+        #' for Weather File Run Periods` in `SimulationControl` class will be
+        #' reset to `Yes` to make sure input run period can take effect.
+        #'
+        #' @param dir The parent output directory for specified simulations.
+        #'        Outputs of each simulation are placed in a separate folder
+        #'        under the parent directory. If `NULL`, directory of seed
+        #'        model will be used. Default: `NULL`.
+        #' @param run_period A list giving a new `RunPeriod` object definition.
+        #'        If not `NULL`, only this new RunPeriod will take effect with
+        #'        all existing RunPeriod objects in the seed model being
+        #'        commented out. If `NULL`, existing run period in the seed
+        #'        model will be used. Default: `NULL`.
+        #' @param wait If `TRUE`, R will hang on and wait all EnergyPlus simulations
+        #'        finish. If `FALSE`, all EnergyPlus simulations are run in the
+        #'        background. Default: `TRUE`.
+        #' @param force Only applicable when the last simulation runs with
+        #'        `wait` equals to `FALSE` and is still running. If `TRUE`,
+        #'        current running job is forced to stop and a new one will
+        #'        start. Default: `FALSE`.
+        #' @param copy_external If `TRUE`, the external files that every `Idf`
+        #'        object depends on will also be copied into the simulation
+        #'        output directory. The values of file paths in the Idf will be
+        #'        changed automatically. Currently, only `Schedule:File` class
+        #'        is supported.  This ensures that the output directory will
+        #'        have all files needed for the model to run. Default is
+        #'        `FALSE`.
+        #' @param echo Only applicable when `wait` is `TRUE`. Whether to print
+        #'        simulation status. Default: same as the value of `wait`.
+        #'
+        #' @return The modified `BayesCalibJob` object itself.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # specify output directory and run period
+        #' bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
+        #'
+        #' # run in the background
+        #' bc$run(wait = TRUE)
+        #' # see job status
+        #' bc$status()
+        #'
+        #' # force to kill background job before running the new one
+        #' bc$run(force = TRUE)
+        #'
+        #' # do not show anything in the console
+        #' bc$run(echo = FALSE)
+        #'
+        #' # copy external files used in the model to simulation output directory
+        #' bc$run(copy_external = TRUE)
+        #' }
+        #'
+        eplus_run = function (dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
+                              copy_external = FALSE, echo = wait)
+            bc_eplus_run(super, self, private, dir, run_period, wait, force, copy_external, echo),
+        # }}}
+
+        # eplus_kill {{{
+        #' @description
+        #' Kill current running EnergyPlus simulations
+        #'
+        #' @details
+        #' `$eplus_kill()` kills all background EnergyPlus processes that are
+        #' current running if possible. It only works when simulations run in
+        #' non-waiting mode.
+        #'
+        #' @return A single logical value of `TRUE` or `FALSE`, invisibly.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$eplus_kill()
+        #' }
+        #'
+        eplus_kill = function ()
+            super$kill(),
+        # }}}
+
+        # eplus_status {{{
+        #' @description
+        #' Get the EnergyPlus simulation status
+        #'
+        #' @details
+        #' `$eplus_status()` returns a named list of values indicates the status
+        #' of the job:
+        #'
+        #'   * `run_before`: `TRUE` if the job has been run before. `FALSE` otherwise.
+        #'   * `alive`: `TRUE` if the job is still running in the background. `FALSE`
+        #'     otherwise.
+        #'   * `terminated`: `TRUE` if the job was terminated during last
+        #'      simulation. `FALSE` otherwise. `NA` if the job has not been run yet.
+        #'   * `successful`: `TRUE` if all simulations ended successfully. `FALSE` if
+        #'     there is any simulation failed. `NA` if the job has not been run yet.
+        #'   * `changed_after`: `TRUE` if the *seed model* has been modified since last
+        #'      simulation. `FALSE` otherwise.
+        #'   * `job_status`: A [data.table::data.table()] contains meta data
+        #'     for each simulation job. For details, please see [run_multi()]. If the
+        #'     job has not been run before, a [data.table::data.table()]
+        #'     with 4 columns is returned:
+        #'     - `index`: The index of simulation
+        #'     - `status`: The status of simulation. As the simulation has not been run,
+        #'       `status` will always be "idle".
+        #'     - `idf`: The path of input IDF file.
+        #'     - `epw`: The path of input EPW file. If not provided, `NA` will be
+        #'       assigned.
+        #'
+        #' @return A named list of 6 elements.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$eplus_status()
+        #' }
+        #'
+        eplus_status = function ()
+            super$status(),
+        # }}}
+
+        # eplus_output_dir {{{
+        #' @description
+        #' Get EnergyPlus simulation output directory
+        #'
+        #' @details
+        #' `$eplus_output_dir()` returns the output directory of EnergyPlus
+        #' simulation results.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #'
+        #' @return A character vector.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # get output directories of all simulations
+        #' bc$eplus_output_dir()
+        #'
+        #' # get output directories of specified simulations
+        #' bc$eplus_output_dir(c(1, 4))
+        #' }
+        #'
+        eplus_output_dir = function (which = NULL)
+            super$output_dir(which),
+        # }}}
+
+        # eplus_locate_output {{{
+        #' @description
+        #' Get paths of EnergyPlus output file
+        #'
+        #' @details
+        #' `$eplus_locate_output()` returns the path of a single output file of
+        #' specified simulations.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #' @param suffix A string that indicates the file extension of
+        #'        simulation output. Default: `".err"`.
+        #' @param strict If `TRUE`, it will check if the simulation was
+        #'        terminated, is still running or the file exists or not.
+        #'        Default: `TRUE`.
+        #'
+        #' @return A character vector.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # get the file path of the error file
+        #' bc$eplus_locate_output(c(1, 4), ".err", strict = FALSE)
+        #'
+        #' # can use to detect if certain output file exists
+        #' bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
+        #' }
+        #'
+        eplus_locate_output = function (which = NULL, suffix = ".err", strict = TRUE)
+            super$locate_output(which, suffix, strict),
+        # }}}
+
+        # eplus_errors {{{
+        #' @description
+        #' Read EnergyPlus simulation errors
+        #'
+        #' @details
+        #' $eplus_errors() returns a list of [ErrFile][eplusr::read_err()]
+        #' objects which contain all contents of the simulation error files
+        #' (`.err`). If `info` is `FALSE`, only warnings and errors are printed.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #' @param info If `FALSE`, only warnings and errors are printed.
+        #'        Default: `FALSE`.
+        #'
+        #' @return A list of [ErrFile][eplusr::read_err()] objects.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$errors()
+        #'
+        #' # show all information
+        #' bc$errors(info = TRUE)
+        #' }
+        #'
+        eplus_errors = function (which = NULL, info = FALSE)
+            super$errors(which, info),
+        # }}}
+
+        # eplus_report_data_dict {{{
+        #' @description
+        #' Read report data dictionary from EnergyPlus SQL outputs
+        #'
+        #' @details
+        #' `$eplus_report_data_dict()` returns a [data.table::data.table()]
+        #' which contains all information about report data.
+        #'
+        #' For details on the meaning of each columns, please see "2.20.2.1
+        #' ReportDataDictionary Table" in EnergyPlus "Output Details and
+        #' Examples" documentation.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #'
+        #' @return A [data.table::data.table()] of 10 columns:
+        #'
+        #' * `case`: The model name. This column can be used to distinguish
+        #'   output from different simulations
+        #' * `report_data_dictionary_index`: The integer used to link the
+        #'   dictionary data to the variable data. Mainly useful when joining
+        #'   diferent tables
+        #' * `is_meter`: Whether report data is a meter data. Possible values:
+        #'   `0` and `1`
+        #' * `timestep_type`: Type of data timestep. Possible values: `Zone` and
+        #'   `HVAC System`
+        #' * `key_value`: Key name of the data
+        #' * `name`: Actual report data name
+        #' * `reporting_frequency`:
+        #' * `schedule_name`: Name of the the schedule that controls reporting
+        #'     frequency.
+        #' * `units`: The data units
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$eplus_report_data_dict(c(1, 4))
+        #' }
+        #'
+        eplus_report_data_dict = function (which = NULL)
+            super$report_data_dict(which),
+        # }}}
+
+        # eplus_report_data {{{
+        #' @description
+        #' Read EnergyPlus report data
+        #'
+        #' @details
+        #' `$eplus_report_data()` extracts the report data in a
+        #' [data.table::data.table()] using key values, variable names and other
+        #' specifications.
+        #'
+        #' `$eplus_report_data()` can also directly take all or subset output from
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}
+        #' as input, and extract all data specified.
+        #'
+        #' The returned column numbers varies depending on `all` argument.
+        #'
+        #' * `all` is `FALSE`, the returned [data.table::data.table()] has 6 columns:
+        #'   * `case`: The model name. This column can be used to distinguish
+        #'     output from different simulations
+        #'   * `datetime`: The date time of simulation result
+        #'   * `key_value`: Key name of the data
+        #'   * `name`: Actual report data name
+        #'   * `units`: The data units
+        #'   * `value`: The data value
+        #' * `all` is `TRUE`, besides columns described above, extra columns are also
+        #'   included:
+        #'   * `month`: The month of reported date time
+        #'   * `day`: The day of month of reported date time
+        #'   * `hour`: The hour of reported date time
+        #'   * `minute`: The minute of reported date time
+        #'   * `dst`: Daylight saving time indicator. Possible values: `0` and `1`
+        #'   * `interval`: Length of reporting interval
+        #'   * `simulation_days`: Day of simulation
+        #'   * `day_type`: The type of day, e.g. `Monday`, `Tuesday` and etc.
+        #'   * `environment_period_index`: The indice of environment.
+        #'   * `environment_name`: A text string identifying the environment.
+        #'   * `is_meter`: Whether report data is a meter data. Possible values: `0` and
+        #'     `1`
+        #'   * `type`: Nature of data type with respect to state. Possible values: `Sum`
+        #'     and `Avg`
+        #'   * `index_group`: The report group, e.g. `Zone`, `System`
+        #'   * `timestep_type`: Type of data timestep. Possible values: `Zone` and `HVAC
+        #'     System`
+        #'   * `reporting_frequency`: The reporting frequency of the variable, e.g.
+        #'   `HVAC System Timestep`, `Zone Timestep`.
+        #'   * `schedule_name`: Name of the the schedule that controls reporting
+        #'     frequency.
+        #'
+        #' With the `datetime` column, it is quite straightforward to apply time-series
+        #' analysis on the simulation output. However, another painful thing is that
+        #' every simulation run period has its own `Day of Week for Start Day`. Randomly
+        #' setting the `year` may result in a date time series that does not have
+        #' the same start day of week as specified in the RunPeriod objects.
+        #'
+        #' eplusr provides a simple solution for this. By setting `year` to `NULL`,
+        #' which is the default behavior, eplusr will calculate a year value (from
+        #' current year backwards) for each run period that compliances with the start
+        #' day of week restriction.
+        #'
+        #' It is worth noting that EnergyPlus uses 24-hour clock system where 24 is only
+        #' used to denote midnight at the end of a calendar day. In EnergyPlus output,
+        #' "00:24:00" with a time interval being 15 mins represents a time period from
+        #' "00:23:45" to "00:24:00", and similarly "00:15:00" represents a time period
+        #' from "00:24:00" to "00:15:00" of the next day. This means that if current day
+        #' is Friday, day of week rule applied in schedule time period "00:23:45" to
+        #' "00:24:00" (presented as "00:24:00" in the output) is also Friday, but not
+        #' Saturday. However, if you try to get the day of week of time "00:24:00" in R,
+        #' you will get Saturday, but not Friday. This introduces inconsistency and may
+        #' cause problems when doing data analysis considering day of week value.
+        #'
+        #' With `wide` equals `TRUE`, `$eplus_report_data()` will format the
+        #' simulation output in the same way as standard EnergyPlus csv output
+        #' file. Sometimes this can be useful as there may be existing
+        #' tools/workflows that depend on this format.  When both `wide` and
+        #' `all` are `TRUE`, columns of runperiod environment names and date
+        #' time components are also returned, including:
+        #' `environment_period_index", "environment_name`, `simulation_days`,
+        #' `datetime`, `month`, `day`, `hour`, `minute`, `day_type`.
+        #'
+        #' For convenience, input character arguments matching in
+        #' `$eplus_report_data()` are **case-insensitive**.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #'
+        #' @param key_value A character vector to identify key values of the
+        #'        data. If `NULL`, all keys of that variable will be returned.
+        #'        `key_value` can also be data.frame that contains `key_value`
+        #'        and `name` columns. In this case, `name` argument in
+        #'        `$eplus_report_data()` is ignored. All available `key_value` for
+        #'        current simulation output can be obtained using
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+        #'        Default: `NULL`.
+        #'
+        #' @param name A character vector to identify names of the data. If
+        #'        `NULL`, all names of that variable will be returned. If
+        #'        `key_value` is a data.frame, `name` is ignored. All available
+        #'        `name` for current simulation output can be obtained using
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+        #'        Default: `NULL`.
+        #'
+        #' @param year Year of the date time in column `datetime`. If `NULL`, it
+        #'        will calculate a year value that meets the start day of week
+        #'        restriction for each environment. Default: `NULL`.
+        #'
+        #' @param tz Time zone of date time in column `datetime`. Default:
+        #'        `"UTC"`.
+        #'
+        #' @param case If not `NULL`, a character column will be added indicates
+        #'        the case of this simulation. If `"auto"`, the name of the IDF
+        #'        file without extension is used.
+        #'
+        #' @param all If `TRUE`, extra columns are also included in the returned
+        #'        [data.table::data.table()].
+        #'
+        #' @param wide If `TRUE`, the output is formated in the same way as
+        #'        standard EnergyPlus csv output file.
+        #'
+        #' @param period A Date or POSIXt vector used to specify which time
+        #'        period to return. The year value does not matter and only
+        #'        month, day, hour and minute value will be used when
+        #'        subsetting. If `NULL`, all time period of data is returned.
+        #'        Default: `NULL`.
+        #'
+        #' @param month,day,hour,minute Each is an integer vector for month,
+        #'        day, hour, minute subsetting of `datetime` column when
+        #'        querying on the SQL database. If `NULL`, no subsetting is
+        #'        performed on those components. All possible `month`, `day`,
+        #'        `hour` and `minute` can be obtained using
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+        #'        Default: `NULL`.
+        #'
+        #' @param interval An integer vector used to specify which interval
+        #'        length of report to extract. If `NULL`, all interval will be
+        #'        used. Default: `NULL`.
+        #'
+        #' @param simulation_days An integer vector to specify which simulation
+        #'        day data to extract. Note that this number resets after warmup
+        #'        and at the beginning of an environment period. All possible
+        #'        `simulation_days` can be obtained using
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+        #'        If `NULL`, all simulation days will be used. Default: `NULL`.
+        #'
+        #' @param day_type A character vector to specify which day type of data
+        #'        to extract. All possible day types are: `Sunday`, `Monday`,
+        #'        `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`,
+        #'        `Holiday`, `SummerDesignDay`, `WinterDesignDay`, `CustomDay1`,
+        #'        and `CustomDay2`. All possible values for current simulation
+        #'        output can be obtained using
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+        #'
+        #' @param environment_name A character vector to specify which
+        #'        environment data to extract. If `NULL`, all environment data
+        #'        are returned. Default: `NULL`. All possible
+        #'        `environment_name` for current simulation output can be
+        #'        obtained using:
+        #' ```
+        #' $read_table(NULL, "EnvironmentPeriods")
+        #' ```
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # read report data
+        #' bc$report_data(c(1, 4))
+        #'
+        #' # specify output variables using report data dictionary
+        #' dict <- bc$report_data_dict(1)
+        #' bc$report_data(c(1, 4), dict[units == "C"])
+        #'
+        #' # specify output variables using 'key_value' and 'name'
+        #' bc$report_data(c(1, 4), "environment", "site outdoor air drybulb temperature")
+        #'
+        #' # explicitly specify year value and time zone
+        #' bc$report_data(c(1, 4), dict[1], year = 2020, tz = "Etc/GMT+8")
+        #'
+        #' # get all possible columns
+        #' bc$report_data(c(1, 4), dict[1], all = TRUE)
+        #'
+        #' # return in a format that is similar as EnergyPlus CSV output
+        #' bc$report_data(c(1, 4), dict[1], wide = TRUE)
+        #'
+        #' # return in a format that is similar as EnergyPlus CSV output with
+        #' # extra columns
+        #' bc$report_data(c(1, 4), dict[1], wide = TRUE, all = TRUE)
+        #'
+        #' # only get data at the working hour on the first Monday
+        #' bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_days = 1:7)
+        #' }
+        #'
+        eplus_report_data = function (which = NULL, key_value = NULL, name = NULL,
+                                year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
+                                period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
+                                interval = NULL, simulation_days = NULL, day_type = NULL,
+                                environment_name = NULL)
+            super$report_data(which, key_value = key_value, name = name,
+                year = year, tz = tz, all = all, wide = wide,
+                period = period, month = month, day = day, hour = hour, minute = minute,
+                interval = interval, simulation_days = simulation_days, day_type = day_type,
+                environment_name = environment_name),
+        # }}}
+
+        # eplus_tabular_data {{{
+        #' @description
+        #' Read EnergyPlus tabular data
+        #'
+        #' @details
+        #' `$eplus_tabular_data()` extracts the tabular data in a
+        #' [data.table::data.table()] using report, table, column and row name
+        #' specifications. The returned [data.table::data.table()] has
+        #' 9 columns:
+        #'
+        #' * `case`: The model name. This column can be used to distinguish
+        #'   output from different simulations
+        #' * `index`: Tabular data index
+        #' * `report_name`: The name of the report that the record belongs to
+        #' * `report_for`: The `For` text that is associated with the record
+        #' * `table_name`: The name of the table that the record belongs to
+        #' * `column_name`: The name of the column that the record belongs to
+        #' * `row_name`: The name of the row that the record belongs to
+        #' * `units`: The units of the record
+        #' * `value`: The value of the record **in string format**
+        #'
+        #' For convenience, input character arguments matching in
+        #' `$eplus_tabular_data()` are **case-insensitive**.
+        #'
+        #' @param which An integer vector of the indexes or a character vector
+        #'        or names of parametric simulations. If `NULL`, results of all
+        #'        parametric simulations are returned. Default: `NULL`.
+        #'
+        #' @param report_name,report_for,table_name,column_name,row_name Each is
+        #'        a character vector for subsetting when querying the SQL
+        #'        database.  For the meaning of each argument, please see the
+        #'        description above.
+        #'
+        #' @return A [data.table::data.table()] with 8 columns.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # read all tabular data
+        #' bc$eplus_tabular_data(c(1, 4))
+        #'
+        #' # explicitly specify data you want
+        #' str(bc$eplus_tabular_data(c(1, 4),
+        #'     report_name = "AnnualBuildingUtilityPerformanceSummary",
+        #'     table_name = "Site and Source Energy",
+        #'     column_name = "Total Energy",
+        #'     row_name = "Total Site Energy"
+        #' ))
+        #' }
+        #'
+        eplus_tabular_data = function (which = NULL, report_name = NULL, report_for = NULL,
+                                table_name = NULL, column_name = NULL, row_name = NULL)
+            super$tabular_data(which, report_name = report_name,
+                report_for = report_for, table_name = table_name,
+                column_name = column_name, row_name = row_name),
+        # }}}
+
+        # eplus_save {{{
+        #' @description
+        #' Save EnergyPlus parametric models
+        #'
+        #' @details
+        #' `$eplus_save()` saves all parametric models in specified folder. An
+        #' error will be issued if no measure has been applied.
+        #'
+        #' @param dir The parent output directory for models to be saved. If
+        #'        `NULL`, the directory of the seed model will be used. Default:
+        #'        `NULL`.
+        #' @param separate If `TRUE`, all models are saved in a separate folder
+        #'        with each model's name under specified directory. If `FALSE`,
+        #'        all models are saved in the specified directory. Default:
+        #'        `TRUE`.
+        #' @param copy_external Only applicable when `separate` is `TRUE`. If
+        #'        `TRUE`, the external files that every `Idf` object depends on
+        #'        will also be copied into the saving directory. The values of
+        #'        file paths in the Idf will be changed automatically.
+        #'        Currently, only `Schedule:File` class is supported.  This
+        #'        ensures that the output directory will have all files needed
+        #'        for the model to run. Default: `FALSE`.
+        #'
+        #' @return A [data.table::data.table()] with two columns:
+        #'
+        #' * model: The path of saved parametric model files.
+        #' * weather: The path of saved weather files.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' # save all parametric models with each model in a separate folder
+        #' bc$save(tempdir())
+        #'
+        #' # save all parametric models with all models in the same folder
+        #' bc$save(tempdir(), separate = FALSE)
+        #' }
+        #'
+        eplus_save = function (dir = NULL, separate = TRUE, copy_external = FALSE)
+            super$save(dir, separate, copy_external),
+        # }}}
+
+        # stan_run {{{
+        #' @description
+        #' Run Bayesian calibration using Stan
+        #'
+        #' @details
+        #' `$stan_run()` runs Bayesian calibration using [Stan][rstan::stan] and
+        #' returns a list of 2 elements:
+        #'
+        #' * `fit`: An object of S4 class [rstan::stanfit].
+        #' * `y_pred`: A [data.table::data.table()] with predicted output
+        #'   values.
+        #'
+        #' @param file The path to the Stan program to use. If `NULL`, the
+        #'        pre-compiled Stan code from Chong (2018) will be used.
+        #'        Default: `NULL`.
+        #' @param data Only applicable when `file` is not `NULL`. The data to be
+        #'        used for Bayesian calibration. If `NULL`, the data that
+        #'        `$data_bc()` returns is used. Default: `NULL`.
+        #' @param iter A positive integer specifying the number of iterations
+        #'        for each chain (including warmup). Default: `2000`.
+        #' @param chains A positive integer specifying the number of Markov
+        #'        chains. Default: `4`.
+        #' @param echo Whether to print intermediate output from Stan on the
+        #'        console, which might be helpful for model debugging. Default:
+        #'        `TRUE`.
+        #' @param mc.cores An integer specifying how many cores to be used for
+        #'        Stan. Default: `parallel::detectCores()`.
+        #' @param ... Additional arguments to pass to [rstan::sampling] (when
+        #'        `file` is `NULL`) or [rstan::stan] (when `file` is not
+        #'        `NULL`).
+        #'
+        #' @return A list of 2 elements.
+        #'
+        stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE, ...)
+            bc_stan_run(super, self, private, file, data, iter, chains, echo, ...),
+        # }}}
+
+        # stan_file {{{
+        #' @description
+        #' Extract Stan file for Bayesian calibration
+        #'
+        #' @details
+        #' `$stan_file()` saves the Stan file used internally for Bayesian
+        #' calibration. If no path is given, a character vector of the Stan
+        #' code is returned. If given, the code will be save to the path and the
+        #' file path is returned.
+        #'
+        #' @param path A path to save the Stan code. If `NULL`, a character
+        #'        vector of the Stan code is returned.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$stan_file()
+        #' }
+        #'
+        stan_file = function (path = NULL)
+            bc_stan_file(super, self, private, path)
+        # }}}
+        # }}}
+    ),
+
+    private = list(
+        # PRIVATE FIELDS {{{
+        m_seed = NULL,
+        m_idfs = NULL,
+        m_epws = NULL,
+        m_input = NULL,
+        m_output = NULL,
+        m_job = NULL,
+        m_log = NULL
+        # }}}
+    )
+)
+# }}}
 
 #' Create a Bayesian Calibration Job
 #'
@@ -659,124 +1437,6 @@ bayes_job <- function (idf, epw) {
     lockEnvironment(bc)
     bc
 }
-# }}}
-
-# BayesCalib {{{
-BayesCalib <- R6::R6Class(classname = "BayesCalibJob",
-    inherit = eplusr:::Parametric, cloneable = FALSE, lock_objects = FALSE,
-    public = list(
-        # INITIALIZE {{{
-        initialize = function (idf, epw) {
-            # do not allow NULL for epw
-            assert(!is.null(epw))
-
-            eplusr:::with_silent(super$initialize(idf, epw))
-
-            # remove all output variables and meters
-            private$m_seed <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
-
-            # init some logging variables
-            private$m_log$run_ddy <- FALSE
-            private$m_log$has_param <- FALSE
-        },
-        # }}}
-
-        # PUBLIC FUNCTIONS {{{
-        read_rdd = function (update = FALSE)
-            bc_read_rdd(super, self, private, update),
-
-        read_mdd = function (update = FALSE)
-            bc_read_mdd(super, self, private, update),
-
-        input = function (key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-            bc_input(super, self, private, key_value, name, reporting_frequency, append),
-
-        param = function (..., .names = NULL, .num_sim = 30L)
-            bc_param(super, self, private, ..., .names = .names, .num_sim = .num_sim),
-
-        apply_measure = function (measure, ..., .num_sim = 30L)
-            bc_apply_measure(super, self, private, ..., .num_sum = .num_sum),
-
-        samples = function ()
-            bc_samples(super, self, private),
-
-        output = function (key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-            bc_output(super, self, private, key_value, name, reporting_frequency, append),
-
-        models = function ()
-            bc_models(super, self, private),
-
-        data_sim = function (resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-            bc_data_sim(super, self, private, resolution, exclude_ddy, all),
-
-        data_field = function (output, new_input = NULL, all = FALSE)
-            bc_data_field(super, self, private, output, new_input, all),
-
-        data_bc = function (data_field = NULL, data_sim = NULL)
-            bc_data_bc(super, self, private, data_field, data_sim),
-
-        eplus_run = function (dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-                              copy_external = FALSE, echo = wait)
-            bc_eplus_run(super, self, private, dir, run_period, wait, force, copy_external, echo),
-
-        eplus_kill = function ()
-            super$kill(),
-
-        eplus_status = function ()
-            super$status(),
-
-        stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE, ...)
-            bc_stan_run(super, self, private, file, data, iter, chains, echo, ...),
-
-        stan_file = function (path = NULL)
-            bc_stan_file(super, self, private, path),
-
-        eplus_output_dir = function (which = NULL)
-            super$output_dir(which),
-
-        eplus_locate_output = function (which = NULL, suffix = ".err", strict = TRUE)
-            super$locate_output(which, suffix, strict),
-
-        eplus_errors = function (which = NULL, info = FALSE)
-            super$errors(which, info),
-
-        eplus_report_data_dict = function (which = NULL)
-            super$report_data_dict(which),
-
-        eplus_report_data = function (which = NULL, key_value = NULL, name = NULL,
-                                year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-                                period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-                                interval = NULL, simulation_days = NULL, day_type = NULL,
-                                environment_name = NULL)
-            super$report_data(which, key_value = key_value, name = name,
-                year = year, tz = tz, all = all, wide = wide,
-                period = period, month = month, day = day, hour = hour, minute = minute,
-                interval = interval, simulation_days = simulation_days, day_type = day_type,
-                environment_name = environment_name),
-
-        eplus_tabular_data = function (which = NULL, report_name = NULL, report_for = NULL,
-                                table_name = NULL, column_name = NULL, row_name = NULL)
-            super$tabular_data(which, report_name = report_name,
-                report_for = report_for, table_name = table_name,
-                column_name = column_name, row_name = row_name),
-
-        eplus_save = function (dir = NULL, separate = TRUE, copy_external = FALSE)
-            super$save(dir, separate, copy_external)
-        # }}}
-    ),
-
-    private = list(
-        # PRIVATE FIELDS {{{
-        m_seed = NULL,
-        m_idfs = NULL,
-        m_epws = NULL,
-        m_input = NULL,
-        m_output = NULL,
-        m_job = NULL,
-        m_log = NULL
-        # }}}
-    )
-)
 # }}}
 
 # bc_remove_output_class {{{

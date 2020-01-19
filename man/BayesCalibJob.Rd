@@ -5,57 +5,446 @@
 \alias{BayesCalibJob}
 \title{Conduct Bayesian Calibration on An EnergyPlus Model}
 \description{
-\code{bayes_job()} takes an IDF and EPW as input and returns a \code{BayesCalibJob},
-which provides a prototype of conducting Bayesian calibration of EnergyPlus
-model.
+\code{BayesCalibJob} class provides a prototype of conducting Bayesian calibration
+of EnergyPlus model.
 }
-\section{Usage}{
-\preformatted{bc <- bayes_job(idf, epw)
-bc$version()
-bc$seed()
-bc$weather()
-bc$read_rdd(update = FALSE)
-bc$read_mdd(update = FALSE)
-bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .num_sim = 30L)
+\details{
+The basic workflow is basically:
+\enumerate{
+\item Setting input and output variables using
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+respectively.
+Input variables should be variables listed in RDD while output variables
+should be variables listed in RDD and MDD.
+\item Adding parameters to calibrate using
+\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
+or
+\href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}.
+\item Check parameter sampled values and generated parametric models using
+\href{../../epluspar/html/BayesCalibJob.html#method-samples}{\code{$samples()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
+respectively.
+\item Run EnergyPlus simulations in parallel using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_run}{\code{$eplus_run()}},
+\item Gather simulated data of input and output parameters using
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+\item Specify field measured data of input and output parameters using
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+\item Specify field measured data of input and output parameters using
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+\item Specify input data for Stan for Bayesian calibration using
+\href{../../epluspar/html/BayesCalibJob.html#method-data_bc}{\code{$data_bc()}}.
+\item Run bayesian calibration using stan using
+\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}.
+}
+}
+\examples{
+
+## ------------------------------------------------
+## Method `BayesCalibJob$new`
+## ------------------------------------------------
+
+if (eplusr::is_avail_eplus(8.8)) {
+    idf_name <- "1ZoneUncontrolled.idf"
+    epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+
+    # create from local files
+    BayesCalibJob$new(idf_path, epw_path)
+
+    # create from an Idf and an Epw object
+    bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$read_rdd`
+## ------------------------------------------------
+
+bc$read_rdd()
+
+# force to rerun
+bc$read_rdd(update = TRUE)
+
+`$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
+model with design-day-only mode to create `.rdd` and `.mdd` file and returns
+the corresponding [RddFile][eplusr::read_rdd()] and
+[MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
+`MddFile` object is stored internally and will be directly returned whenever
+you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
+design-day-only simulation again to update the contents by setting `update`
+to `TRUE`.
+
+`$read_rdd()` and `read_mdd()` is useful when adding input and output
+parameters.
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$read_mdd`
+## ------------------------------------------------
+
+bc$read_mdd()
+
+# force to rerun
+bc$read_mdd(update = TRUE)
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$input`
+## ------------------------------------------------
+
+\dontrun{
+# explicitly specify input variable name
+bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
+
+# use an RddFile
+bc$input(bc$read_rdd()[1:5])
+
+# use a data.frame
+bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+
+# get existing input
+bc$input()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$output`
+## ------------------------------------------------
+
+\dontrun{
+# explicitly specify input variable name
+bc$output(name = "fan electric power", reporting_frequency = "hourly")
+
+# use an RddFile or MddFile
+bc$output(bc$read_rdd()[6:10])
+bc$output(bc$read_mdd()[6:10])
+
+# use a data.frame
+bc$output(eplusr::rdd_to_load(bc$read_mdd()[6:10]))
+
+# get existing input
+bc$output()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$param`
+## ------------------------------------------------
+
+\dontrun{
+bc$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
+    Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
+)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$apply_measure`
+## ------------------------------------------------
+
+# set calibration parameters using $apply_measure()
+# (a) first define a "measure"
+measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
+    idf$set(
+        `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        Material := list(Thickness = thickness, Conductivity = conducivity)
+        .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
+    )
+
+    idf
+}
+
+# (b) then apply that measure with parameter space definitions as
+# function arguments
+bc$apply_measure(measure,
+    efficiency = c(min = 0.1, max = 1.0),
+    thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
+    lpd = c(10, 30)
+)
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$samples`
+## ------------------------------------------------
+
+\dontrun{
 bc$samples()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$models`
+## ------------------------------------------------
+
+\dontrun{
 bc$models()
-bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-             copy_external = FALSE, echo = wait)
-bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-bc$data_field(output, new_input = NULL, all = FALSE)
-bc$data_bc(data_field = NULL, data_sim = NULL)
-bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-            mc.cores = parallel::detectCores(), ...)
-bc$stan_file(path = NULL)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$data_sim`
+## ------------------------------------------------
+
+\dontrun{
+bc$data_sim()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_run`
+## ------------------------------------------------
+
+\dontrun{
+# specify output directory and run period
+bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
+
+# run in the background
+bc$run(wait = TRUE)
+# see job status
+bc$status()
+
+# force to kill background job before running the new one
+bc$run(force = TRUE)
+
+# do not show anything in the console
+bc$run(echo = FALSE)
+
+# copy external files used in the model to simulation output directory
+bc$run(copy_external = TRUE)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_kill`
+## ------------------------------------------------
+
+\dontrun{
 bc$eplus_kill()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_status`
+## ------------------------------------------------
+
+\dontrun{
 bc$eplus_status()
-bc$eplus_output_dir(which = NULL)
-bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-bc$eplus_errors(which = NULL, info = FALSE)
-bc$eplus_report_data_dict(which = NULL)
-bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-                     year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-                     period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-                     interval = NULL, simulation_days = NULL, day_type = NULL,
-                     environment_name = NULL)
-bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-                      table_name = NULL, column_name = NULL, row_name = NULL)
-bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-bc$print()
-}
 }
 
-\section{Create}{
-\preformatted{bc <- bayes_job(idf, epw)
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_output_dir`
+## ------------------------------------------------
+
+\dontrun{
+# get output directories of all simulations
+bc$eplus_output_dir()
+
+# get output directories of specified simulations
+bc$eplus_output_dir(c(1, 4))
 }
 
-When calling \code{bayes_job()}, the objects of classes related in output variable
-reporting will be deleted, in order to make sure all input and output
-variable specifications can be achieved using \code{Output:Variable} and
-\code{Output:Meter}. Classes to be deleted include:
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_locate_output`
+## ------------------------------------------------
+
+\dontrun{
+# get the file path of the error file
+bc$eplus_locate_output(c(1, 4), ".err", strict = FALSE)
+
+# can use to detect if certain output file exists
+bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_errors`
+## ------------------------------------------------
+
+\dontrun{
+bc$errors()
+
+# show all information
+bc$errors(info = TRUE)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_report_data_dict`
+## ------------------------------------------------
+
+\dontrun{
+bc$eplus_report_data_dict(c(1, 4))
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_report_data`
+## ------------------------------------------------
+
+\dontrun{
+# read report data
+bc$report_data(c(1, 4))
+
+# specify output variables using report data dictionary
+dict <- bc$report_data_dict(1)
+bc$report_data(c(1, 4), dict[units == "C"])
+
+# specify output variables using 'key_value' and 'name'
+bc$report_data(c(1, 4), "environment", "site outdoor air drybulb temperature")
+
+# explicitly specify year value and time zone
+bc$report_data(c(1, 4), dict[1], year = 2020, tz = "Etc/GMT+8")
+
+# get all possible columns
+bc$report_data(c(1, 4), dict[1], all = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output
+bc$report_data(c(1, 4), dict[1], wide = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output with
+# extra columns
+bc$report_data(c(1, 4), dict[1], wide = TRUE, all = TRUE)
+
+# only get data at the working hour on the first Monday
+bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_days = 1:7)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_tabular_data`
+## ------------------------------------------------
+
+\dontrun{
+# read all tabular data
+bc$eplus_tabular_data(c(1, 4))
+
+# explicitly specify data you want
+str(bc$eplus_tabular_data(c(1, 4),
+    report_name = "AnnualBuildingUtilityPerformanceSummary",
+    table_name = "Site and Source Energy",
+    column_name = "Total Energy",
+    row_name = "Total Site Energy"
+))
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$eplus_save`
+## ------------------------------------------------
+
+\dontrun{
+# save all parametric models with each model in a separate folder
+bc$save(tempdir())
+
+# save all parametric models with all models in the same folder
+bc$save(tempdir(), separate = FALSE)
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$stan_file`
+## ------------------------------------------------
+
+\dontrun{
+bc$stan_file()
+}
+
+}
+\references{
+A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
+energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
+10.1016/j.enbuild.2018.06.028
+}
+\author{
+Hongyuan Jia, Adrian Chong
+}
+\section{Super classes}{
+\code{\link[eplusr:EplusGroupJob]{eplusr::EplusGroupJob}} -> \code{\link[eplusr:ParametricJob]{eplusr::ParametricJob}} -> \code{BayesCalibJob}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{BayesCalibJob$new()}}
+\item \href{#method-read_rdd}{\code{BayesCalibJob$read_rdd()}}
+\item \href{#method-read_mdd}{\code{BayesCalibJob$read_mdd()}}
+\item \href{#method-input}{\code{BayesCalibJob$input()}}
+\item \href{#method-output}{\code{BayesCalibJob$output()}}
+\item \href{#method-param}{\code{BayesCalibJob$param()}}
+\item \href{#method-apply_measure}{\code{BayesCalibJob$apply_measure()}}
+\item \href{#method-samples}{\code{BayesCalibJob$samples()}}
+\item \href{#method-models}{\code{BayesCalibJob$models()}}
+\item \href{#method-data_sim}{\code{BayesCalibJob$data_sim()}}
+\item \href{#method-data_field}{\code{BayesCalibJob$data_field()}}
+\item \href{#method-data_bc}{\code{BayesCalibJob$data_bc()}}
+\item \href{#method-eplus_run}{\code{BayesCalibJob$eplus_run()}}
+\item \href{#method-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
+\item \href{#method-eplus_status}{\code{BayesCalibJob$eplus_status()}}
+\item \href{#method-eplus_output_dir}{\code{BayesCalibJob$eplus_output_dir()}}
+\item \href{#method-eplus_locate_output}{\code{BayesCalibJob$eplus_locate_output()}}
+\item \href{#method-eplus_errors}{\code{BayesCalibJob$eplus_errors()}}
+\item \href{#method-eplus_report_data_dict}{\code{BayesCalibJob$eplus_report_data_dict()}}
+\item \href{#method-eplus_report_data}{\code{BayesCalibJob$eplus_report_data()}}
+\item \href{#method-eplus_tabular_data}{\code{BayesCalibJob$eplus_tabular_data()}}
+\item \href{#method-eplus_save}{\code{BayesCalibJob$eplus_save()}}
+\item \href{#method-stan_run}{\code{BayesCalibJob$stan_run()}}
+\item \href{#method-stan_file}{\code{BayesCalibJob$stan_file()}}
+}
+}
+\if{html}{
+\out{<details ><summary>Inherited methods</summary>}
+\itemize{
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors">}\href{../../eplusr/html/EplusGroupJob.html#method-errors}{\code{eplusr::EplusGroupJob$errors()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill">}\href{../../eplusr/html/EplusGroupJob.html#method-kill}{\code{eplusr::EplusGroupJob$kill()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table">}\href{../../eplusr/html/EplusGroupJob.html#method-list_table}{\code{eplusr::EplusGroupJob$list_table()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output">}\href{../../eplusr/html/EplusGroupJob.html#method-locate_output}{\code{eplusr::EplusGroupJob$locate_output()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir">}\href{../../eplusr/html/EplusGroupJob.html#method-output_dir}{\code{eplusr::EplusGroupJob$output_dir()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table">}\href{../../eplusr/html/EplusGroupJob.html#method-read_table}{\code{eplusr::EplusGroupJob$read_table()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data}{\code{eplusr::EplusGroupJob$report_data()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data_dict}{\code{eplusr::EplusGroupJob$report_data_dict()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status">}\href{../../eplusr/html/EplusGroupJob.html#method-status}{\code{eplusr::EplusGroupJob$status()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data">}\href{../../eplusr/html/EplusGroupJob.html#method-tabular_data}{\code{eplusr::EplusGroupJob$tabular_data()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print">}\href{../../eplusr/html/ParametricJob.html#method-print}{\code{eplusr::ParametricJob$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run">}\href{../../eplusr/html/ParametricJob.html#method-run}{\code{eplusr::ParametricJob$run()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save">}\href{../../eplusr/html/ParametricJob.html#method-save}{\code{eplusr::ParametricJob$save()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed">}\href{../../eplusr/html/ParametricJob.html#method-seed}{\code{eplusr::ParametricJob$seed()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version">}\href{../../eplusr/html/ParametricJob.html#method-version}{\code{eplusr::ParametricJob$version()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather">}\href{../../eplusr/html/ParametricJob.html#method-weather}{\code{eplusr::ParametricJob$weather()}}\out{</span>}
+}
+\out{</details>}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\subsection{Method \code{new()}}{
+Create a \code{BayesCalibJob} object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$new(idf, epw)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{idf}}{A path to an local EnergyPlus IDF file or an \link[eplusr:Idf]{eplusr::Idf} object.}
+
+\item{\code{epw}}{A path to an local EnergyPlus EPW file or an \link[eplusr:Epw]{eplusr::Epw} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+When initialization, the objects of classes related in output variable
+reporting in the original \link[eplusr:Idf]{eplusr::Idf} will be deleted, in order to
+make sure all input and output variable specifications can be
+achieved using \code{Output:Variable} and \code{Output:Meter}. Classes to be
+deleted include:
 \itemize{
 \item \code{Output:Variable}
 \item \code{Output:Meter}
@@ -66,62 +455,190 @@ variable specifications can be achieved using \code{Output:Variable} and
 \item \code{Meter:CustomDecrement}
 \item \code{Output:EnvironmentalImpactFactors}
 }
-
-\strong{Arguments}
-\itemize{
-\item \code{idf}: Path to EnergyPlus IDF file or an \code{Idf} object.
-\item \code{epw}: Path to EnergyPlus EPW file or an \code{Epw} object.
-}
 }
 
-\section{Get Seed Model and Weather}{
-\preformatted{param$version()
-param$seed()
-param$weather()
+\subsection{Returns}{
+An \code{BayesCalibJob} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{if (eplusr::is_avail_eplus(8.8)) {
+    idf_name <- "1ZoneUncontrolled.idf"
+    epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+
+    # create from local files
+    BayesCalibJob$new(idf_path, epw_path)
+
+    # create from an Idf and an Epw object
+    bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
 }
 
-\verb{$version()} returns the version of input \link{Idf} object.
+}
+\if{html}{\out{</div>}}
 
-\verb{$seed()} returns the input \link{Idf} object.
-
-\verb{$weather()} returns the input \link{Epw} object.
 }
 
-\section{Get RDD amd MDD Data of Seed Model}{
-\preformatted{param$read_rdd(update = FALSE)
-param$read_mdd(update = FALSE)
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-read_rdd"></a>}}
+\subsection{Method \code{read_rdd()}}{
+Read EnergyPlus Report Data Dictionary (RDD) file
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$read_rdd(update = FALSE)}\if{html}{\out{</div>}}
 }
 
-\verb{$read_rdd()} and \verb{$read_mdd()} silently runs EnergyPlus using input seed
-model with design-day-only mode to create \code{.rdd} and \code{.mdd} file and returns
-the corresponding \link[eplusr:read_rdd]{RddFile} and
-\link[eplusr:read_mdd]{MddFile} object, respectively. The \code{RddFile} and
-\code{MddFile} object is stored internally and will be directly returned whenever
-you call \verb{$read_rdd()} and \verb{$read_mdd()} again. You can force to run the
-design-day-only simulation again to update the contents by setting \code{update}
-to \code{TRUE}.
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{update}}{Whether to run the design-day-only simulation and parse
+\code{.rdd} and \code{.mdd} file again. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$read_rdd()} silently runs EnergyPlus using input seed model with
+design-day-only mode to create the \code{.rdd} file and returns the
+corresponding \link[eplusr:read_rdd]{RddFile} object.
 
-\verb{$read_rdd()} and \code{read_mdd()} is useful when adding input and output
+The \code{RddFile} object is stored internally and will be directly
+returned whenever you call \verb{$read_rdd()} again. You can force to
+rerun the design-day-only simulation again to update the contents by
+setting \code{update} to \code{TRUE}.
+
+\verb{$read_rdd()} and
+\href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}}
+are useful when adding input and output parameters using
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+respectively.
+}
+
+\subsection{Returns}{
+An \link[eplusr:read_rdd]{RddFile} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{bc$read_rdd()
+
+# force to rerun
+bc$read_rdd(update = TRUE)
+
+`$read_rdd()` and `$read_mdd()` silently runs EnergyPlus using input seed
+model with design-day-only mode to create `.rdd` and `.mdd` file and returns
+the corresponding [RddFile][eplusr::read_rdd()] and
+[MddFile][eplusr::read_mdd()] object, respectively. The `RddFile` and
+`MddFile` object is stored internally and will be directly returned whenever
+you call `$read_rdd()` and `$read_mdd()` again. You can force to run the
+design-day-only simulation again to update the contents by setting `update`
+to `TRUE`.
+
+`$read_rdd()` and `read_mdd()` is useful when adding input and output
 parameters.
 
-\strong{Arguments}
-\itemize{
-\item \code{update}: Whether to run the design-day-only simulation and parse \code{.rdd}
-and \code{.mdd} file again. Default: \code{FALSE}.
 }
+\if{html}{\out{</div>}}
+
 }
 
-\section{Set Input and Output Parameters}{
-\preformatted{bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-read_mdd"></a>}}
+\subsection{Method \code{read_mdd()}}{
+Read EnergyPlus Meter Data Dictionary (MDD) file
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$read_mdd(update = FALSE)}\if{html}{\out{</div>}}
 }
 
-\verb{$input()} and \verb{$output()} takes input and output parameter definitions in a
-similar pattern as you set output variables in \code{Output:Variable} and
-\code{Output:Meter} class and returns a \link[data.table:data.table]{data.table}
-containing the information of input and output parameters. For \verb{$input()},
-only variables in RDD are allowed. For \verb{$output()}, both variables in RDD and
-MDD are allowd. The returned data.table has 5 columns:
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{update}}{Whether to run the design-day-only simulation and parse
+\code{.rdd} and \code{.mdd} file again. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$read_mdd()} silently runs EnergyPlus using input seed model with
+design-day-only mode to create the \code{.mdd} file and returns the
+corresponding \link[eplusr:read_mdd]{MddFile} object.
+
+The \code{MddFile} object is stored internally and will be directly
+returned whenever you call \verb{$read_mdd()} again. You can force to
+rerun the design-day-only simulation again to update the contents by
+setting \code{update} to \code{TRUE}.
+
+\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
+and
+\code{read_mdd()}
+are useful when adding input and output parameters using
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+respectively.
+}
+
+\subsection{Returns}{
+An \link[eplusr:read_mdd]{MddFile} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{bc$read_mdd()
+
+# force to rerun
+bc$read_mdd(update = TRUE)
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-input"></a>}}
+\subsection{Method \code{input()}}{
+Set input parameters
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$input(
+  key_value = NULL,
+  name = NULL,
+  reporting_frequency = NULL,
+  append = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key_value}}{Key value name for variables. If not specified,
+\code{"*"} are used for all variables. \code{key_value} can also be an
+\code{RddFile}, \code{MddFile} or a \code{\link[=data.frame]{data.frame()}}. Please see
+description above.}
+
+\item{\code{name}}{Variable names listed in RDD or MDD.}
+
+\item{\code{reporting_frequency}}{Variable reporting frequency for \strong{all}
+variables.  If \code{NULL}, \code{"Timestep"} are used for all
+variables. All possible values: \code{"Detailed"}, \code{"Timestep"},
+\code{"Hourly"}, \code{"Daily"}, \code{"Monthly"}, \code{"RunPeriod"},
+\code{"Environment"}, and \code{"Annual"}. Default: \code{NULL}.}
+
+\item{\code{append}}{Whether to append input variables at the end of
+existing ones. A special value \code{NULL} can be given to remove
+all existing parameters. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$input()} takes input parameter definitions in a similar pattern as
+you set output variables in \code{Output:Variable} and \code{Output:Meter}
+class and returns a \code{\link[data.table:data.table]{data.table::data.table()}} containing the
+information of input parameters. Only variables in
+\link[eplusr:read_rdd]{RDD} are
+allowed.The returned \code{\link[data.table:data.table]{data.table::data.table()}} has 5 columns:
 \itemize{
 \item \code{index}: Indices of input or output parameters.
 \item \code{class}: The class that parameters belong to. Will be either
@@ -131,84 +648,220 @@ MDD are allowd. The returned data.table has 5 columns:
 \item \code{reporting_frequency}: Variable reporting frequency.
 }
 
-If calling without any argument, the existing input and output parameters are
-directly returned, e.g. \code{bc$input()} and \code{bc$output()}.
+If calling without any argument, the existing input parameters are
+directly returned, e.g. \code{bc$input()}.
 
-You can remove all existing input and output parameter by setting \code{append} to
-\code{NULL}, e.g. \code{bc$input(append = NULL)} and \code{bc$output(append = NULL)}.
+You can remove all existing input parameters by setting \code{append} to
+\code{NULL}, e.g. \code{bc$input(append = NULL)}.
 
 \code{key_value} accepts 3 different formats:
 \itemize{
 \item A character vector.
-\item An \code{RddFile} or an \code{MddFile} object. They can be retrieved using
-\verb{$read_rdd()} and \verb{$read_mdd()}. In this case, \code{name} argument will be
-ignored, as its values are directly taken from variable names in input
-\code{RddFile} and \code{MddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
-bc$output(bc$read_mdd()[1:5])
+\item An \link[eplusr:read_rdd]{RddFile} object. It can be retrieved using
+\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}.
+In this case, \code{name} argument will be ignored, as its values are
+directly taken from variable names in input
+\link[eplusr:read_rdd]{RddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
 }
 \item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
-\code{Output:Meter} objects using \link[eplusr:Idf]{Idf$load()}. In this case, \code{name}
-argument will be ignored. For example:
+\code{Output:Meter} objects using \link[eplusr:Idf]{eplusr::Idf$load()}. In
+this case, \code{name} argument will be ignored. For example:
 }\preformatted{bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
-bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
+}
 }
 
-\strong{Arguments}
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# explicitly specify input variable name
+bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
+
+# use an RddFile
+bc$input(bc$read_rdd()[1:5])
+
+# use a data.frame
+bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+
+# get existing input
+bc$input()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-output"></a>}}
+\subsection{Method \code{output()}}{
+Set output parameters
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$output(
+  key_value = NULL,
+  name = NULL,
+  reporting_frequency = NULL,
+  append = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key_value}}{Key value name for variables. If not specified,
+\code{"*"} are used for all variables. \code{key_value} can also be an
+\code{RddFile}, \code{MddFile} or a \code{\link[=data.frame]{data.frame()}}. Please see
+description above.}
+
+\item{\code{name}}{Variable names listed in RDD or MDD.}
+
+\item{\code{reporting_frequency}}{Variable reporting frequency for \strong{all}
+variables.  If \code{NULL}, \code{"Timestep"} are used for all
+variables. All possible values: \code{"Detailed"}, \code{"Timestep"},
+\code{"Hourly"}, \code{"Daily"}, \code{"Monthly"}, \code{"RunPeriod"},
+\code{"Environment"}, and \code{"Annual"}. Default: \code{NULL}.}
+
+\item{\code{append}}{Whether to append input variables at the end of
+existing ones. A special value \code{NULL} can be given to remove
+all existing parameters. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$output()} takes output parameter definitions in a
+similar pattern as you set output variables in \code{Output:Variable} and
+\code{Output:Meter} class and returns a \code{\link[data.table:data.table]{data.table::data.table()}}
+containing the information of output parameters. Unlike
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
+both variables in \link[eplusr:read_rdd]{RDD} and
+\link[eplusr:read_mdd]{MDD} are allowd. The returned data.table has 5
+columns:
 \itemize{
-\item \code{key_value}: Key value name for variables. If not specified, \code{"*"} are used
-for all variables. \code{key_value} can also be an \code{RddFile}, \code{MddFile} or a
-\code{\link[=data.frame]{data.frame()}}. Please see description above.
-\item \code{name}: Variable names listed in RDD or MDD.
-\item \code{reporting_frequency}: Variable reporting frequency for \strong{all} variables.
-If \code{NULL}, \code{"Timestep"} are used for all variables. All possible
-values: \code{"Detailed"}, \code{"Timestep"}, \code{"Hourly"}, \code{"Daily"}, \code{"Monthly"},
-\code{"RunPeriod"}, \code{"Environment"}, and \code{"Annual"}. Default: \code{NULL}.
-\item \code{append}: Whether to append input variables at the end of
-existing ones. A special value \code{NULL} can be given to remove all existing
-parameters. Default: \code{FALSE}.
-}
+\item \code{index}: Indices of input or output parameters.
+\item \code{class}: The class that parameters belong to. Will be either
+\code{Output:Variable} or \code{Output:Meter}.
+\item \code{key_value}: Key value name for variables.
+\item \code{variable_name}: Variable names listed in RDD or MDD.
+\item \code{reporting_frequency}: Variable reporting frequency.
 }
 
-\section{Set Parameters}{
-\preformatted{bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .num_sim = 30L)
-bc$samples()
-bc$models()
-}
+If calling without any argument, the existing output parameters are
+directly returned, e.g. \code{bc$output()}.
 
-There are 2 ways to set calibration parameters in \code{BayesCalibJob} class,
-i.e. \verb{$param()} and \verb{$apply_measure()}.
+You can remove all existing parameter by setting \code{append} to \code{NULL},
+e.g. \code{bc$output(append = NULL)}.
 
-\verb{$param()} takes parameter definitions in list format, which is similar to
-\verb{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is not assigned with a
-single value, but a numeric vector of length 2, indicating the minimum and
-maximum of the parameter. Every list in \verb{$param()} should be named with a
-valid object name. Object ID can also be used but have to be combined with
-prevailing two periods \code{..}, e.g. \code{..10} indicates the object with ID \code{10}.
-
-There is two special syntax in \verb{$param()}:
+\code{key_value} accepts 3 different formats:
 \itemize{
-\item \code{class := list(field = value)}: Note the use of \verb{:=} instead of \verb{=}. The
-main difference is that, unlike \verb{=}, the left hand side of \verb{:=} should be a
-valid class name in the seed model. It will treat the specified field of
-all objects in specified class to as a single calibration parameter.
-\item \code{.(object, object) := list(field = value)}: Simimar like above, but note
-the use of \code{.()} in the left hand side. You can put multiple object ID or
-names in \code{.()}. It will treat the field of all specified objects to as a
-single calibration parameter.
+\item A character vector.
+\item An \link[eplusr:read_rdd]{RddFile} object or an
+\link[eplusr:read_mdd]{MddFile} object. They can be retrieved using
+\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}},
+respectively.  In this case, \code{name} argument will be ignored, as
+its values are directly taken from variable names in input
+\link[eplusr:read_rdd]{RddFile} object or
+\link[eplusr:read_mdd]{MddFile} object. For example:\preformatted{bc$output(bc$read_mdd()[1:5])
+}
+\item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
+\code{Output:Meter} objects using \link[eplusr:Idf]{Idf$load()}. In this
+case, \code{name} argument will be ignored. For example:
+}\preformatted{bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
+}
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# explicitly specify input variable name
+bc$output(name = "fan electric power", reporting_frequency = "hourly")
+
+# use an RddFile or MddFile
+bc$output(bc$read_rdd()[6:10])
+bc$output(bc$read_mdd()[6:10])
+
+# use a data.frame
+bc$output(eplusr::rdd_to_load(bc$read_mdd()[6:10]))
+
+# get existing input
+bc$output()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-param"></a>}}
+\subsection{Method \code{param()}}{
+Set parameters for Bayesian calibration
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$param(..., .names = NULL, .num_sim = 30L)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Lists of paramter definitions. Please see above on the
+syntax.}
+
+\item{\code{.names}}{A character vector of the parameter names. If \code{NULL},
+the parameter will be named in format \code{t + number}, where
+\code{number} is the index of parameter. Default: \code{NULL}.}
+
+\item{\code{.num_sim}}{An positive integer specifying the number of
+simulations to run for each combination of calibration
+parameter value. Default: \code{30L}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$param()} takes parameter definitions in list format, which is
+similar to \verb{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is
+not assigned with a single value, but a numeric vector of length 2,
+indicating the minimum and maximum value of each
+parameter.
+
+Similar like the way of modifying object field values in
+\code{\link[eplusr:Idf$set]{eplusr::Idf$set()}}, there are 3 different ways of defining a
+parameter in epluspar:
+\itemize{
+\item \code{object = list(field = c(min, max))}: Where \code{object} is a
+valid object ID or name. Note object ID should be denoted with two
+periods \code{..}, e.g. \code{..10} indicates the object with ID \code{10}, It
+will set that specific field in that object as one parameter.
+\item \code{.(object, object) := list(field = c(min, max))}: Simimar like
+above, but note the use of \code{.()} in the left hand side. You can put
+multiple object ID or names in \code{.()}. It will set the field of all
+specified objects as one parameter.
+\item \code{class := list(field = c(min, max, levels))}: Note the use of \verb{:=}
+instead of \code{=}. The main difference is that, unlike \code{=}, the left
+hand side of \verb{:=} should be a valid class name in current
+\link[eplusr:Idf]{eplusr::Idf}. It will set that field of all objects in specified
+class as one parameter.
 }
 
 For example, the code block below defines 4 calibration parameters:
 \itemize{
-\item Field \verb{Fan Total Efficiency} in object named \verb{Supply Fan 1} in class
-\code{Fan:VariableVolume} class, with minimum and maximum being 0.1 and 1.0,
+\item Field \verb{Fan Total Efficiency} in object named \verb{Supply Fan 1} in
+class \code{Fan:VariableVolume} class, with minimum and maximum being
+0.1 and 1.0, respectively.
+\item Field \code{Thickness} in all objects in class \code{Material}, with minimum
+and maximum being 0.01 and 1.0, respectively.
+\item Field \code{Conductivity} in all objects in class \code{Material}, with
+minimum and maximum being 0.1 and 0.6, respectively.
+\item Field \verb{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2}
+in class \code{Lights}, with minimum and maximum being 10 and 30,
 respectively.
-\item Field \code{Thickness} in all objects in class \code{Material}, with minimum and
-maximum being 0.01 and 1.0, respectively.
-\item Field \code{Conductivity} in all objects in class \code{Material}, with minimum and
-maximum being 0.1 and 0.6, respectively.
-\item Field \verb{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2} in class
-\code{Lights}, with minimum and maximum being 10 and 30, respectively.
 }\preformatted{bc$param(
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
@@ -216,32 +869,75 @@ maximum being 0.1 and 0.6, respectively.
 )
 }
 
-\strong{Arguments}
-\itemize{
-\item \code{...}: Lists of paramter definitions. Each list should be named with a valid
-object name or a valid object ID denoted in style \code{..1}, \code{..2} and etc. For
-specifying the fields for all objects in a class, the class name instead of
-the object name should be used, and a special notation \verb{:=} should be used
-instead of \verb{=}, e.g. \code{class := list(field = value)}. For grouping fields
-from different objects in the same class, use \code{.()} in the left hand side
-and put object ID or names inside., .e.g \code{.(object1, object2) := list(field = value)}.
-\item \code{.num_sim}: An positive integer specifying the number of simulations to run
-for each combination of calibration parameter value. Default:
-\code{30L}.
-\item \code{.names}: A character vector of the parameter names. If \code{NULL},
-the parameter will be named in format \code{t + number}. Default: \code{NULL}.
+All models created using \verb{$param()} will be named in the same
+pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
+paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with
+\code{minlength} being \code{5L} and \code{use.classes} being \code{TRUE}. If samples
+contain duplications, \code{\link[=make.unique]{make.unique()}} will be called to make sure
+every model has a unique name.
 }
 
+\subsection{Returns}{
+The modified \code{BayesCalibJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
+    Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-apply_measure"></a>}}
+\subsection{Method \code{apply_measure()}}{
+Set parameters for Bayesian calibration using function
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$apply_measure(measure, ..., .num_sim = 30L)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{measure}}{A function that takes an \link[eplusr:Idf]{eplusr::Idf} and other
+arguments as input and returns an \link[eplusr:Idf]{eplusr::Idf} object as
+output.}
+
+\item{\code{...}}{Arguments \strong{except first \code{Idf} argument} that are passed
+to that \code{measure}.}
+
+\item{\code{.num_sim}}{An positive integer specifying the number of
+simulations to run taking into account of all parameter
+combinations. Default: \code{30L}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
 \verb{$apply_measure()} works in a similar way as the \verb{$apply_measure} in
 \link[eplusr:ParametricJob]{eplusr::ParametricJob} class, with only exception that each argument
-supplied in \code{...} should be a numeric vector of length 2, indicating the
-minimum and maximum of the calibration parameter.
-Basically \verb{$apply_measure()} allows to apply a measure to an \link{Idf}.
-A measure here is just a function that takes an \link{Idf} object and other
-arguments as input, and returns a modified \link{Idf} object as output. The names
-of function parameter will be used as the names of calibration parameter. For
-example, the equivalent version of specifying parameters described above
-using \verb{$apply_measure()} can be:\preformatted{measure <- function (idf, efficiency, thickness, conducitivy, lpd) \{
+supplied in \code{...} should be a numeric vector of length 2, indicating
+the minimum value and maximum value of each parameter.
+
+Basically \verb{$apply_measure()} allows to apply a measure to an
+\link[eplusr:Idf]{eplusr::Idf}. A measure here is just a function that takes an
+\link[eplusr:Idf]{eplusr::Idf} object and other arguments as input, and returns a
+modified \link[eplusr:Idf]{eplusr::Idf} object as output.
+
+The names of function parameter will be used as the names of
+calibration parameter. For example, the equivalent version of
+specifying parameters described in
+\href{../../epluspar/html/SensitivityJob.html#method-param}{\code{$param()}}
+using \verb{$apply_measure()} can be:\preformatted{# set calibration parameters using $apply_measure()
+# (a) first define a "measure"
+measure <- function (idf, efficiency, thickness, conducitivy, lpd) \{
     idf$set(
         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
         Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -251,6 +947,8 @@ using \verb{$apply_measure()} can be:\preformatted{measure <- function (idf, eff
     idf
 \}
 
+# (b) then apply that measure with parameter space definitions as
+# function arguments
 bc$apply_measure(measure,
     efficiency = c(min = 0.1, max = 1.0),
     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
@@ -258,191 +956,314 @@ bc$apply_measure(measure,
 )
 }
 
-\strong{Arguments}
-\itemize{
-\item \code{measure}: A function that takes an \code{Idf} and other arguments as input and
-returns an \code{Idf} object as output.
-\item \code{...}: Arguments \strong{except first \code{Idf} argument} that are passed to that
-\code{measure}.
-\item \code{.num_sim}: An positive integer specifying the number of simulations to run
-for each value of calibration parameter value. (NOT CORRECT). Default:
-\code{30L}.
+All models created using \verb{$apply_measure()} will be named in the same
+pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
+paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with
+\code{minlength} being \code{5L} and \code{use.classes} being \code{TRUE}. If samples
+contain duplications, \code{\link[=make.unique]{make.unique()}} will be called to make sure
+every model has a unique name.
 }
 
-All models created using \verb{$param()} and \verb{$apply_measure()} will be named in
-the same pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
-paramter names will be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength}
-being \code{5L} and \code{use.classes} being \code{TRUE}. If samples contain duplications,
-\code{\link[=make.unique]{make.unique()}} will be called to make sure every model has a unique name.
+\subsection{Returns}{
+The modified \code{BayesCalibJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{# set calibration parameters using $apply_measure()
+# (a) first define a "measure"
+measure <- function (idf, efficiency, thickness, conducitivy, lpd) {
+    idf$set(
+        `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        Material := list(Thickness = thickness, Conductivity = conducivity)
+        .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
+    )
 
-\verb{$samples()} returns a \link[data.table:data.table]{data.table} which contains
-the sampled value for each parameter using \link[lhs:randomLHS]{Random Latin Hypercube Sampling} method. The returned data.table has \code{1 + n}
-columns, where \code{n} is the parameter number, and \code{1} indicates an extra column
-named \code{case} giving the index of each sample. Note that if \verb{$samples()} is
-called before input and output parameters being set using \verb{$input()} and
-\verb{$output()}, only the sampling will be performed and no parametric models
-will be created. This is because information of input and output parameters
+    idf
+}
+
+# (b) then apply that measure with parameter space definitions as
+# function arguments
+bc$apply_measure(measure,
+    efficiency = c(min = 0.1, max = 1.0),
+    thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
+    lpd = c(10, 30)
+)
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-samples"></a>}}
+\subsection{Method \code{samples()}}{
+Get sampled parameter values
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$samples()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$samples()} returns a \code{\link[data.table:data.table]{data.table::data.table()}} which contains the
+sampled value for each parameter using \link[lhs:randomLHS]{Random Latin Hypercube Sampling} method. The returned
+\code{\link[data.table:data.table]{data.table::data.table()}} has \code{1 + n} columns, where \code{n} is the
+parameter number, and \code{1} indicates an extra column named \code{case}
+giving the index of each sample.
+
+Note that if \verb{$samples()} is called before input and output
+parameters being set using
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
+only the sampling will be performed and no parametric models will be
+created.  This is because information of input and output parameters
 are needed in order to make sure that corresponding variables will be
-reported during simulations. In this case, you can use \verb{$models()} to create
-those models.
+reported during simulations. In this case, you can use
+\href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
+to create those models.
+}
 
-\verb{$models()} returns a list of parametric \link[eplusr:Idf]{Idf} objects created
-using calibration parameter values genereated using Random Latin Hypercube
-Sampling. As stated above, parametric models can only be created after input,
-output and calibration parameters have all be set using \verb{$input()},
-\verb{$output()} and \verb{$param()} (or \verb{$apply_measure()}), respectively.
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$samples()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-models"></a>}}
+\subsection{Method \code{models()}}{
+Get parametric models
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$models()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$models()} returns a list of parametric \link[eplusr:Idf]{eplusr::Idf} objects
+created using calibration parameter values genereated using Random
+Latin Hypercube Sampling. As stated above, parametric models can only
+be created after input, output and calibration parameters have all be
+set using
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}
+and
+\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
+(or
+\href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}
+), respectively.
 
 All models will be named in the same pattern, i.e.
-\verb{Case_ParameterName(ParamterValue)...}. Note that paramter names will be
-abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength} being \code{5L} and
+\verb{Case_ParameterName(ParamterValue)...}. Note that paramter names will
+be abbreviated using \code{\link[=abbreviate]{abbreviate()}} with \code{minlength} being \code{5L} and
 \code{use.classes} being \code{TRUE}.
 }
 
-\section{Run Parametric Simulations}{
-\preformatted{bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-             copy_external = FALSE, echo = wait)
+\subsection{Returns}{
+A named list of \link[eplusr:Idf]{eplusr::Idf} objects.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$models()
 }
 
-\verb{$eplus_run()} runs all parametric models in parallel. Parameter \code{run_period}
-can be given to insert a new \code{RunPeriod} object. In this case, all existing
-\code{RunPeriod} objects in the seed model will be commented out.
-
-Note that when \code{run_period} is given, value of field \verb{Run Simulation for Weather File Run Periods} in \code{SimulationControl} class will be reset to \code{Yes}
-to make sure input run period can take effect.
-
-\strong{Arguments}
-\itemize{
-\item \code{dir}: The parent output directory for specified simulations. Outputs of
-each simulation are placed in a separate folder under the parent directory.
-If \code{NULL}, directory of seed model will be used. Default: \code{NULL}.
-\item \code{run_period}: A list giving a new \code{RunPeriod} object definition. If not
-\code{NULL}, only this new RunPeriod will take effect with all existing
-RunPeriod objects in the seed model being commented out. If \code{NULL},
-existing run period in the seed model will be used. Default: \code{NULL}.
-\item \code{wait}: If \code{TRUE}, R will hang on and wait all EnergyPlus simulations
-finish. If \code{FALSE}, all EnergyPlus simulations are run in the background.
-Default: \code{TRUE}.
-\item \code{force}: Only applicable when the last simulation runs with \code{wait} equals
-to \code{FALSE} and is still running. If \code{TRUE}, current running job is
-forced to stop and a new one will start. Default: \code{FALSE}.
-\item \code{copy_external}: If \code{TRUE}, the external files that every \code{Idf} object
-depends on will also be copied into the simulation output directory. The
-values of file paths in the Idf will be changed automatically. Currently,
-only \code{Schedule:File} class is supported.  This ensures that the output
-directory will have all files needed for the model to run. Default is
-\code{FALSE}.
-\item \code{echo}: Only applicable when \code{wait} is \code{TRUE}. Whether to print simulation
-status. Default: the value of \code{wait}.
 }
+\if{html}{\out{</div>}}
+
 }
 
-\section{Collect Simulation Data}{
-\preformatted{bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-data_sim"></a>}}
+\subsection{Method \code{data_sim()}}{
+Collect simulation data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)}\if{html}{\out{</div>}}
 }
 
-\verb{$data_sim()} returns a list of 2 \link[data.table:data.table]{data.table}
-which contains the simulated data of input and output parameters. These data
-will be stored internally and used during Bayesian calibration using Stan.
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{resolution}}{A character string specifying a time unit or a
+multiple of a unit to change the time resolution of returned
+simulation data. Valid base units are \code{min}, \code{hour}, \code{day},
+\code{week}, \code{month}, and \code{year}.  Example: \verb{10 mins}, \verb{2 hours},
+\verb{1 day}. If \code{NULL}, the variable reporting frequency is used.
+Default: \code{NULL}.}
 
-The \code{resolution} parameter can be used to specify the time resolution of
-returned data. Note that input time resolution cannot be smaller than the
-reporting frequency, otherwise an error will be issued.
+\item{\code{exclude_ddy}}{Whether to exclude design day data. Default:
+\code{TRUE}. Default: \code{FALSE}.}
 
-The parameter is named in the same way as standard EnergyPlus csv output
-file, i.e. \code{KeyValue:VariableName[Unit](Frequency)}.
+\item{\code{all}}{If \code{TRUE}, extra columns are also included in the returned
+\code{\link[data.table:data.table]{data.table::data.table()}} describing the simulation case and
+datetime components. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$data_sim()} returns a list of 2 \code{\link[data.table:data.table]{data.table::data.table()}} which
+contains the simulated data of input and output parameters. These
+data will be stored internally and used during Bayesian calibration
+using Stan.
 
-By default, \verb{$data_sim()} returns minimal columns, i.e. the \code{Date/Time}
-column together with all input and output parameters are returned. You can
-retrieve extra columns by setting \code{all} to \code{TRUE}. Those column include:
+The \code{resolution} parameter can be used to specify the time resolution
+of returned data. Note that input time resolution cannot be smaller
+than the reporting frequency, otherwise an error will be issued.
+
+The parameter is named in the same way as standard EnergyPlus csv
+output file, i.e. \code{KeyValue:VariableName [Unit](Frequency)}.
+
+By default, \verb{$data_sim()} returns minimal columns, i.e. the
+\code{Date/Time} column together with all input and output parameters are
+returned. You can retrieve extra columns by setting \code{all} to \code{TRUE}.
+Those column include:
 \itemize{
 \item \code{case}: Integer type. Indices of parametric simulations.
 \item \code{environment_period_index}: Integer type. The indice of environment.
 \item \code{environment_name}: Character type. A text string identifying the
 simulation environment.
 \item \code{simulation_days}: Integer type. Day of simulation.
-\item \code{datetime}: DateTime type. The date time of simulation result. Note that
-the year valueas are automatically calculated to meets the start day of
-week restriction for each simulation environment.
+\item \code{datetime}: DateTime type. The date time of simulation result. Note
+that the year valueas are automatically calculated to meets the
+start day of week restriction for each simulation environment.
 \item \code{month}: Integer type. The month of reported date time.
 \item \code{day}: Integer type. The day of month of reported date time.
 \item \code{hour}: Integer type. The hour of reported date time.
 \item \code{minute}: Integer type. The minute of reported date time.
-\item \code{day_type}: Character type. The type of day, e.g. \code{Monday}, \code{Tuesday} and
-etc. Note that \code{day_type} will always be \code{NA} if \code{resolution} is specified.
-}
-
-\strong{Arguments}
-\itemize{
-\item \code{resolution}: A character string specifying a time unit or a multiple of a
-unit to change the time resolution of returned simulation data. Valid base
-units are \code{min}, \code{hour}, \code{day}, \code{week}, \code{month}, and \code{year}.
-Example: \verb{10 mins}, \verb{2 hours}, \verb{1 day}. If \code{NULL}, the variable reporting
-frequency is used. Default: \code{NULL}.
-\item \code{exclude_ddy}: Whether to exclude design day data. Default: \code{TRUE}.
-Default: \code{FALSE}.
-\item \code{all}: If \code{TRUE}, extra columns are also included in the returned
-\link[data.table:data.table]{data.table} describing the simulation case and
-datetime components. Default: \code{FALSE}.
+\item \code{day_type}: Character type. The type of day, e.g. \code{Monday},
+\code{Tuesday} and etc. Note that \code{day_type} will always be \code{NA} if
+\code{resolution} is specified.
 }
 }
 
-\section{Specify Measured Data}{
-\preformatted{bc$data_field(output, new_input = NULL, all = FALSE)
+\subsection{Returns}{
+A list of 2 \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$data_sim()
 }
 
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-data_field"></a>}}
+\subsection{Method \code{data_field()}}{
+Specify field measured data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$data_field(output, new_input = NULL, all = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{output}}{A \code{\link[=data.frame]{data.frame()}} containing measured value of output
+parameters.}
+
+\item{\code{new_input}}{A \code{\link[=data.frame]{data.frame()}} containing newly measured value of
+input parameters.}
+
+\item{\code{all}}{If \code{TRUE}, extra columns are also included in the returned
+\code{\link[data.table:data.table]{data.table::data.table()}} describing the simulation case and
+datetime components. For details, please see
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
 \verb{$data_field()} takes a \code{\link[=data.frame]{data.frame()}} of measured value of output
-parameters and returns a list of \link[data.table:data.table]{data.table}s
-which contains the measured value of input and output parameters, and newly
+parameters and returns a list of \code{\link[data.table:data.table]{data.table::data.table()}}s which
+contains the measured value of input and output parameters, and newly
 measured value of input if applicable.
 
-The specified \code{output} \code{\link[=data.frame]{data.frame()}} is validated using criteria below:
+The specified \code{output} \code{\link[=data.frame]{data.frame()}} is validated using criteria
+below:
 \itemize{
-\item The column number should be the same as the number of output specified in
-\verb{$output()}.
-\item The row number should be the same as the number of simulated values for
-each case extracted using \verb{$data_sim()}.
+\item The column number should be the same as the number of output
+specified in
+\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}.
+\item The row number should be the same as the number of simulated values
+for each case extracted using
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
 }
 
-For input parameters, the values of simulation data for the first case are
-directly used as the measured values.
+For input parameters, the values of simulation data for the first
+case are directly used as the measured values.
 
-Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly measured
-value of input parameters. The column number of input \code{\link[=data.frame]{data.frame()}} should
-be the same as the number of input parameters specified in \verb{$input()}. If not
-specified, the measured values of input parameters will be used for
-predictions.
+Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly
+measured value of input parameters. The column number of input
+\code{\link[=data.frame]{data.frame()}} should be the same as the number of input parameters
+specified in
+\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}.
+If not specified, the measured values of
+input parameters will be used for predictions.
 
-All the data will be stored internally and used during Bayesian calibration
-using Stan.
+All the data will be stored internally and used during Bayesian
+calibration using Stan.
 
-Note that as \verb{$data_field()} relies on the output of \verb{$data_sim()} to
-perform validation on the specified data, \verb{$data_field()} cannot be called
-before \verb{$data_sim()} and internally stored data will be removed whenever
-\verb{$data_sim()} is called. This aims to make sure that simulated data and field
-data can be matched whenever the calibration is performed.
-
-\strong{Arguments}
-\itemize{
-\item \code{output}: A \code{\link[=data.frame]{data.frame()}} containing measured value of output parameters.
-\item \code{new_input}: A \code{\link[=data.frame]{data.frame()}} containing newly measured value of input
-parameters.
-\item \code{all}: If \code{TRUE}, extra columns are also included in the returned
-\link[data.table:data.table]{data.table} describing the simulation case and
-datetime components. For details, please see \verb{$data_sim()}. Default:
-\code{FALSE}.
-}
+Note that as \verb{$data_field()} relies on the output of
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+to
+perform validation on the specified data, \verb{$data_field()} cannot be
+called before
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+and internally stored data will be
+removed whenever
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+is called. This aims to make sure that
+simulated data and field data can be matched whenever the calibration
+is performed.
 }
 
-\section{Run Bayesian Calibration Using Stan}{
-\preformatted{bc$data_bc(data_field = NULL, data_sim = NULL)
-bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-            mc.cores = parallel::detectCores(), ...)
-bc$stan_file(path = NULL)
+\subsection{Returns}{
+A list of \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-data_bc"></a>}}
+\subsection{Method \code{data_bc()}}{
+Combine simulation data and field measured data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$data_bc(data_field = NULL, data_sim = NULL)}\if{html}{\out{</div>}}
 }
 
-\verb{$data_bc()} takes a list of field data and simulated data, and returns a
-list that contains data input for Bayesican calibration using the Stan model
-from Chong (2018):
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data_field}}{A \code{\link[=data.frame]{data.frame()}} specifying field measured data.
+Should have the same structure as the output from
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
+If \code{NULL}, the output from
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+will be used. Default: \code{NULL}.}
+
+\item{\code{data_sim}}{A \code{\link[=data.frame]{data.frame()}} specifying field measured data.
+Should have the same structure as the output from
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+If \code{NULL}, the output from
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
+will be used. Default: \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$data_bc()} takes a list of field data and simulated data, and
+returns a list that contains data input for Bayesian calibration
+using the Stan model from Chong (2018):
 \itemize{
 \item \code{n}: Number of measured parameter observations.
 \item \code{n_pred}: Number of newly design points for predictions.
@@ -463,145 +1284,827 @@ Input \code{data_field} and \code{data_sim} should have the same structure as th
 output from \verb{$data_field()} and \verb{$data_sim()}. If \code{data_field} and
 \code{data_sim} is not specified, the output from \verb{$data_field()} and
 \verb{$data_sim()} will be used.
+}
 
+\subsection{Returns}{
+A list of 11 elements.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_run"></a>}}
+\subsection{Method \code{eplus_run()}}{
+Run parametric simulations
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_run(
+  dir = NULL,
+  run_period = NULL,
+  wait = TRUE,
+  force = FALSE,
+  copy_external = FALSE,
+  echo = wait
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dir}}{The parent output directory for specified simulations.
+Outputs of each simulation are placed in a separate folder
+under the parent directory. If \code{NULL}, directory of seed
+model will be used. Default: \code{NULL}.}
+
+\item{\code{run_period}}{A list giving a new \code{RunPeriod} object definition.
+If not \code{NULL}, only this new RunPeriod will take effect with
+all existing RunPeriod objects in the seed model being
+commented out. If \code{NULL}, existing run period in the seed
+model will be used. Default: \code{NULL}.}
+
+\item{\code{wait}}{If \code{TRUE}, R will hang on and wait all EnergyPlus simulations
+finish. If \code{FALSE}, all EnergyPlus simulations are run in the
+background. Default: \code{TRUE}.}
+
+\item{\code{force}}{Only applicable when the last simulation runs with
+\code{wait} equals to \code{FALSE} and is still running. If \code{TRUE},
+current running job is forced to stop and a new one will
+start. Default: \code{FALSE}.}
+
+\item{\code{copy_external}}{If \code{TRUE}, the external files that every \code{Idf}
+object depends on will also be copied into the simulation
+output directory. The values of file paths in the Idf will be
+changed automatically. Currently, only \code{Schedule:File} class
+is supported.  This ensures that the output directory will
+have all files needed for the model to run. Default is
+\code{FALSE}.}
+
+\item{\code{echo}}{Only applicable when \code{wait} is \code{TRUE}. Whether to print
+simulation status. Default: same as the value of \code{wait}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_run()} runs all parametric models in parallel. Parameter
+\code{run_period} can be given to insert a new \code{RunPeriod} object. In this
+case, all existing \code{RunPeriod} objects in the seed model will be
+commented out.
+
+Note that when \code{run_period} is given, value of field \verb{Run Simulation for Weather File Run Periods} in \code{SimulationControl} class will be
+reset to \code{Yes} to make sure input run period can take effect.
+}
+
+\subsection{Returns}{
+The modified \code{BayesCalibJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# specify output directory and run period
+bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
+
+# run in the background
+bc$run(wait = TRUE)
+# see job status
+bc$status()
+
+# force to kill background job before running the new one
+bc$run(force = TRUE)
+
+# do not show anything in the console
+bc$run(echo = FALSE)
+
+# copy external files used in the model to simulation output directory
+bc$run(copy_external = TRUE)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_kill"></a>}}
+\subsection{Method \code{eplus_kill()}}{
+Kill current running EnergyPlus simulations
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_kill()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$eplus_kill()} kills all background EnergyPlus processes that are
+current running if possible. It only works when simulations run in
+non-waiting mode.
+}
+
+\subsection{Returns}{
+A single logical value of \code{TRUE} or \code{FALSE}, invisibly.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$eplus_kill()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_status"></a>}}
+\subsection{Method \code{eplus_status()}}{
+Get the EnergyPlus simulation status
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_status()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$eplus_status()} returns a named list of values indicates the status
+of the job:
+\itemize{
+\item \code{run_before}: \code{TRUE} if the job has been run before. \code{FALSE} otherwise.
+\item \code{alive}: \code{TRUE} if the job is still running in the background. \code{FALSE}
+otherwise.
+\item \code{terminated}: \code{TRUE} if the job was terminated during last
+simulation. \code{FALSE} otherwise. \code{NA} if the job has not been run yet.
+\item \code{successful}: \code{TRUE} if all simulations ended successfully. \code{FALSE} if
+there is any simulation failed. \code{NA} if the job has not been run yet.
+\item \code{changed_after}: \code{TRUE} if the \emph{seed model} has been modified since last
+simulation. \code{FALSE} otherwise.
+\item \code{job_status}: A \code{\link[data.table:data.table]{data.table::data.table()}} contains meta data
+for each simulation job. For details, please see \code{\link[=run_multi]{run_multi()}}. If the
+job has not been run before, a \code{\link[data.table:data.table]{data.table::data.table()}}
+with 4 columns is returned:
+\itemize{
+\item \code{index}: The index of simulation
+\item \code{status}: The status of simulation. As the simulation has not been run,
+\code{status} will always be "idle".
+\item \code{idf}: The path of input IDF file.
+\item \code{epw}: The path of input EPW file. If not provided, \code{NA} will be
+assigned.
+}
+}
+}
+
+\subsection{Returns}{
+A named list of 6 elements.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$eplus_status()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_output_dir"></a>}}
+\subsection{Method \code{eplus_output_dir()}}{
+Get EnergyPlus simulation output directory
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_output_dir(which = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_output_dir()} returns the output directory of EnergyPlus
+simulation results.
+}
+
+\subsection{Returns}{
+A character vector.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# get output directories of all simulations
+bc$eplus_output_dir()
+
+# get output directories of specified simulations
+bc$eplus_output_dir(c(1, 4))
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_locate_output"></a>}}
+\subsection{Method \code{eplus_locate_output()}}{
+Get paths of EnergyPlus output file
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+
+\item{\code{suffix}}{A string that indicates the file extension of
+simulation output. Default: \code{".err"}.}
+
+\item{\code{strict}}{If \code{TRUE}, it will check if the simulation was
+terminated, is still running or the file exists or not.
+Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_locate_output()} returns the path of a single output file of
+specified simulations.
+}
+
+\subsection{Returns}{
+A character vector.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# get the file path of the error file
+bc$eplus_locate_output(c(1, 4), ".err", strict = FALSE)
+
+# can use to detect if certain output file exists
+bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_errors"></a>}}
+\subsection{Method \code{eplus_errors()}}{
+Read EnergyPlus simulation errors
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_errors(which = NULL, info = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+
+\item{\code{info}}{If \code{FALSE}, only warnings and errors are printed.
+Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+$eplus_errors() returns a list of \link[eplusr:read_err]{ErrFile}
+objects which contain all contents of the simulation error files
+(\code{.err}). If \code{info} is \code{FALSE}, only warnings and errors are printed.
+}
+
+\subsection{Returns}{
+A list of \link[eplusr:read_err]{ErrFile} objects.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$errors()
+
+# show all information
+bc$errors(info = TRUE)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_report_data_dict"></a>}}
+\subsection{Method \code{eplus_report_data_dict()}}{
+Read report data dictionary from EnergyPlus SQL outputs
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_report_data_dict(which = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_report_data_dict()} returns a \code{\link[data.table:data.table]{data.table::data.table()}}
+which contains all information about report data.
+
+For details on the meaning of each columns, please see "2.20.2.1
+ReportDataDictionary Table" in EnergyPlus "Output Details and
+Examples" documentation.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} of 10 columns:
+\itemize{
+\item \code{case}: The model name. This column can be used to distinguish
+output from different simulations
+\item \code{report_data_dictionary_index}: The integer used to link the
+dictionary data to the variable data. Mainly useful when joining
+diferent tables
+\item \code{is_meter}: Whether report data is a meter data. Possible values:
+\code{0} and \code{1}
+\item \code{timestep_type}: Type of data timestep. Possible values: \code{Zone} and
+\verb{HVAC System}
+\item \code{key_value}: Key name of the data
+\item \code{name}: Actual report data name
+\item \code{reporting_frequency}:
+\item \code{schedule_name}: Name of the the schedule that controls reporting
+frequency.
+\item \code{units}: The data units
+}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$eplus_report_data_dict(c(1, 4))
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_report_data"></a>}}
+\subsection{Method \code{eplus_report_data()}}{
+Read EnergyPlus report data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_report_data(
+  which = NULL,
+  key_value = NULL,
+  name = NULL,
+  year = NULL,
+  tz = "UTC",
+  all = FALSE,
+  wide = FALSE,
+  period = NULL,
+  month = NULL,
+  day = NULL,
+  hour = NULL,
+  minute = NULL,
+  interval = NULL,
+  simulation_days = NULL,
+  day_type = NULL,
+  environment_name = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+
+\item{\code{key_value}}{A character vector to identify key values of the
+data. If \code{NULL}, all keys of that variable will be returned.
+\code{key_value} can also be data.frame that contains \code{key_value}
+and \code{name} columns. In this case, \code{name} argument in
+\verb{$eplus_report_data()} is ignored. All available \code{key_value} for
+current simulation output can be obtained using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+Default: \code{NULL}.}
+
+\item{\code{name}}{A character vector to identify names of the data. If
+\code{NULL}, all names of that variable will be returned. If
+\code{key_value} is a data.frame, \code{name} is ignored. All available
+\code{name} for current simulation output can be obtained using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+Default: \code{NULL}.}
+
+\item{\code{year}}{Year of the date time in column \code{datetime}. If \code{NULL}, it
+will calculate a year value that meets the start day of week
+restriction for each environment. Default: \code{NULL}.}
+
+\item{\code{tz}}{Time zone of date time in column \code{datetime}. Default:
+\code{"UTC"}.}
+
+\item{\code{all}}{If \code{TRUE}, extra columns are also included in the returned
+\code{\link[data.table:data.table]{data.table::data.table()}}.}
+
+\item{\code{wide}}{If \code{TRUE}, the output is formated in the same way as
+standard EnergyPlus csv output file.}
+
+\item{\code{period}}{A Date or POSIXt vector used to specify which time
+period to return. The year value does not matter and only
+month, day, hour and minute value will be used when
+subsetting. If \code{NULL}, all time period of data is returned.
+Default: \code{NULL}.}
+
+\item{\code{month, day, hour, minute}}{Each is an integer vector for month,
+day, hour, minute subsetting of \code{datetime} column when
+querying on the SQL database. If \code{NULL}, no subsetting is
+performed on those components. All possible \code{month}, \code{day},
+\code{hour} and \code{minute} can be obtained using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+Default: \code{NULL}.}
+
+\item{\code{interval}}{An integer vector used to specify which interval
+length of report to extract. If \code{NULL}, all interval will be
+used. Default: \code{NULL}.}
+
+\item{\code{simulation_days}}{An integer vector to specify which simulation
+day data to extract. Note that this number resets after warmup
+and at the beginning of an environment period. All possible
+\code{simulation_days} can be obtained using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
+If \code{NULL}, all simulation days will be used. Default: \code{NULL}.}
+
+\item{\code{day_type}}{A character vector to specify which day type of data
+to extract. All possible day types are: \code{Sunday}, \code{Monday},
+\code{Tuesday}, \code{Wednesday}, \code{Thursday}, \code{Friday}, \code{Saturday},
+\code{Holiday}, \code{SummerDesignDay}, \code{WinterDesignDay}, \code{CustomDay1},
+and \code{CustomDay2}. All possible values for current simulation
+output can be obtained using
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.}
+
+\item{\code{environment_name}}{A character vector to specify which
+environment data to extract. If \code{NULL}, all environment data
+are returned. Default: \code{NULL}. All possible
+\code{environment_name} for current simulation output can be
+obtained using:\preformatted{$read_table(NULL, "EnvironmentPeriods")
+}}
+
+\item{\code{case}}{If not \code{NULL}, a character column will be added indicates
+the case of this simulation. If \code{"auto"}, the name of the IDF
+file without extension is used.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_report_data()} extracts the report data in a
+\code{\link[data.table:data.table]{data.table::data.table()}} using key values, variable names and other
+specifications.
+
+\verb{$eplus_report_data()} can also directly take all or subset output from
+\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}
+as input, and extract all data specified.
+
+The returned column numbers varies depending on \code{all} argument.
+\itemize{
+\item \code{all} is \code{FALSE}, the returned \code{\link[data.table:data.table]{data.table::data.table()}} has 6 columns:
+\itemize{
+\item \code{case}: The model name. This column can be used to distinguish
+output from different simulations
+\item \code{datetime}: The date time of simulation result
+\item \code{key_value}: Key name of the data
+\item \code{name}: Actual report data name
+\item \code{units}: The data units
+\item \code{value}: The data value
+}
+\item \code{all} is \code{TRUE}, besides columns described above, extra columns are also
+included:
+\itemize{
+\item \code{month}: The month of reported date time
+\item \code{day}: The day of month of reported date time
+\item \code{hour}: The hour of reported date time
+\item \code{minute}: The minute of reported date time
+\item \code{dst}: Daylight saving time indicator. Possible values: \code{0} and \code{1}
+\item \code{interval}: Length of reporting interval
+\item \code{simulation_days}: Day of simulation
+\item \code{day_type}: The type of day, e.g. \code{Monday}, \code{Tuesday} and etc.
+\item \code{environment_period_index}: The indice of environment.
+\item \code{environment_name}: A text string identifying the environment.
+\item \code{is_meter}: Whether report data is a meter data. Possible values: \code{0} and
+\code{1}
+\item \code{type}: Nature of data type with respect to state. Possible values: \code{Sum}
+and \code{Avg}
+\item \code{index_group}: The report group, e.g. \code{Zone}, \code{System}
+\item \code{timestep_type}: Type of data timestep. Possible values: \code{Zone} and \verb{HVAC System}
+\item \code{reporting_frequency}: The reporting frequency of the variable, e.g.
+\verb{HVAC System Timestep}, \verb{Zone Timestep}.
+\item \code{schedule_name}: Name of the the schedule that controls reporting
+frequency.
+}
+}
+
+With the \code{datetime} column, it is quite straightforward to apply time-series
+analysis on the simulation output. However, another painful thing is that
+every simulation run period has its own \verb{Day of Week for Start Day}. Randomly
+setting the \code{year} may result in a date time series that does not have
+the same start day of week as specified in the RunPeriod objects.
+
+eplusr provides a simple solution for this. By setting \code{year} to \code{NULL},
+which is the default behavior, eplusr will calculate a year value (from
+current year backwards) for each run period that compliances with the start
+day of week restriction.
+
+It is worth noting that EnergyPlus uses 24-hour clock system where 24 is only
+used to denote midnight at the end of a calendar day. In EnergyPlus output,
+"00:24:00" with a time interval being 15 mins represents a time period from
+"00:23:45" to "00:24:00", and similarly "00:15:00" represents a time period
+from "00:24:00" to "00:15:00" of the next day. This means that if current day
+is Friday, day of week rule applied in schedule time period "00:23:45" to
+"00:24:00" (presented as "00:24:00" in the output) is also Friday, but not
+Saturday. However, if you try to get the day of week of time "00:24:00" in R,
+you will get Saturday, but not Friday. This introduces inconsistency and may
+cause problems when doing data analysis considering day of week value.
+
+With \code{wide} equals \code{TRUE}, \verb{$eplus_report_data()} will format the
+simulation output in the same way as standard EnergyPlus csv output
+file. Sometimes this can be useful as there may be existing
+tools/workflows that depend on this format.  When both \code{wide} and
+\code{all} are \code{TRUE}, columns of runperiod environment names and date
+time components are also returned, including:
+\verb{environment_period_index", "environment_name}, \code{simulation_days},
+\code{datetime}, \code{month}, \code{day}, \code{hour}, \code{minute}, \code{day_type}.
+
+For convenience, input character arguments matching in
+\verb{$eplus_report_data()} are \strong{case-insensitive}.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# read report data
+bc$report_data(c(1, 4))
+
+# specify output variables using report data dictionary
+dict <- bc$report_data_dict(1)
+bc$report_data(c(1, 4), dict[units == "C"])
+
+# specify output variables using 'key_value' and 'name'
+bc$report_data(c(1, 4), "environment", "site outdoor air drybulb temperature")
+
+# explicitly specify year value and time zone
+bc$report_data(c(1, 4), dict[1], year = 2020, tz = "Etc/GMT+8")
+
+# get all possible columns
+bc$report_data(c(1, 4), dict[1], all = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output
+bc$report_data(c(1, 4), dict[1], wide = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output with
+# extra columns
+bc$report_data(c(1, 4), dict[1], wide = TRUE, all = TRUE)
+
+# only get data at the working hour on the first Monday
+bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_days = 1:7)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_tabular_data"></a>}}
+\subsection{Method \code{eplus_tabular_data()}}{
+Read EnergyPlus tabular data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_tabular_data(
+  which = NULL,
+  report_name = NULL,
+  report_for = NULL,
+  table_name = NULL,
+  column_name = NULL,
+  row_name = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which}}{An integer vector of the indexes or a character vector
+or names of parametric simulations. If \code{NULL}, results of all
+parametric simulations are returned. Default: \code{NULL}.}
+
+\item{\code{report_name, report_for, table_name, column_name, row_name}}{Each is
+a character vector for subsetting when querying the SQL
+database.  For the meaning of each argument, please see the
+description above.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_tabular_data()} extracts the tabular data in a
+\code{\link[data.table:data.table]{data.table::data.table()}} using report, table, column and row name
+specifications. The returned \code{\link[data.table:data.table]{data.table::data.table()}} has
+9 columns:
+\itemize{
+\item \code{case}: The model name. This column can be used to distinguish
+output from different simulations
+\item \code{index}: Tabular data index
+\item \code{report_name}: The name of the report that the record belongs to
+\item \code{report_for}: The \code{For} text that is associated with the record
+\item \code{table_name}: The name of the table that the record belongs to
+\item \code{column_name}: The name of the column that the record belongs to
+\item \code{row_name}: The name of the row that the record belongs to
+\item \code{units}: The units of the record
+\item \code{value}: The value of the record \strong{in string format}
+}
+
+For convenience, input character arguments matching in
+\verb{$eplus_tabular_data()} are \strong{case-insensitive}.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} with 8 columns.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# read all tabular data
+bc$eplus_tabular_data(c(1, 4))
+
+# explicitly specify data you want
+str(bc$eplus_tabular_data(c(1, 4),
+    report_name = "AnnualBuildingUtilityPerformanceSummary",
+    table_name = "Site and Source Energy",
+    column_name = "Total Energy",
+    row_name = "Total Site Energy"
+))
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eplus_save"></a>}}
+\subsection{Method \code{eplus_save()}}{
+Save EnergyPlus parametric models
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dir}}{The parent output directory for models to be saved. If
+\code{NULL}, the directory of the seed model will be used. Default:
+\code{NULL}.}
+
+\item{\code{separate}}{If \code{TRUE}, all models are saved in a separate folder
+with each model's name under specified directory. If \code{FALSE},
+all models are saved in the specified directory. Default:
+\code{TRUE}.}
+
+\item{\code{copy_external}}{Only applicable when \code{separate} is \code{TRUE}. If
+\code{TRUE}, the external files that every \code{Idf} object depends on
+will also be copied into the saving directory. The values of
+file paths in the Idf will be changed automatically.
+Currently, only \code{Schedule:File} class is supported.  This
+ensures that the output directory will have all files needed
+for the model to run. Default: \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$eplus_save()} saves all parametric models in specified folder. An
+error will be issued if no measure has been applied.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} with two columns:
+\itemize{
+\item model: The path of saved parametric model files.
+\item weather: The path of saved weather files.
+}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# save all parametric models with each model in a separate folder
+bc$save(tempdir())
+
+# save all parametric models with all models in the same folder
+bc$save(tempdir(), separate = FALSE)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-stan_run"></a>}}
+\subsection{Method \code{stan_run()}}{
+Run Bayesian calibration using Stan
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$stan_run(
+  file = NULL,
+  data = NULL,
+  iter = 2000L,
+  chains = 4L,
+  echo = TRUE,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{The path to the Stan program to use. If \code{NULL}, the
+pre-compiled Stan code from Chong (2018) will be used.
+Default: \code{NULL}.}
+
+\item{\code{data}}{Only applicable when \code{file} is not \code{NULL}. The data to be
+used for Bayesian calibration. If \code{NULL}, the data that
+\verb{$data_bc()} returns is used. Default: \code{NULL}.}
+
+\item{\code{iter}}{A positive integer specifying the number of iterations
+for each chain (including warmup). Default: \code{2000}.}
+
+\item{\code{chains}}{A positive integer specifying the number of Markov
+chains. Default: \code{4}.}
+
+\item{\code{echo}}{Whether to print intermediate output from Stan on the
+console, which might be helpful for model debugging. Default:
+\code{TRUE}.}
+
+\item{\code{...}}{Additional arguments to pass to \link[rstan:sampling]{rstan::sampling} (when
+\code{file} is \code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not
+\code{NULL}).}
+
+\item{\code{mc.cores}}{An integer specifying how many cores to be used for
+Stan. Default: \code{parallel::detectCores()}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
 \verb{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
 returns a list of 2 elements:
 \itemize{
 \item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
-\item \code{y_pred}: A \link[data.table:data.table]{data.table} with predicted output
+\item \code{y_pred}: A \code{\link[data.table:data.table]{data.table::data.table()}} with predicted output
 values.
 }
-
-\verb{$stan_file()} saves the Stan file used internally for Bayesican calibration.
-If no path is given, a character vector of the Stan code is returned. If
-given, the code will be save to the path and the file path is returned.
-
-\strong{Arguments}
-\itemize{
-\item \code{file}: The path to the Stan program to use. If \code{NULL}, the pre-compiled
-Stan code from Chong (2018) will be used. Default: \code{NULL}.
-\item \code{data}: Only applicable when \code{file} is not \code{NULL}. The data to be used for
-Bayesican calibration. If \code{NULL}, the data that \verb{$data_bc()} returns is
-used. Default: \code{NULL}.
-\item \code{path}: A path to save the Stan code. If \code{NULL}, a character vector of the
-Stan code is returned.
-\item \code{iter}: A positive integer specifying the number of iterations for each
-chain (including warmup). Default: \code{2000}.
-\item \code{chains}: A positive integer specifying the number of Markov chains.
-Default: \code{4}.
-\item \code{echo}: Whether to print intermediate output from Stan on the console,
-which might be helpful for model debugging. Default: \code{TRUE}.
-\item \code{mc.cores}: An integer specifying how many cores to be used for Stan.
-Default: \code{parallel::detectCores()}.
-\item \code{...}: Additional arguments to pass to \link[rstan:sampling]{rstan::sampling} (when \code{file} is
-\code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not \code{NULL}).
-}
 }
 
-\section{Inherited Methods from \code{ParametricJob}}{
-\preformatted{bc$eplus_kill()
-bc$eplus_status()
-bc$eplus_output_dir(which = NULL)
-bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-bc$eplus_errors(which = NULL, info = FALSE)
-bc$eplus_report_data_dict(which = NULL)
-bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-                     year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-                     period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-                     interval = NULL, simulation_days = NULL, day_type = NULL,
-                     environment_name = NULL)
-bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-                      table_name = NULL, column_name = NULL, row_name = NULL)
-bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-}
-
-All methods listed above are inherited from eplusr's
-\code{\link[eplusr:ParametricJob]{ParametricJob}}. Each method has been renamed with a
-prefix \code{eplus_}, e.g. \verb{$output_dir()} in \link[eplusr:ParametricJob]{eplusr::ParametricJob} becomes
-\verb{$eplus_output_dir()}. For detailed documentation on each
-method, please see \link[eplusr:ParametricJob]{eplusr's documentation}.
-}
-
-\examples{
-\dontrun{
-if (eplusr::is_avail_eplus(8.8)) {
-    idf_name <- "5Zone_Transformer.idf"
-    epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
-
-    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
-
-    # create from local files
-    bayes_job(idf_path, epw_path)
-
-    # create from an Idf and an Epw object
-    bc <- bayes_job(read_idf(idf_path), read_epw(epw_path))
-
-    # get the seed model
-    bc$seed()
-
-    # get the weather
-    bc$weather()
-
-    # read rdd
-    bc$read_rdd()
-
-    # read mdd
-    bc$read_mdd()
-
-    # set input and output parameters
-    bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
-    # set input parameters
-    bc$output(name = "fan electric power", reporting_frequency = "hourly")
-
-    # get existing input and output
-    bc$input()
-    bc$output()
-
-    # set sensitivity parameters using $param()
-    bc$param(`Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
-        .names = "faneff", .num_sim = 2
-    )
-
-    # extract samples
-    bc$samples()
-
-    # extract all models
-    bc$models()
-
-    # run parametric simulations
-    bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
-
-    # print simulation errors
-    bc$eplus_errors()
-
-    # extract simulation data
-    bc$data_sim()
-
-    # specify field data
-    # here use the seed model as an example
-    ## clone the seed model
-    seed <- bc$seed()$clone()
-    ## remove existing RunPeriod objects
-    seed$RunPeriod <- NULL
-    ## set run period as the same as in `$eplus_run()`
-    seed$add(RunPeriod = list("test", 1, 1, 1, 31))
-    ## save the model to tempdir
-    seed$save(tempfile(fileext = ".idf"))
-    job <- seed$run(epw_path, echo = FALSE)
-    fan_power <- job$report_data(name = bc$output()$variable_name, wide = TRUE)
-    bc$data_field(fan_power[, -c("case", "Date/Time")])
-
-    # run stan
-    fit <- bc$stan_run()
+\subsection{Returns}{
+A list of 2 elements.
 }
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-stan_file"></a>}}
+\subsection{Method \code{stan_file()}}{
+Extract Stan file for Bayesian calibration
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$stan_file(path = NULL)}\if{html}{\out{</div>}}
 }
-\references{
-A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
-energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
-10.1016/j.enbuild.2018.06.028
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{A path to save the Stan code. If \code{NULL}, a character
+vector of the Stan code is returned.}
 }
-\author{
-Hongyuan Jia, Adrian Chong
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$stan_file()} saves the Stan file used internally for Bayesian
+calibration. If no path is given, a character vector of the Stan
+code is returned. If given, the code will be save to the path and the
+file path is returned.
+}
+
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$stan_file()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
 }
