@@ -1428,7 +1428,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
 #' @export
 # bayes_job {{{
 bayes_job <- function (idf, epw) {
-    bc <- BayesCalib$new(idf, epw)
+    bc <- BayesCalibJob$new(idf, epw)
     # remove parent methods
     rm(list = c("run", "kill", "status", "output_dir", "locate_output",
         "errors", "report_data_dict", "report_data", "tabular_data"
