@@ -6,7 +6,7 @@ test_that("Sensitivity", {
 
     # read idf
     example <- copy_example()
-    sen <- Sensitivity$new(example$idf, example$epw)
+    sen <- SensitivityJob$new(example$idf, example$epw)
 
     expect_error(sen$param(GP01 = list(Thickness = c(0, 1))), class = "error_param_num_format")
     expect_error(sen$param(GP01 = list(Thickness = c(2, 2, 1))), class = "error_param_num_format")

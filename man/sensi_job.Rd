@@ -37,7 +37,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 }
 \seealso{
-\code{\link[=bayes_job]{bayes_job()}} for creating a Bayesican calibration job.
+\code{\link[=bayes_job]{bayes_job()}} for creating a Bayesian calibration job.
 }
 \author{
 Hongyuan Jia
