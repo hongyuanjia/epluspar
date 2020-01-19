@@ -1,5 +1,5 @@
 Package: epluspar
-Title: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models
+Title: Conduct parametric analysis on 'EnergyPlus' models
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Hongyuan",
@@ -13,7 +13,11 @@ Authors@R: c(
            email = "bdgczma@nus.edu.sg",
            comment = c(ORCID = "0000-0002-9486-4728"))
     )
-Description: Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.
+Description: A toolkit for conducting parametric analysis on
+    'EnergyPlus'(<https://energyplus.net>) models in R, including sensitivity
+    analysis using Morris method and Bayesian calibration using using
+    'Stan'(<https://mc-stan.org>). References: Chong (2018)
+    <doi:10.1016/j.enbuild.2018.06.028>.
 URL: https://github.com/ideas-lab-nus/epluspar
 BugReports: https://github.com/ideas-lab-nus/epluspar
 License: MIT + file LICENSE
