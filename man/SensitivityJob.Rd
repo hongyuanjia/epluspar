@@ -13,6 +13,26 @@ simulations using \link[sensitivity:morris]{Morris} method.
 \code{SensitivityJob} inherits from \link[eplusr:ParametricJob]{eplusr::ParametricJob} class, which means
 that all methods provided by \link[eplusr:ParametricJob]{eplusr::ParametricJob} class are also available
 for \code{SensitivityJob} class.
+
+The basic workflow is basically:
+\enumerate{
+\item Adding parameters for sensitivity analysis  using
+\href{../../epluspar/html/SensitivityJob#method-param}{\code{$param()}}
+or
+\href{../../epluspar/html/SensitivityJob#method-apply_measure}{\code{$apply_measure()}}.
+\item Check parameter sampled values and generated parametric models using
+\href{../../epluspar/html/SensitivityJob#method-samples}{\code{$samples()}}
+and
+\href{../../epluspar/html/SensitivityJob#method-models}{\code{$models()}},
+respectively.
+\item Run EnergyPlus simulations in parallel using
+\href{../../epluspar/html/SensitivityJob#method-run}{\code{$run()}},
+\item Gather EnergyPlus simulated data using
+\link[eplusr:EplusGroupJob]{$report_data()} or
+\link[eplus:EplusGroupJob]{$tabular_data()}.
+\item Evaluate parameter sensitivity using
+\href{../../epluspar/html/SensitivityJob#method-evaluate}{\code{$evaluate()}}.
+}
 }
 \examples{
 

@@ -14,6 +14,25 @@ NULL
 #' that all methods provided by [eplusr::ParametricJob] class are also available
 #' for `SensitivityJob` class.
 #'
+#' The basic workflow is basically:
+#'
+#' 1. Adding parameters for sensitivity analysis  using
+#'    \href{../../epluspar/html/SensitivityJob#method-param}{\code{$param()}}
+#'    or
+#'    \href{../../epluspar/html/SensitivityJob#method-apply_measure}{\code{$apply_measure()}}.
+#' 1. Check parameter sampled values and generated parametric models using
+#'    \href{../../epluspar/html/SensitivityJob#method-samples}{\code{$samples()}}
+#'    and
+#'    \href{../../epluspar/html/SensitivityJob#method-models}{\code{$models()}},
+#'    respectively.
+#' 1. Run EnergyPlus simulations in parallel using
+#'    \href{../../epluspar/html/SensitivityJob#method-run}{\code{$run()}},
+#' 1. Gather EnergyPlus simulated data using
+#'    [$report_data()][eplusr::EplusGroupJob] or
+#'    [$tabular_data()][eplus::EplusGroupJob].
+#' 1. Evaluate parameter sensitivity using
+#'    \href{../../epluspar/html/SensitivityJob#method-evaluate}{\code{$evaluate()}}.
+#'
 #' @docType class
 #' @name SensitivityJob
 #' @author Hongyuan Jia
