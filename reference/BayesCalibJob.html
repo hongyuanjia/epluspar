@@ -36,9 +36,8 @@
 
 
 <meta property="og:title" content="Conduct Bayesian Calibration on An EnergyPlus Model — BayesCalibJob" />
-<meta property="og:description" content="bayes_job() takes an IDF and EPW as input and returns a BayesCalibJob,
-which provides a prototype of conducting Bayesian calibration of EnergyPlus
-model." />
+<meta property="og:description" content="BayesCalibJob class provides a prototype of conducting Bayesian calibration
+of EnergyPlus model." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,63 +115,123 @@ model." />
     </div>
 
     <div class="ref-description">
-    <p><code>bayes_job()</code> takes an IDF and EPW as input and returns a <code>BayesCalibJob</code>,
-which provides a prototype of conducting Bayesian calibration of EnergyPlus
-model.</p>
+    <p><code>BayesCalibJob</code> class provides a prototype of conducting Bayesian calibration
+of EnergyPlus model.</p>
     </div>
 
 
 
-    <h2 class="hasAnchor" id="usage"><a class="anchor" href="#usage"></a>Usage</h2>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The basic workflow is basically:</p><ol>
+<li><p>Setting input and output variables using
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>,
+respectively.
+Input variables should be variables listed in RDD while output variables
+should be variables listed in RDD and MDD.</p></li>
+<li><p>Adding parameters to calibrate using
+<a href='../../epluspar/html/BayesCalibJob.html#method-param'><code>$param()</code></a>
+or
+<a href='../../epluspar/html/BayesCalibJob.html#method-apply_measure'><code>$apply_measure()</code></a>.</p></li>
+<li><p>Check parameter sampled values and generated parametric models using
+<a href='../../epluspar/html/BayesCalibJob.html#method-samples'><code>$samples()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-models'><code>$models()</code></a>,
+respectively.</p></li>
+<li><p>Run EnergyPlus simulations in parallel using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_run'><code>$eplus_run()</code></a>,</p></li>
+<li><p>Gather simulated data of input and output parameters using
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.</p></li>
+<li><p>Specify field measured data of input and output parameters using
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>.</p></li>
+<li><p>Specify field measured data of input and output parameters using
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>.</p></li>
+<li><p>Specify input data for Stan for Bayesian calibration using
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_bc'><code>$data_bc()</code></a>.</p></li>
+<li><p>Run bayesian calibration using stan using
+<a href='../../epluspar/html/BayesCalibJob.html#method-stan_run'><code>$stan_run()</code></a>.</p></li>
+</ol>
+
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
+energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
+10.1016/j.enbuild.2018.06.028</p>
+    <h2 class="hasAnchor" id="super-classes"><a class="anchor" href="#super-classes"></a>Super classes</h2>
+
+    <p><code><a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>eplusr::EplusGroupJob</a></code> -&gt; <code><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a></code> -&gt; <code>BayesCalibJob</code></p>
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
     
-<pre>bc &lt;- bayes_job(idf, epw)
-bc$version()
-bc$seed()
-bc$weather()
-bc$read_rdd(update = FALSE)
-bc$read_mdd(update = FALSE)
-bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .num_sim = 30L)
-bc$samples()
-bc$models()
-bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-             copy_external = FALSE, echo = wait)
-bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-bc$data_field(output, new_input = NULL, all = FALSE)
-bc$data_bc(data_field = NULL, data_sim = NULL)
-bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-            mc.cores = parallel::detectCores(), ...)
-bc$stan_file(path = NULL)
-bc$eplus_kill()
-bc$eplus_status()
-bc$eplus_output_dir(which = NULL)
-bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-bc$eplus_errors(which = NULL, info = FALSE)
-bc$eplus_report_data_dict(which = NULL)
-bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-                     year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-                     period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-                     interval = NULL, simulation_days = NULL, day_type = NULL,
-                     environment_name = NULL)
-bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-                      table_name = NULL, column_name = NULL, row_name = NULL)
-bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-bc$print()
-</pre>
+<h3>Public methods</h3>
 
-    <h2 class="hasAnchor" id="create"><a class="anchor" href="#create"></a>Create</h2>
+<ul>
+<li><p><a href='#method-new'><code>BayesCalibJob$new()</code></a></p></li>
+<li><p><a href='#method-read_rdd'><code>BayesCalibJob$read_rdd()</code></a></p></li>
+<li><p><a href='#method-read_mdd'><code>BayesCalibJob$read_mdd()</code></a></p></li>
+<li><p><a href='#method-input'><code>BayesCalibJob$input()</code></a></p></li>
+<li><p><a href='#method-output'><code>BayesCalibJob$output()</code></a></p></li>
+<li><p><a href='#method-param'><code>BayesCalibJob$param()</code></a></p></li>
+<li><p><a href='#method-apply_measure'><code>BayesCalibJob$apply_measure()</code></a></p></li>
+<li><p><a href='#method-samples'><code>BayesCalibJob$samples()</code></a></p></li>
+<li><p><a href='#method-models'><code>BayesCalibJob$models()</code></a></p></li>
+<li><p><a href='#method-data_sim'><code>BayesCalibJob$data_sim()</code></a></p></li>
+<li><p><a href='#method-data_field'><code>BayesCalibJob$data_field()</code></a></p></li>
+<li><p><a href='#method-data_bc'><code>BayesCalibJob$data_bc()</code></a></p></li>
+<li><p><a href='#method-eplus_run'><code>BayesCalibJob$eplus_run()</code></a></p></li>
+<li><p><a href='#method-eplus_kill'><code>BayesCalibJob$eplus_kill()</code></a></p></li>
+<li><p><a href='#method-eplus_status'><code>BayesCalibJob$eplus_status()</code></a></p></li>
+<li><p><a href='#method-eplus_output_dir'><code>BayesCalibJob$eplus_output_dir()</code></a></p></li>
+<li><p><a href='#method-eplus_locate_output'><code>BayesCalibJob$eplus_locate_output()</code></a></p></li>
+<li><p><a href='#method-eplus_errors'><code>BayesCalibJob$eplus_errors()</code></a></p></li>
+<li><p><a href='#method-eplus_report_data_dict'><code>BayesCalibJob$eplus_report_data_dict()</code></a></p></li>
+<li><p><a href='#method-eplus_report_data'><code>BayesCalibJob$eplus_report_data()</code></a></p></li>
+<li><p><a href='#method-eplus_tabular_data'><code>BayesCalibJob$eplus_tabular_data()</code></a></p></li>
+<li><p><a href='#method-eplus_save'><code>BayesCalibJob$eplus_save()</code></a></p></li>
+<li><p><a href='#method-stan_run'><code>BayesCalibJob$stan_run()</code></a></p></li>
+<li><p><a href='#method-stan_file'><code>BayesCalibJob$stan_file()</code></a></p></li>
+</ul>
+<p><details ><summary>Inherited methods</summary>
+<ul>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors"><a href='../../eplusr/html/EplusGroupJob.html#method-errors'><code>eplusr::EplusGroupJob$errors()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill"><a href='../../eplusr/html/EplusGroupJob.html#method-kill'><code>eplusr::EplusGroupJob$kill()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table"><a href='../../eplusr/html/EplusGroupJob.html#method-list_table'><code>eplusr::EplusGroupJob$list_table()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output"><a href='../../eplusr/html/EplusGroupJob.html#method-locate_output'><code>eplusr::EplusGroupJob$locate_output()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir"><a href='../../eplusr/html/EplusGroupJob.html#method-output_dir'><code>eplusr::EplusGroupJob$output_dir()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table"><a href='../../eplusr/html/EplusGroupJob.html#method-read_table'><code>eplusr::EplusGroupJob$read_table()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data"><a href='../../eplusr/html/EplusGroupJob.html#method-report_data'><code>eplusr::EplusGroupJob$report_data()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict"><a href='../../eplusr/html/EplusGroupJob.html#method-report_data_dict'><code>eplusr::EplusGroupJob$report_data_dict()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status"><a href='../../eplusr/html/EplusGroupJob.html#method-status'><code>eplusr::EplusGroupJob$status()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data"><a href='../../eplusr/html/EplusGroupJob.html#method-tabular_data'><code>eplusr::EplusGroupJob$tabular_data()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print"><a href='../../eplusr/html/ParametricJob.html#method-print'><code>eplusr::ParametricJob$print()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run"><a href='../../eplusr/html/ParametricJob.html#method-run'><code>eplusr::ParametricJob$run()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save"><a href='../../eplusr/html/ParametricJob.html#method-save'><code>eplusr::ParametricJob$save()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed"><a href='../../eplusr/html/ParametricJob.html#method-seed'><code>eplusr::ParametricJob$seed()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version"><a href='../../eplusr/html/ParametricJob.html#method-version'><code>eplusr::ParametricJob$version()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather"><a href='../../eplusr/html/ParametricJob.html#method-weather'><code>eplusr::ParametricJob$weather()</code></a></span></p></li>
+</ul>
+</details>
 
-    
-<pre>bc &lt;- bayes_job(idf, epw)
-</pre>
+<hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+<p>Create a <code>BayesCalibJob</code> object</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$new(idf, epw)</pre><p></div></p>
 
-<p>When calling <code>bayes_job()</code>, the objects of classes related in output variable
-reporting will be deleted, in order to make sure all input and output
-variable specifications can be achieved using <code>Output:Variable</code> and
-<code>Output:Meter</code>. Classes to be deleted include:</p><ul>
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>idf</code></dt><dd><p>A path to an local EnergyPlus IDF file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object.</p></dd>
+
+<dt><code>epw</code></dt><dd><p>A path to an local EnergyPlus EPW file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Epw.html'>eplusr::Epw</a> object.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p>When initialization, the objects of classes related in output variable
+reporting in the original <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> will be deleted, in order to
+make sure all input and output variable specifications can be
+achieved using <code>Output:Variable</code> and <code>Output:Meter</code>. Classes to be
+deleted include:</p><ul>
 <li><p><code>Output:Variable</code></p></li>
 <li><p><code>Output:Meter</code></p></li>
 <li><p><code>Output:Meter:MeterFileOnly</code></p></li>
@@ -183,57 +242,142 @@ variable specifications can be achieved using <code>Output:Variable</code> and
 <li><p><code>Output:EnvironmentalImpactFactors</code></p></li>
 </ul>
 
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>idf</code>: Path to EnergyPlus IDF file or an <code>Idf</code> object.</p></li>
-<li><p><code>epw</code>: Path to EnergyPlus EPW file or an <code>Epw</code> object.</p></li>
-</ul>
 
-    <h2 class="hasAnchor" id="get-seed-model-and-weather"><a class="anchor" href="#get-seed-model-and-weather"></a>Get Seed Model and Weather</h2>
+<h3>Returns</h3>
+<p>An <code>BayesCalibJob</code> object.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>if (eplusr::is_avail_eplus(8.8)) {
+    idf_name &lt;- "1ZoneUncontrolled.idf"
+    epw_name &lt;-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
-    
-<pre>param$version()
-param$seed()
-param$weather()
-</pre>
+    idf_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 
-<p><code>$version()</code> returns the version of input Idf object.</p>
-<p><code>$seed()</code> returns the input Idf object.</p>
-<p><code>$weather()</code> returns the input Epw object.</p>
-    <h2 class="hasAnchor" id="get-rdd-amd-mdd-data-of-seed-model"><a class="anchor" href="#get-rdd-amd-mdd-data-of-seed-model"></a>Get RDD amd MDD Data of Seed Model</h2>
+    # create from local files
+    BayesCalibJob$new(idf_path, epw_path)
 
-    
-<pre>param$read_rdd(update = FALSE)
-param$read_mdd(update = FALSE)
-</pre>
+    # create from an Idf and an Epw object
+    bc &lt;- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
 
-<p><code>$read_rdd()</code> and <code>$read_mdd()</code> silently runs EnergyPlus using input seed
-model with design-day-only mode to create <code>.rdd</code> and <code>.mdd</code> file and returns
-the corresponding <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> and
-<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object, respectively. The <code>RddFile</code> and
-<code>MddFile</code> object is stored internally and will be directly returned whenever
-you call <code>$read_rdd()</code> and <code>$read_mdd()</code> again. You can force to run the
-design-day-only simulation again to update the contents by setting <code>update</code>
-to <code>TRUE</code>.</p>
-<p><code>$read_rdd()</code> and <code>read_mdd()</code> is useful when adding input and output
-parameters.</p>
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>update</code>: Whether to run the design-day-only simulation and parse <code>.rdd</code>
-and <code>.mdd</code> file again. Default: <code>FALSE</code>.</p></li>
-</ul>
+</pre><p></div></p>
 
-    <h2 class="hasAnchor" id="set-input-and-output-parameters"><a class="anchor" href="#set-input-and-output-parameters"></a>Set Input and Output Parameters</h2>
+<p><hr>
+<a id="method-read_rdd"></a></p><h3>Method <code>read_rdd()</code></h3>
+<p>Read EnergyPlus Report Data Dictionary (RDD) file</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$read_rdd(update = FALSE)</pre><p></div></p>
 
-    
-<pre>bc$input(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-bc$output(key_value = NULL, name = NULL, reporting_frequency = NULL, append = FALSE)
-</pre>
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>update</code></dt><dd><p>Whether to run the design-day-only simulation and parse
+<code>.rdd</code> and <code>.mdd</code> file again. Default: <code>FALSE</code>.</p></dd>
 
-<p><code>$input()</code> and <code>$output()</code> takes input and output parameter definitions in a
-similar pattern as you set output variables in <code>Output:Variable</code> and
-<code>Output:Meter</code> class and returns a <a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a>
-containing the information of input and output parameters. For <code>$input()</code>,
-only variables in RDD are allowed. For <code>$output()</code>, both variables in RDD and
-MDD are allowd. The returned data.table has 5 columns:</p><ul>
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$read_rdd()</code> silently runs EnergyPlus using input seed model with
+design-day-only mode to create the <code>.rdd</code> file and returns the
+corresponding <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object.</p>
+<p>The <code>RddFile</code> object is stored internally and will be directly
+returned whenever you call <code>$read_rdd()</code> again. You can force to
+rerun the design-day-only simulation again to update the contents by
+setting <code>update</code> to <code>TRUE</code>.</p>
+<p><code>$read_rdd()</code> and
+<a href='../../epluspar/html/BayesCalibJob.html#method-read_mdd'><code>$read_mdd()</code></a>
+are useful when adding input and output parameters using
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>,
+respectively.</p>
+
+<h3>Returns</h3>
+<p>An <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$read_rdd()
+
+# force to rerun
+bc$read_rdd(update = TRUE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-read_mdd"></a></p><h3>Method <code>read_mdd()</code></h3>
+<p>Read EnergyPlus Meter Data Dictionary (MDD) file</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$read_mdd(update = FALSE)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>update</code></dt><dd><p>Whether to run the design-day-only simulation and parse
+<code>.rdd</code> and <code>.mdd</code> file again. Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$read_mdd()</code> silently runs EnergyPlus using input seed model with
+design-day-only mode to create the <code>.mdd</code> file and returns the
+corresponding <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object.</p>
+<p>The <code>MddFile</code> object is stored internally and will be directly
+returned whenever you call <code>$read_mdd()</code> again. You can force to
+rerun the design-day-only simulation again to update the contents by
+setting <code>update</code> to <code>TRUE</code>.</p>
+<p><a href='../../epluspar/html/BayesCalibJob.html#method-read_rdd'><code>$read_rdd()</code></a>
+and
+<code>read_mdd()</code>
+are useful when adding input and output parameters using
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>,
+respectively.</p>
+
+<h3>Returns</h3>
+<p>An <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$read_mdd()
+
+# force to rerun
+bc$read_mdd(update = TRUE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-input"></a></p><h3>Method <code>input()</code></h3>
+<p>Set input parameters</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$input(
+  key_value = NULL,
+  name = NULL,
+  reporting_frequency = NULL,
+  append = FALSE
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>key_value</code></dt><dd><p>Key value name for variables. If not specified,
+<code><a href='https://rdrr.io/r/base/Arithmetic.html'>"*"</a></code> are used for all variables. <code>key_value</code> can also be an
+<code>RddFile</code>, <code>MddFile</code> or a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code>. Please see
+description above.</p></dd>
+
+<dt><code>name</code></dt><dd><p>Variable names listed in RDD or MDD.</p></dd>
+
+<dt><code>reporting_frequency</code></dt><dd><p>Variable reporting frequency for <strong>all</strong>
+variables.  If <code>NULL</code>, <code>"Timestep"</code> are used for all
+variables. All possible values: <code>"Detailed"</code>, <code>"Timestep"</code>,
+<code>"Hourly"</code>, <code>"Daily"</code>, <code>"Monthly"</code>, <code>"RunPeriod"</code>,
+<code>"Environment"</code>, and <code>"Annual"</code>. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>append</code></dt><dd><p>Whether to append input variables at the end of
+existing ones. A special value <code>NULL</code> can be given to remove
+all existing parameters. Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$input()</code> takes input parameter definitions in a similar pattern as
+you set output variables in <code>Output:Variable</code> and <code>Output:Meter</code>
+class and returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> containing the
+information of input parameters. Only variables in
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RDD</a> are
+allowed.The returned <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> has 5 columns:</p><ul>
 <li><p><code>index</code>: Indices of input or output parameters.</p></li>
 <li><p><code>class</code>: The class that parameters belong to. Will be either
 <code>Output:Variable</code> or <code>Output:Meter</code>.</p></li>
@@ -242,77 +386,188 @@ MDD are allowd. The returned data.table has 5 columns:</p><ul>
 <li><p><code>reporting_frequency</code>: Variable reporting frequency.</p></li>
 </ul>
 
-<p>If calling without any argument, the existing input and output parameters are
-directly returned, e.g. <code>bc$input()</code> and <code>bc$output()</code>.</p>
-<p>You can remove all existing input and output parameter by setting <code>append</code> to
-<code>NULL</code>, e.g. <code>bc$input(append = NULL)</code> and <code>bc$output(append = NULL)</code>.</p>
+<p>If calling without any argument, the existing input parameters are
+directly returned, e.g. <code>bc$input()</code>.</p>
+<p>You can remove all existing input parameters by setting <code>append</code> to
+<code>NULL</code>, e.g. <code>bc$input(append = NULL)</code>.</p>
 <p><code>key_value</code> accepts 3 different formats:</p><ul>
 <li><p>A character vector.</p></li>
-<li><p>An <code>RddFile</code> or an <code>MddFile</code> object. They can be retrieved using
-<code>$read_rdd()</code> and <code>$read_mdd()</code>. In this case, <code>name</code> argument will be
-ignored, as its values are directly taken from variable names in input
-<code>RddFile</code> and <code>MddFile</code> object. For example:</p><pre>bc$input(bc$read_rdd()[1:5])
-bc$output(bc$read_mdd()[1:5])
+<li><p>An <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object. It can be retrieved using
+<a href='../../epluspar/html/BayesCalibJob.html#method-read_rdd'><code>$read_rdd()</code></a>.
+In this case, <code>name</code> argument will be ignored, as its values are
+directly taken from variable names in input
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object. For example:</p><pre>bc$input(bc$read_rdd()[1:5])
 </pre></li>
 <li><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> with valid format for adding <code>Output:Variable</code> and
-<code>Output:Meter</code> objects using <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>Idf$load()</a>. In this case, <code>name</code>
-argument will be ignored. For example:</p></li>
+<code>Output:Meter</code> objects using <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf$load()</a>. In
+this case, <code>name</code> argument will be ignored. For example:</p></li>
 </ul><pre>bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
-bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
 </pre>
 
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>key_value</code>: Key value name for variables. If not specified, <code><a href='https://rdrr.io/r/base/Arithmetic.html'>"*"</a></code> are used
-for all variables. <code>key_value</code> can also be an <code>RddFile</code>, <code>MddFile</code> or a
-<code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code>. Please see description above.</p></li>
-<li><p><code>name</code>: Variable names listed in RDD or MDD.</p></li>
-<li><p><code>reporting_frequency</code>: Variable reporting frequency for <strong>all</strong> variables.
-If <code>NULL</code>, <code>"Timestep"</code> are used for all variables. All possible
-values: <code>"Detailed"</code>, <code>"Timestep"</code>, <code>"Hourly"</code>, <code>"Daily"</code>, <code>"Monthly"</code>,
-<code>"RunPeriod"</code>, <code>"Environment"</code>, and <code>"Annual"</code>. Default: <code>NULL</code>.</p></li>
-<li><p><code>append</code>: Whether to append input variables at the end of
-existing ones. A special value <code>NULL</code> can be given to remove all existing
-parameters. Default: <code>FALSE</code>.</p></li>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# explicitly specify input variable name
+bc$input(name = "fan air mass flow rate", reporting_frequency = "hourly")
+
+# use an RddFile
+bc$input(bc$read_rdd()[1:5])
+
+# use a data.frame
+bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+
+# get existing input
+bc$input()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-output"></a></p><h3>Method <code>output()</code></h3>
+<p>Set output parameters</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$output(
+  key_value = NULL,
+  name = NULL,
+  reporting_frequency = NULL,
+  append = FALSE
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>key_value</code></dt><dd><p>Key value name for variables. If not specified,
+<code><a href='https://rdrr.io/r/base/Arithmetic.html'>"*"</a></code> are used for all variables. <code>key_value</code> can also be an
+<code>RddFile</code>, <code>MddFile</code> or a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code>. Please see
+description above.</p></dd>
+
+<dt><code>name</code></dt><dd><p>Variable names listed in RDD or MDD.</p></dd>
+
+<dt><code>reporting_frequency</code></dt><dd><p>Variable reporting frequency for <strong>all</strong>
+variables.  If <code>NULL</code>, <code>"Timestep"</code> are used for all
+variables. All possible values: <code>"Detailed"</code>, <code>"Timestep"</code>,
+<code>"Hourly"</code>, <code>"Daily"</code>, <code>"Monthly"</code>, <code>"RunPeriod"</code>,
+<code>"Environment"</code>, and <code>"Annual"</code>. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>append</code></dt><dd><p>Whether to append input variables at the end of
+existing ones. A special value <code>NULL</code> can be given to remove
+all existing parameters. Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$output()</code> takes output parameter definitions in a
+similar pattern as you set output variables in <code>Output:Variable</code> and
+<code>Output:Meter</code> class and returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>
+containing the information of output parameters. Unlike
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>
+both variables in <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RDD</a> and
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MDD</a> are allowd. The returned data.table has 5
+columns:</p><ul>
+<li><p><code>index</code>: Indices of input or output parameters.</p></li>
+<li><p><code>class</code>: The class that parameters belong to. Will be either
+<code>Output:Variable</code> or <code>Output:Meter</code>.</p></li>
+<li><p><code>key_value</code>: Key value name for variables.</p></li>
+<li><p><code>variable_name</code>: Variable names listed in RDD or MDD.</p></li>
+<li><p><code>reporting_frequency</code>: Variable reporting frequency.</p></li>
 </ul>
 
-    <h2 class="hasAnchor" id="set-parameters"><a class="anchor" href="#set-parameters"></a>Set Parameters</h2>
-
-    
-<pre>bc$param(..., .names = NULL, .num_sim = 30L)
-bc$apply_measure(measure, ..., .num_sim = 30L)
-bc$samples()
-bc$models()
+<p>If calling without any argument, the existing output parameters are
+directly returned, e.g. <code>bc$output()</code>.</p>
+<p>You can remove all existing parameter by setting <code>append</code> to <code>NULL</code>,
+e.g. <code>bc$output(append = NULL)</code>.</p>
+<p><code>key_value</code> accepts 3 different formats:</p><ul>
+<li><p>A character vector.</p></li>
+<li><p>An <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object or an
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object. They can be retrieved using
+<a href='../../epluspar/html/BayesCalibJob.html#method-read_rdd'><code>$read_rdd()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-read_mdd'><code>$read_mdd()</code></a>,
+respectively.  In this case, <code>name</code> argument will be ignored, as
+its values are directly taken from variable names in input
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object or
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object. For example:</p><pre>bc$output(bc$read_mdd()[1:5])
+</pre></li>
+<li><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> with valid format for adding <code>Output:Variable</code> and
+<code>Output:Meter</code> objects using <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>Idf$load()</a>. In this
+case, <code>name</code> argument will be ignored. For example:</p></li>
+</ul><pre>bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
 </pre>
 
-<p>There are 2 ways to set calibration parameters in <code>BayesCalibJob</code> class,
-i.e. <code>$param()</code> and <code>$apply_measure()</code>.</p>
-<p><code>$param()</code> takes parameter definitions in list format, which is similar to
-<code>$set()</code> in <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> class except that each field is not assigned with a
-single value, but a numeric vector of length 2, indicating the minimum and
-maximum of the parameter. Every list in <code>$param()</code> should be named with a
-valid object name. Object ID can also be used but have to be combined with
-prevailing two periods <code>..</code>, e.g. <code>..10</code> indicates the object with ID <code>10</code>.</p>
-<p>There is two special syntax in <code>$param()</code>:</p><ul>
-<li><p><code>class := list(field = value)</code>: Note the use of <code>:=</code> instead of <code>=</code>. The
-main difference is that, unlike <code>=</code>, the left hand side of <code>:=</code> should be a
-valid class name in the seed model. It will treat the specified field of
-all objects in specified class to as a single calibration parameter.</p></li>
-<li><p><code>.(object, object) := list(field = value)</code>: Simimar like above, but note
-the use of <code>.()</code> in the left hand side. You can put multiple object ID or
-names in <code>.()</code>. It will treat the field of all specified objects to as a
-single calibration parameter.</p></li>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# explicitly specify input variable name
+bc$output(name = "fan electric power", reporting_frequency = "hourly")
+
+# use an RddFile or MddFile
+bc$output(bc$read_rdd()[6:10])
+bc$output(bc$read_mdd()[6:10])
+
+# use a data.frame
+bc$output(eplusr::rdd_to_load(bc$read_mdd()[6:10]))
+
+# get existing input
+bc$output()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-param"></a></p><h3>Method <code>param()</code></h3>
+<p>Set parameters for Bayesian calibration</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$param(..., .names = NULL, .num_sim = 30L)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>...</code></dt><dd><p>Lists of paramter definitions. Please see above on the
+syntax.</p></dd>
+
+<dt><code>.names</code></dt><dd><p>A character vector of the parameter names. If <code>NULL</code>,
+the parameter will be named in format <code>t + number</code>, where
+<code>number</code> is the index of parameter. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>.num_sim</code></dt><dd><p>An positive integer specifying the number of
+simulations to run for each combination of calibration
+parameter value. Default: <code>30L</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$param()</code> takes parameter definitions in list format, which is
+similar to <code>$set()</code> in <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> class except that each field is
+not assigned with a single value, but a numeric vector of length 2,
+indicating the minimum and maximum value of each
+parameter.</p>
+<p>Similar like the way of modifying object field values in
+<a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf$set()</a>, there are 3 different ways of
+defining a parameter in epluspar:</p><ul>
+<li><p><code>object = list(field = c(min, max))</code>: Where <code>object</code> is a
+valid object ID or name. Note object ID should be denoted with two
+periods <code>..</code>, e.g. <code>..10</code> indicates the object with ID <code>10</code>, It
+will set that specific field in that object as one parameter.</p></li>
+<li><p><code>.(object, object) := list(field = c(min, max))</code>: Simimar like
+above, but note the use of <code>.()</code> in the left hand side. You can put
+multiple object ID or names in <code>.()</code>. It will set the field of all
+specified objects as one parameter.</p></li>
+<li><p><code>class := list(field = c(min, max, levels))</code>: Note the use of <code>:=</code>
+instead of <code>=</code>. The main difference is that, unlike <code>=</code>, the left
+hand side of <code>:=</code> should be a valid class name in current
+<a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a>. It will set that field of all objects in specified
+class as one parameter.</p></li>
 </ul>
 
 <p>For example, the code block below defines 4 calibration parameters:</p><ul>
-<li><p>Field <code>Fan Total Efficiency</code> in object named <code>Supply Fan 1</code> in class
-<code>Fan:VariableVolume</code> class, with minimum and maximum being 0.1 and 1.0,
+<li><p>Field <code>Fan Total Efficiency</code> in object named <code>Supply Fan 1</code> in
+class <code>Fan:VariableVolume</code> class, with minimum and maximum being
+0.1 and 1.0, respectively.</p></li>
+<li><p>Field <code>Thickness</code> in all objects in class <code>Material</code>, with minimum
+and maximum being 0.01 and 1.0, respectively.</p></li>
+<li><p>Field <code>Conductivity</code> in all objects in class <code>Material</code>, with
+minimum and maximum being 0.1 and 0.6, respectively.</p></li>
+<li><p>Field <code>Watts per Zone Floor Area</code> in objects <code>Light1</code> and <code>Light2</code>
+in class <code>Lights</code>, with minimum and maximum being 10 and 30,
 respectively.</p></li>
-<li><p>Field <code>Thickness</code> in all objects in class <code>Material</code>, with minimum and
-maximum being 0.01 and 1.0, respectively.</p></li>
-<li><p>Field <code>Conductivity</code> in all objects in class <code>Material</code>, with minimum and
-maximum being 0.1 and 0.6, respectively.</p></li>
-<li><p>Field <code>Watts per Zone Floor Area</code> in objects <code>Light1</code> and <code>Light2</code> in class
-<code>Lights</code>, with minimum and maximum being 10 and 30, respectively.</p></li>
 </ul><pre>bc$param(
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
@@ -320,31 +575,61 @@ maximum being 0.1 and 0.6, respectively.</p></li>
 )
 </pre>
 
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>...</code>: Lists of paramter definitions. Each list should be named with a valid
-object name or a valid object ID denoted in style <code>..1</code>, <code>..2</code> and etc. For
-specifying the fields for all objects in a class, the class name instead of
-the object name should be used, and a special notation <code>:=</code> should be used
-instead of <code>=</code>, e.g. <code>class := list(field = value)</code>. For grouping fields
-from different objects in the same class, use <code>.()</code> in the left hand side
-and put object ID or names inside., .e.g <code>.(object1, object2) := list(field = value)</code>.</p></li>
-<li><p><code>.num_sim</code>: An positive integer specifying the number of simulations to run
-for each combination of calibration parameter value. Default:
-<code>30L</code>.</p></li>
-<li><p><code>.names</code>: A character vector of the parameter names. If <code>NULL</code>,
-the parameter will be named in format <code>t + number</code>. Default: <code>NULL</code>.</p></li>
-</ul>
+<p>All models created using <code>$param()</code> will be named in the same
+pattern, i.e. <code>Case_ParameterName(ParamterValue)...</code>. Note that only
+paramter names will be abbreviated using <code><a href='https://rdrr.io/r/base/abbreviate.html'>abbreviate()</a></code> with
+<code>minlength</code> being <code>5L</code> and <code>use.classes</code> being <code>TRUE</code>. If samples
+contain duplications, <code><a href='https://rdrr.io/r/base/make.unique.html'>make.unique()</a></code> will be called to make sure
+every model has a unique name.</p>
 
+<h3>Returns</h3>
+<p>The modified <code>BayesCalibJob</code> object itself.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
+    Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
+)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-apply_measure"></a></p><h3>Method <code>apply_measure()</code></h3>
+<p>Set parameters for Bayesian calibration using function</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$apply_measure(measure, ..., .num_sim = 30L)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>measure</code></dt><dd><p>A function that takes an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> and other
+arguments as input and returns an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object as
+output.</p></dd>
+
+<dt><code>...</code></dt><dd><p>Arguments <strong>except first <code>Idf</code> argument</strong> that are passed
+to that <code>measure</code>.</p></dd>
+
+<dt><code>.num_sim</code></dt><dd><p>An positive integer specifying the number of
+simulations to run taking into account of all parameter
+combinations. Default: <code>30L</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
 <p><code>$apply_measure()</code> works in a similar way as the <code>$apply_measure</code> in
 <a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a> class, with only exception that each argument
-supplied in <code>...</code> should be a numeric vector of length 2, indicating the
-minimum and maximum of the calibration parameter.
-Basically <code>$apply_measure()</code> allows to apply a measure to an Idf.
-A measure here is just a function that takes an Idf object and other
-arguments as input, and returns a modified Idf object as output. The names
-of function parameter will be used as the names of calibration parameter. For
-example, the equivalent version of specifying parameters described above
-using <code>$apply_measure()</code> can be:</p><pre>measure &lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
+supplied in <code>...</code> should be a numeric vector of length 2, indicating
+the minimum value and maximum value of each parameter.</p>
+<p>Basically <code>$apply_measure()</code> allows to apply a measure to an
+<a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a>. A measure here is just a function that takes an
+<a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object and other arguments as input, and returns a
+modified <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object as output.</p>
+<p>The names of function parameter will be used as the names of
+calibration parameter. For example, the equivalent version of
+specifying parameters described in
+<a href='../../epluspar/html/SensitivityJob.html#method-param'><code>$param()</code></a>
+using <code>$apply_measure()</code> can be:</p><pre># set calibration parameters using $apply_measure()
+# (a) first define a "measure"
+measure &lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
     idf$set(
         `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
         Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -354,6 +639,8 @@ using <code>$apply_measure()</code> can be:</p><pre>measure &lt;- function (idf,
     idf
 }
 
+# (b) then apply that measure with parameter space definitions as
+# function arguments
 bc$apply_measure(measure,
     efficiency = c(min = 0.1, max = 1.0),
     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
@@ -361,175 +648,254 @@ bc$apply_measure(measure,
 )
 </pre>
 
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>measure</code>: A function that takes an <code>Idf</code> and other arguments as input and
-returns an <code>Idf</code> object as output.</p></li>
-<li><p><code>...</code>: Arguments <strong>except first <code>Idf</code> argument</strong> that are passed to that
-<code>measure</code>.</p></li>
-<li><p><code>.num_sim</code>: An positive integer specifying the number of simulations to run
-for each value of calibration parameter value. (NOT CORRECT). Default:
-<code>30L</code>.</p></li>
-</ul>
+<p>All models created using <code>$apply_measure()</code> will be named in the same
+pattern, i.e. <code>Case_ParameterName(ParamterValue)...</code>. Note that only
+paramter names will be abbreviated using <code><a href='https://rdrr.io/r/base/abbreviate.html'>abbreviate()</a></code> with
+<code>minlength</code> being <code>5L</code> and <code>use.classes</code> being <code>TRUE</code>. If samples
+contain duplications, <code><a href='https://rdrr.io/r/base/make.unique.html'>make.unique()</a></code> will be called to make sure
+every model has a unique name.</p>
 
-<p>All models created using <code>$param()</code> and <code>$apply_measure()</code> will be named in
-the same pattern, i.e. <code>Case_ParameterName(ParamterValue)...</code>. Note that only
-paramter names will be abbreviated using <code><a href='https://rdrr.io/r/base/abbreviate.html'>abbreviate()</a></code> with <code>minlength</code>
-being <code>5L</code> and <code>use.classes</code> being <code>TRUE</code>. If samples contain duplications,
-<code><a href='https://rdrr.io/r/base/make.unique.html'>make.unique()</a></code> will be called to make sure every model has a unique name.</p>
-<p><code>$samples()</code> returns a <a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a> which contains
-the sampled value for each parameter using <a href='https://rdrr.io/pkg/lhs/man/randomLHS.html'>Random Latin Hypercube Sampling</a> method. The returned data.table has <code>1 + n</code>
-columns, where <code>n</code> is the parameter number, and <code>1</code> indicates an extra column
-named <code>case</code> giving the index of each sample. Note that if <code>$samples()</code> is
-called before input and output parameters being set using <code>$input()</code> and
-<code>$output()</code>, only the sampling will be performed and no parametric models
-will be created. This is because information of input and output parameters
+<h3>Returns</h3>
+<p>The modified <code>BayesCalibJob</code> object itself.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# set calibration parameters using $apply_measure()
+# (a) first define a "measure"
+measure &lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
+    idf$set(
+        `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
+        Material := list(Thickness = thickness, Conductivity = conducivity)
+        .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = lpd)
+    )
+
+    idf
+}
+
+# (b) then apply that measure with parameter space definitions as
+# function arguments
+bc$apply_measure(measure,
+    efficiency = c(min = 0.1, max = 1.0),
+    thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
+    lpd = c(10, 30)
+)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-samples"></a></p><h3>Method <code>samples()</code></h3>
+<p>Get sampled parameter values</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$samples()</pre><p></div></p>
+
+<h3>Details</h3>
+<p><code>$samples()</code> returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which contains the
+sampled value for each parameter using <a href='https://rdrr.io/pkg/lhs/man/randomLHS.html'>Random Latin Hypercube Sampling</a> method. The returned
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> has <code>1 + n</code> columns, where <code>n</code> is the
+parameter number, and <code>1</code> indicates an extra column named <code>case</code>
+giving the index of each sample.</p>
+<p>Note that if <code>$samples()</code> is called before input and output
+parameters being set using
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>,
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>,
+only the sampling will be performed and no parametric models will be
+created.  This is because information of input and output parameters
 are needed in order to make sure that corresponding variables will be
-reported during simulations. In this case, you can use <code>$models()</code> to create
-those models.</p>
-<p><code>$models()</code> returns a list of parametric <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>Idf</a> objects created
-using calibration parameter values genereated using Random Latin Hypercube
-Sampling. As stated above, parametric models can only be created after input,
-output and calibration parameters have all be set using <code>$input()</code>,
-<code>$output()</code> and <code>$param()</code> (or <code>$apply_measure()</code>), respectively.</p>
+reported during simulations. In this case, you can use
+<a href='../../epluspar/html/BayesCalibJob.html#method-models'><code>$models()</code></a>,
+to create those models.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$samples()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-models"></a></p><h3>Method <code>models()</code></h3>
+<p>Get parametric models</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$models()</pre><p></div></p>
+
+<h3>Details</h3>
+<p><code>$models()</code> returns a list of parametric <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> objects
+created using calibration parameter values genereated using Random
+Latin Hypercube Sampling. As stated above, parametric models can only
+be created after input, output and calibration parameters have all be
+set using
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>,
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>
+and
+<a href='../../epluspar/html/BayesCalibJob.html#method-param'><code>$param()</code></a>
+(or
+<a href='../../epluspar/html/BayesCalibJob.html#method-apply_measure'><code>$apply_measure()</code></a>
+), respectively.</p>
 <p>All models will be named in the same pattern, i.e.
-<code>Case_ParameterName(ParamterValue)...</code>. Note that paramter names will be
-abbreviated using <code><a href='https://rdrr.io/r/base/abbreviate.html'>abbreviate()</a></code> with <code>minlength</code> being <code>5L</code> and
+<code>Case_ParameterName(ParamterValue)...</code>. Note that paramter names will
+be abbreviated using <code><a href='https://rdrr.io/r/base/abbreviate.html'>abbreviate()</a></code> with <code>minlength</code> being <code>5L</code> and
 <code>use.classes</code> being <code>TRUE</code>.</p>
-    <h2 class="hasAnchor" id="run-parametric-simulations"><a class="anchor" href="#run-parametric-simulations"></a>Run Parametric Simulations</h2>
 
-    
-<pre>bc$eplus_run(dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
-             copy_external = FALSE, echo = wait)
-</pre>
+<h3>Returns</h3>
+<p>A named list of <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> objects.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$models()
+}
 
-<p><code>$eplus_run()</code> runs all parametric models in parallel. Parameter <code>run_period</code>
-can be given to insert a new <code>RunPeriod</code> object. In this case, all existing
-<code>RunPeriod</code> objects in the seed model will be commented out.</p>
-<p>Note that when <code>run_period</code> is given, value of field <code>Run Simulation for Weather File Run Periods</code> in <code>SimulationControl</code> class will be reset to <code>Yes</code>
-to make sure input run period can take effect.</p>
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>dir</code>: The parent output directory for specified simulations. Outputs of
-each simulation are placed in a separate folder under the parent directory.
-If <code>NULL</code>, directory of seed model will be used. Default: <code>NULL</code>.</p></li>
-<li><p><code>run_period</code>: A list giving a new <code>RunPeriod</code> object definition. If not
-<code>NULL</code>, only this new RunPeriod will take effect with all existing
-RunPeriod objects in the seed model being commented out. If <code>NULL</code>,
-existing run period in the seed model will be used. Default: <code>NULL</code>.</p></li>
-<li><p><code>wait</code>: If <code>TRUE</code>, R will hang on and wait all EnergyPlus simulations
-finish. If <code>FALSE</code>, all EnergyPlus simulations are run in the background.
-Default: <code>TRUE</code>.</p></li>
-<li><p><code>force</code>: Only applicable when the last simulation runs with <code>wait</code> equals
-to <code>FALSE</code> and is still running. If <code>TRUE</code>, current running job is
-forced to stop and a new one will start. Default: <code>FALSE</code>.</p></li>
-<li><p><code>copy_external</code>: If <code>TRUE</code>, the external files that every <code>Idf</code> object
-depends on will also be copied into the simulation output directory. The
-values of file paths in the Idf will be changed automatically. Currently,
-only <code>Schedule:File</code> class is supported.  This ensures that the output
-directory will have all files needed for the model to run. Default is
-<code>FALSE</code>.</p></li>
-<li><p><code>echo</code>: Only applicable when <code>wait</code> is <code>TRUE</code>. Whether to print simulation
-status. Default: the value of <code>wait</code>.</p></li>
-</ul>
+</pre><p></div></p>
 
-    <h2 class="hasAnchor" id="collect-simulation-data"><a class="anchor" href="#collect-simulation-data"></a>Collect Simulation Data</h2>
+<p><hr>
+<a id="method-data_sim"></a></p><h3>Method <code>data_sim()</code></h3>
+<p>Collect simulation data</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)</pre><p></div></p>
 
-    
-<pre>bc$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)
-</pre>
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>resolution</code></dt><dd><p>A character string specifying a time unit or a
+multiple of a unit to change the time resolution of returned
+simulation data. Valid base units are <code>min</code>, <code>hour</code>, <code>day</code>,
+<code>week</code>, <code>month</code>, and <code>year</code>.  Example: <code>10 mins</code>, <code>2 hours</code>,
+<code>1 day</code>. If <code>NULL</code>, the variable reporting frequency is used.
+Default: <code>NULL</code>.</p></dd>
 
-<p><code>$data_sim()</code> returns a list of 2 <a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a>
-which contains the simulated data of input and output parameters. These data
-will be stored internally and used during Bayesian calibration using Stan.</p>
-<p>The <code>resolution</code> parameter can be used to specify the time resolution of
-returned data. Note that input time resolution cannot be smaller than the
-reporting frequency, otherwise an error will be issued.</p>
-<p>The parameter is named in the same way as standard EnergyPlus csv output
-file, i.e. <code>KeyValue:VariableName[Unit](Frequency)</code>.</p>
-<p>By default, <code>$data_sim()</code> returns minimal columns, i.e. the <code>Date/Time</code>
-column together with all input and output parameters are returned. You can
-retrieve extra columns by setting <code>all</code> to <code>TRUE</code>. Those column include:</p><ul>
+<dt><code>exclude_ddy</code></dt><dd><p>Whether to exclude design day data. Default:
+<code>TRUE</code>. Default: <code>FALSE</code>.</p></dd>
+
+<dt><code>all</code></dt><dd><p>If <code>TRUE</code>, extra columns are also included in the returned
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> describing the simulation case and
+datetime components. Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$data_sim()</code> returns a list of 2 <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which
+contains the simulated data of input and output parameters. These
+data will be stored internally and used during Bayesian calibration
+using Stan.</p>
+<p>The <code>resolution</code> parameter can be used to specify the time resolution
+of returned data. Note that input time resolution cannot be smaller
+than the reporting frequency, otherwise an error will be issued.</p>
+<p>The parameter is named in the same way as standard EnergyPlus csv
+output file, i.e. <code>KeyValue:VariableName [Unit](Frequency)</code>.</p>
+<p>By default, <code>$data_sim()</code> returns minimal columns, i.e. the
+<code>Date/Time</code> column together with all input and output parameters are
+returned. You can retrieve extra columns by setting <code>all</code> to <code>TRUE</code>.
+Those column include:</p><ul>
 <li><p><code>case</code>: Integer type. Indices of parametric simulations.</p></li>
 <li><p><code>environment_period_index</code>: Integer type. The indice of environment.</p></li>
 <li><p><code>environment_name</code>: Character type. A text string identifying the
 simulation environment.</p></li>
 <li><p><code>simulation_days</code>: Integer type. Day of simulation.</p></li>
-<li><p><code>datetime</code>: DateTime type. The date time of simulation result. Note that
-the year valueas are automatically calculated to meets the start day of
-week restriction for each simulation environment.</p></li>
+<li><p><code>datetime</code>: DateTime type. The date time of simulation result. Note
+that the year valueas are automatically calculated to meets the
+start day of week restriction for each simulation environment.</p></li>
 <li><p><code>month</code>: Integer type. The month of reported date time.</p></li>
 <li><p><code>day</code>: Integer type. The day of month of reported date time.</p></li>
 <li><p><code>hour</code>: Integer type. The hour of reported date time.</p></li>
 <li><p><code>minute</code>: Integer type. The minute of reported date time.</p></li>
-<li><p><code>day_type</code>: Character type. The type of day, e.g. <code>Monday</code>, <code>Tuesday</code> and
-etc. Note that <code>day_type</code> will always be <code>NA</code> if <code>resolution</code> is specified.</p></li>
+<li><p><code>day_type</code>: Character type. The type of day, e.g. <code>Monday</code>,
+<code>Tuesday</code> and etc. Note that <code>day_type</code> will always be <code>NA</code> if
+<code>resolution</code> is specified.</p></li>
 </ul>
 
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>resolution</code>: A character string specifying a time unit or a multiple of a
-unit to change the time resolution of returned simulation data. Valid base
-units are <code>min</code>, <code>hour</code>, <code>day</code>, <code>week</code>, <code>month</code>, and <code>year</code>.
-Example: <code>10 mins</code>, <code>2 hours</code>, <code>1 day</code>. If <code>NULL</code>, the variable reporting
-frequency is used. Default: <code>NULL</code>.</p></li>
-<li><p><code>exclude_ddy</code>: Whether to exclude design day data. Default: <code>TRUE</code>.
-Default: <code>FALSE</code>.</p></li>
-<li><p><code>all</code>: If <code>TRUE</code>, extra columns are also included in the returned
-<a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a> describing the simulation case and
-datetime components. Default: <code>FALSE</code>.</p></li>
-</ul>
 
-    <h2 class="hasAnchor" id="specify-measured-data"><a class="anchor" href="#specify-measured-data"></a>Specify Measured Data</h2>
+<h3>Returns</h3>
+<p>A list of 2 <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$data_sim()
+}
 
-    
-<pre>bc$data_field(output, new_input = NULL, all = FALSE)
-</pre>
+</pre><p></div></p>
 
+<p><hr>
+<a id="method-data_field"></a></p><h3>Method <code>data_field()</code></h3>
+<p>Specify field measured data</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$data_field(output, new_input = NULL, all = FALSE)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>output</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> containing measured value of output
+parameters.</p></dd>
+
+<dt><code>new_input</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> containing newly measured value of
+input parameters.</p></dd>
+
+<dt><code>all</code></dt><dd><p>If <code>TRUE</code>, extra columns are also included in the returned
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> describing the simulation case and
+datetime components. For details, please see
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.
+Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
 <p><code>$data_field()</code> takes a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> of measured value of output
-parameters and returns a list of <a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a>s
-which contains the measured value of input and output parameters, and newly
+parameters and returns a list of <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>s which
+contains the measured value of input and output parameters, and newly
 measured value of input if applicable.</p>
-<p>The specified <code>output</code> <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> is validated using criteria below:</p><ul>
-<li><p>The column number should be the same as the number of output specified in
-<code>$output()</code>.</p></li>
-<li><p>The row number should be the same as the number of simulated values for
-each case extracted using <code>$data_sim()</code>.</p></li>
+<p>The specified <code>output</code> <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> is validated using criteria
+below:</p><ul>
+<li><p>The column number should be the same as the number of output
+specified in
+<a href='../../epluspar/html/BayesCalibJob.html#method-output'><code>$output()</code></a>.</p></li>
+<li><p>The row number should be the same as the number of simulated values
+for each case extracted using
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.</p></li>
 </ul>
 
-<p>For input parameters, the values of simulation data for the first case are
-directly used as the measured values.</p>
-<p>Parameter <code>new_input</code> can be used to give a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> of newly measured
-value of input parameters. The column number of input <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> should
-be the same as the number of input parameters specified in <code>$input()</code>. If not
-specified, the measured values of input parameters will be used for
-predictions.</p>
-<p>All the data will be stored internally and used during Bayesian calibration
-using Stan.</p>
-<p>Note that as <code>$data_field()</code> relies on the output of <code>$data_sim()</code> to
-perform validation on the specified data, <code>$data_field()</code> cannot be called
-before <code>$data_sim()</code> and internally stored data will be removed whenever
-<code>$data_sim()</code> is called. This aims to make sure that simulated data and field
-data can be matched whenever the calibration is performed.</p>
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>output</code>: A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> containing measured value of output parameters.</p></li>
-<li><p><code>new_input</code>: A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> containing newly measured value of input
-parameters.</p></li>
-<li><p><code>all</code>: If <code>TRUE</code>, extra columns are also included in the returned
-<a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a> describing the simulation case and
-datetime components. For details, please see <code>$data_sim()</code>. Default:
-<code>FALSE</code>.</p></li>
-</ul>
+<p>For input parameters, the values of simulation data for the first
+case are directly used as the measured values.</p>
+<p>Parameter <code>new_input</code> can be used to give a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> of newly
+measured value of input parameters. The column number of input
+<code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> should be the same as the number of input parameters
+specified in
+<a href='../../epluspar/html/BayesCalibJob.html#method-input'><code>$input()</code></a>.
+If not specified, the measured values of
+input parameters will be used for predictions.</p>
+<p>All the data will be stored internally and used during Bayesian
+calibration using Stan.</p>
+<p>Note that as <code>$data_field()</code> relies on the output of
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.
+to
+perform validation on the specified data, <code>$data_field()</code> cannot be
+called before
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.
+and internally stored data will be
+removed whenever
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.
+is called. This aims to make sure that
+simulated data and field data can be matched whenever the calibration
+is performed.</p>
 
-    <h2 class="hasAnchor" id="run-bayesian-calibration-using-stan"><a class="anchor" href="#run-bayesian-calibration-using-stan"></a>Run Bayesian Calibration Using Stan</h2>
+<h3>Returns</h3>
+<p>A list of <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<p><hr>
+<a id="method-data_bc"></a></p><h3>Method <code>data_bc()</code></h3>
+<p>Combine simulation data and field measured data</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$data_bc(data_field = NULL, data_sim = NULL)</pre><p></div></p>
 
-    
-<pre>bc$data_bc(data_field = NULL, data_sim = NULL)
-bc$stan_run(file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
-            mc.cores = parallel::detectCores(), ...)
-bc$stan_file(path = NULL)
-</pre>
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>data_field</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> specifying field measured data.
+Should have the same structure as the output from
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>.
+If <code>NULL</code>, the output from
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>
+will be used. Default: <code>NULL</code>.</p></dd>
 
-<p><code>$data_bc()</code> takes a list of field data and simulated data, and returns a
-list that contains data input for Bayesican calibration using the Stan model
-from Chong (2018):</p><ul>
+<dt><code>data_sim</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> specifying field measured data.
+Should have the same structure as the output from
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>.
+If <code>NULL</code>, the output from
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_sim'><code>$data_sim()</code></a>
+will be used. Default: <code>NULL</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$data_bc()</code> takes a list of field data and simulated data, and
+returns a list that contains data input for Bayesian calibration
+using the Stan model from Chong (2018):</p><ul>
 <li><p><code>n</code>: Number of measured parameter observations.</p></li>
 <li><p><code>n_pred</code>: Number of newly design points for predictions.</p></li>
 <li><p><code>m</code>: Number of simulated observations.</p></li>
@@ -549,156 +915,705 @@ normalization.</p></li>
 output from <code>$data_field()</code> and <code>$data_sim()</code>. If <code>data_field</code> and
 <code>data_sim</code> is not specified, the output from <code>$data_field()</code> and
 <code>$data_sim()</code> will be used.</p>
+
+<h3>Returns</h3>
+<p>A list of 11 elements.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$data_bc()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_run"></a></p><h3>Method <code>eplus_run()</code></h3>
+<p>Run parametric simulations</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_run(
+  dir = NULL,
+  run_period = NULL,
+  wait = TRUE,
+  force = FALSE,
+  copy_external = FALSE,
+  echo = wait
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>dir</code></dt><dd><p>The parent output directory for specified simulations.
+Outputs of each simulation are placed in a separate folder
+under the parent directory. If <code>NULL</code>, directory of seed
+model will be used. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>run_period</code></dt><dd><p>A list giving a new <code>RunPeriod</code> object definition.
+If not <code>NULL</code>, only this new RunPeriod will take effect with
+all existing RunPeriod objects in the seed model being
+commented out. If <code>NULL</code>, existing run period in the seed
+model will be used. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>wait</code></dt><dd><p>If <code>TRUE</code>, R will hang on and wait all EnergyPlus simulations
+finish. If <code>FALSE</code>, all EnergyPlus simulations are run in the
+background. Default: <code>TRUE</code>.</p></dd>
+
+<dt><code>force</code></dt><dd><p>Only applicable when the last simulation runs with
+<code>wait</code> equals to <code>FALSE</code> and is still running. If <code>TRUE</code>,
+current running job is forced to stop and a new one will
+start. Default: <code>FALSE</code>.</p></dd>
+
+<dt><code>copy_external</code></dt><dd><p>If <code>TRUE</code>, the external files that every <code>Idf</code>
+object depends on will also be copied into the simulation
+output directory. The values of file paths in the Idf will be
+changed automatically. Currently, only <code>Schedule:File</code> class
+is supported.  This ensures that the output directory will
+have all files needed for the model to run. Default is
+<code>FALSE</code>.</p></dd>
+
+<dt><code>echo</code></dt><dd><p>Only applicable when <code>wait</code> is <code>TRUE</code>. Whether to print
+simulation status. Default: same as the value of <code>wait</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_run()</code> runs all parametric models in parallel. Parameter
+<code>run_period</code> can be given to insert a new <code>RunPeriod</code> object. In this
+case, all existing <code>RunPeriod</code> objects in the seed model will be
+commented out.</p>
+<p>Note that when <code>run_period</code> is given, value of field <code>Run Simulation for Weather File Run Periods</code> in <code>SimulationControl</code> class will be
+reset to <code>Yes</code> to make sure input run period can take effect.</p>
+
+<h3>Returns</h3>
+<p>The modified <code>BayesCalibJob</code> object itself.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# specify output directory and run period
+bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
+
+# run in the background
+bc$run(wait = TRUE)
+# see job status
+bc$status()
+
+# force to kill background job before running the new one
+bc$run(force = TRUE)
+
+# do not show anything in the console
+bc$run(echo = FALSE)
+
+# copy external files used in the model to simulation output directory
+bc$run(copy_external = TRUE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_kill"></a></p><h3>Method <code>eplus_kill()</code></h3>
+<p>Kill current running EnergyPlus simulations</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_kill()</pre><p></div></p>
+
+<h3>Details</h3>
+<p><code>$eplus_kill()</code> kills all background EnergyPlus processes that are
+current running if possible. It only works when simulations run in
+non-waiting mode.</p>
+
+<h3>Returns</h3>
+<p>A single logical value of <code>TRUE</code> or <code>FALSE</code>, invisibly.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$eplus_kill()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_status"></a></p><h3>Method <code>eplus_status()</code></h3>
+<p>Get the EnergyPlus simulation status</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_status()</pre><p></div></p>
+
+<h3>Details</h3>
+<p><code>$eplus_status()</code> returns a named list of values indicates the status
+of the job:</p><ul>
+<li><p><code>run_before</code>: <code>TRUE</code> if the job has been run before. <code>FALSE</code> otherwise.</p></li>
+<li><p><code>alive</code>: <code>TRUE</code> if the job is still running in the background. <code>FALSE</code>
+otherwise.</p></li>
+<li><p><code>terminated</code>: <code>TRUE</code> if the job was terminated during last
+simulation. <code>FALSE</code> otherwise. <code>NA</code> if the job has not been run yet.</p></li>
+<li><p><code>successful</code>: <code>TRUE</code> if all simulations ended successfully. <code>FALSE</code> if
+there is any simulation failed. <code>NA</code> if the job has not been run yet.</p></li>
+<li><p><code>changed_after</code>: <code>TRUE</code> if the <em>seed model</em> has been modified since last
+simulation. <code>FALSE</code> otherwise.</p></li>
+<li><p><code>job_status</code>: A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> contains meta data
+for each simulation job. For details, please see <code>run_multi()</code>. If the
+job has not been run before, a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>
+with 4 columns is returned:</p><ul>
+<li><p><code>index</code>: The index of simulation</p></li>
+<li><p><code>status</code>: The status of simulation. As the simulation has not been run,
+<code>status</code> will always be "idle".</p></li>
+<li><p><code>idf</code>: The path of input IDF file.</p></li>
+<li><p><code>epw</code>: The path of input EPW file. If not provided, <code>NA</code> will be
+assigned.</p></li>
+</ul></li>
+</ul>
+
+
+<h3>Returns</h3>
+<p>A named list of 6 elements.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$eplus_status()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_output_dir"></a></p><h3>Method <code>eplus_output_dir()</code></h3>
+<p>Get EnergyPlus simulation output directory</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_output_dir(which = NULL)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_output_dir()</code> returns the output directory of EnergyPlus
+simulation results.</p>
+
+<h3>Returns</h3>
+<p>A character vector.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# get output directories of all simulations
+bc$eplus_output_dir()
+
+# get output directories of specified simulations
+bc$eplus_output_dir(c(1, 4))
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_locate_output"></a></p><h3>Method <code>eplus_locate_output()</code></h3>
+<p>Get paths of EnergyPlus output file</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>suffix</code></dt><dd><p>A string that indicates the file extension of
+simulation output. Default: <code>".err"</code>.</p></dd>
+
+<dt><code>strict</code></dt><dd><p>If <code>TRUE</code>, it will check if the simulation was
+terminated, is still running or the file exists or not.
+Default: <code>TRUE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_locate_output()</code> returns the path of a single output file of
+specified simulations.</p>
+
+<h3>Returns</h3>
+<p>A character vector.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# get the file path of the error file
+bc$eplus_locate_output(c(1, 4), ".err", strict = FALSE)
+
+# can use to detect if certain output file exists
+bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_errors"></a></p><h3>Method <code>eplus_errors()</code></h3>
+<p>Read EnergyPlus simulation errors</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_errors(which = NULL, info = FALSE)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>info</code></dt><dd><p>If <code>FALSE</code>, only warnings and errors are printed.
+Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p>$eplus_errors() returns a list of <a href='https://hongyuanjia.github.io/eplusr/reference/read_err.html'>ErrFile</a>
+objects which contain all contents of the simulation error files
+(<code>.err</code>). If <code>info</code> is <code>FALSE</code>, only warnings and errors are printed.</p>
+
+<h3>Returns</h3>
+<p>A list of <a href='https://hongyuanjia.github.io/eplusr/reference/read_err.html'>ErrFile</a> objects.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$errors()
+
+# show all information
+bc$errors(info = TRUE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_report_data_dict"></a></p><h3>Method <code>eplus_report_data_dict()</code></h3>
+<p>Read report data dictionary from EnergyPlus SQL outputs</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_report_data_dict(which = NULL)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_report_data_dict()</code> returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>
+which contains all information about report data.</p>
+<p>For details on the meaning of each columns, please see "2.20.2.1
+ReportDataDictionary Table" in EnergyPlus "Output Details and
+Examples" documentation.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> of 10 columns:</p><ul>
+<li><p><code>case</code>: The model name. This column can be used to distinguish
+output from different simulations</p></li>
+<li><p><code>report_data_dictionary_index</code>: The integer used to link the
+dictionary data to the variable data. Mainly useful when joining
+diferent tables</p></li>
+<li><p><code>is_meter</code>: Whether report data is a meter data. Possible values:
+<code>0</code> and <code>1</code></p></li>
+<li><p><code>timestep_type</code>: Type of data timestep. Possible values: <code>Zone</code> and
+<code>HVAC System</code></p></li>
+<li><p><code>key_value</code>: Key name of the data</p></li>
+<li><p><code>name</code>: Actual report data name</p></li>
+<li><p><code>reporting_frequency</code>:</p></li>
+<li><p><code>schedule_name</code>: Name of the the schedule that controls reporting
+frequency.</p></li>
+<li><p><code>units</code>: The data units</p></li>
+</ul>
+
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$eplus_report_data_dict(c(1, 4))
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_report_data"></a></p><h3>Method <code>eplus_report_data()</code></h3>
+<p>Read EnergyPlus report data</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_report_data(
+  which = NULL,
+  key_value = NULL,
+  name = NULL,
+  year = NULL,
+  tz = "UTC",
+  all = FALSE,
+  wide = FALSE,
+  period = NULL,
+  month = NULL,
+  day = NULL,
+  hour = NULL,
+  minute = NULL,
+  interval = NULL,
+  simulation_days = NULL,
+  day_type = NULL,
+  environment_name = NULL
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>key_value</code></dt><dd><p>A character vector to identify key values of the
+data. If <code>NULL</code>, all keys of that variable will be returned.
+<code>key_value</code> can also be data.frame that contains <code>key_value</code>
+and <code>name</code> columns. In this case, <code>name</code> argument in
+<code>$eplus_report_data()</code> is ignored. All available <code>key_value</code> for
+current simulation output can be obtained using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>.
+Default: <code>NULL</code>.</p></dd>
+
+<dt><code>name</code></dt><dd><p>A character vector to identify names of the data. If
+<code>NULL</code>, all names of that variable will be returned. If
+<code>key_value</code> is a data.frame, <code>name</code> is ignored. All available
+<code>name</code> for current simulation output can be obtained using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>.
+Default: <code>NULL</code>.</p></dd>
+
+<dt><code>year</code></dt><dd><p>Year of the date time in column <code>datetime</code>. If <code>NULL</code>, it
+will calculate a year value that meets the start day of week
+restriction for each environment. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>tz</code></dt><dd><p>Time zone of date time in column <code>datetime</code>. Default:
+<code>"UTC"</code>.</p></dd>
+
+<dt><code>all</code></dt><dd><p>If <code>TRUE</code>, extra columns are also included in the returned
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p></dd>
+
+<dt><code>wide</code></dt><dd><p>If <code>TRUE</code>, the output is formated in the same way as
+standard EnergyPlus csv output file.</p></dd>
+
+<dt><code>period</code></dt><dd><p>A Date or POSIXt vector used to specify which time
+period to return. The year value does not matter and only
+month, day, hour and minute value will be used when
+subsetting. If <code>NULL</code>, all time period of data is returned.
+Default: <code>NULL</code>.</p></dd>
+
+<dt><code>month, day, hour, minute</code></dt><dd><p>Each is an integer vector for month,
+day, hour, minute subsetting of <code>datetime</code> column when
+querying on the SQL database. If <code>NULL</code>, no subsetting is
+performed on those components. All possible <code>month</code>, <code>day</code>,
+<code>hour</code> and <code>minute</code> can be obtained using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>.
+Default: <code>NULL</code>.</p></dd>
+
+<dt><code>interval</code></dt><dd><p>An integer vector used to specify which interval
+length of report to extract. If <code>NULL</code>, all interval will be
+used. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>simulation_days</code></dt><dd><p>An integer vector to specify which simulation
+day data to extract. Note that this number resets after warmup
+and at the beginning of an environment period. All possible
+<code>simulation_days</code> can be obtained using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>.
+If <code>NULL</code>, all simulation days will be used. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>day_type</code></dt><dd><p>A character vector to specify which day type of data
+to extract. All possible day types are: <code>Sunday</code>, <code>Monday</code>,
+<code>Tuesday</code>, <code>Wednesday</code>, <code>Thursday</code>, <code>Friday</code>, <code>Saturday</code>,
+<code>Holiday</code>, <code>SummerDesignDay</code>, <code>WinterDesignDay</code>, <code>CustomDay1</code>,
+and <code>CustomDay2</code>. All possible values for current simulation
+output can be obtained using
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>.</p></dd>
+
+<dt><code>environment_name</code></dt><dd><p>A character vector to specify which
+environment data to extract. If <code>NULL</code>, all environment data
+are returned. Default: <code>NULL</code>. All possible
+<code>environment_name</code> for current simulation output can be
+obtained using:<pre>$read_table(NULL, "EnvironmentPeriods")
+</pre></p></dd>
+
+<dt><code>case</code></dt><dd><p>If not <code>NULL</code>, a character column will be added indicates
+the case of this simulation. If <code>"auto"</code>, the name of the IDF
+file without extension is used.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_report_data()</code> extracts the report data in a
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> using key values, variable names and other
+specifications.</p>
+<p><code>$eplus_report_data()</code> can also directly take all or subset output from
+<a href='../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict'><code>$eplus_report_data_dict()</code></a>
+as input, and extract all data specified.</p>
+<p>The returned column numbers varies depending on <code>all</code> argument.</p><ul>
+<li><p><code>all</code> is <code>FALSE</code>, the returned <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> has 6 columns:</p><ul>
+<li><p><code>case</code>: The model name. This column can be used to distinguish
+output from different simulations</p></li>
+<li><p><code>datetime</code>: The date time of simulation result</p></li>
+<li><p><code>key_value</code>: Key name of the data</p></li>
+<li><p><code>name</code>: Actual report data name</p></li>
+<li><p><code>units</code>: The data units</p></li>
+<li><p><code>value</code>: The data value</p></li>
+</ul></li>
+<li><p><code>all</code> is <code>TRUE</code>, besides columns described above, extra columns are also
+included:</p><ul>
+<li><p><code>month</code>: The month of reported date time</p></li>
+<li><p><code>day</code>: The day of month of reported date time</p></li>
+<li><p><code>hour</code>: The hour of reported date time</p></li>
+<li><p><code>minute</code>: The minute of reported date time</p></li>
+<li><p><code>dst</code>: Daylight saving time indicator. Possible values: <code>0</code> and <code>1</code></p></li>
+<li><p><code>interval</code>: Length of reporting interval</p></li>
+<li><p><code>simulation_days</code>: Day of simulation</p></li>
+<li><p><code>day_type</code>: The type of day, e.g. <code>Monday</code>, <code>Tuesday</code> and etc.</p></li>
+<li><p><code>environment_period_index</code>: The indice of environment.</p></li>
+<li><p><code>environment_name</code>: A text string identifying the environment.</p></li>
+<li><p><code>is_meter</code>: Whether report data is a meter data. Possible values: <code>0</code> and
+<code>1</code></p></li>
+<li><p><code>type</code>: Nature of data type with respect to state. Possible values: <code>Sum</code>
+and <code>Avg</code></p></li>
+<li><p><code>index_group</code>: The report group, e.g. <code>Zone</code>, <code>System</code></p></li>
+<li><p><code>timestep_type</code>: Type of data timestep. Possible values: <code>Zone</code> and <code>HVAC System</code></p></li>
+<li><p><code>reporting_frequency</code>: The reporting frequency of the variable, e.g.
+<code>HVAC System Timestep</code>, <code>Zone Timestep</code>.</p></li>
+<li><p><code>schedule_name</code>: Name of the the schedule that controls reporting
+frequency.</p></li>
+</ul></li>
+</ul>
+
+<p>With the <code>datetime</code> column, it is quite straightforward to apply time-series
+analysis on the simulation output. However, another painful thing is that
+every simulation run period has its own <code>Day of Week for Start Day</code>. Randomly
+setting the <code>year</code> may result in a date time series that does not have
+the same start day of week as specified in the RunPeriod objects.</p>
+<p>eplusr provides a simple solution for this. By setting <code>year</code> to <code>NULL</code>,
+which is the default behavior, eplusr will calculate a year value (from
+current year backwards) for each run period that compliances with the start
+day of week restriction.</p>
+<p>It is worth noting that EnergyPlus uses 24-hour clock system where 24 is only
+used to denote midnight at the end of a calendar day. In EnergyPlus output,
+"00:24:00" with a time interval being 15 mins represents a time period from
+"00:23:45" to "00:24:00", and similarly "00:15:00" represents a time period
+from "00:24:00" to "00:15:00" of the next day. This means that if current day
+is Friday, day of week rule applied in schedule time period "00:23:45" to
+"00:24:00" (presented as "00:24:00" in the output) is also Friday, but not
+Saturday. However, if you try to get the day of week of time "00:24:00" in R,
+you will get Saturday, but not Friday. This introduces inconsistency and may
+cause problems when doing data analysis considering day of week value.</p>
+<p>With <code>wide</code> equals <code>TRUE</code>, <code>$eplus_report_data()</code> will format the
+simulation output in the same way as standard EnergyPlus csv output
+file. Sometimes this can be useful as there may be existing
+tools/workflows that depend on this format.  When both <code>wide</code> and
+<code>all</code> are <code>TRUE</code>, columns of runperiod environment names and date
+time components are also returned, including:
+<code>environment_period_index", "environment_name</code>, <code>simulation_days</code>,
+<code>datetime</code>, <code>month</code>, <code>day</code>, <code>hour</code>, <code>minute</code>, <code>day_type</code>.</p>
+<p>For convenience, input character arguments matching in
+<code>$eplus_report_data()</code> are <strong>case-insensitive</strong>.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# read report data
+bc$report_data(c(1, 4))
+
+# specify output variables using report data dictionary
+dict &lt;- bc$report_data_dict(1)
+bc$report_data(c(1, 4), dict[units == "C"])
+
+# specify output variables using 'key_value' and 'name'
+bc$report_data(c(1, 4), "environment", "site outdoor air drybulb temperature")
+
+# explicitly specify year value and time zone
+bc$report_data(c(1, 4), dict[1], year = 2020, tz = "Etc/GMT+8")
+
+# get all possible columns
+bc$report_data(c(1, 4), dict[1], all = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output
+bc$report_data(c(1, 4), dict[1], wide = TRUE)
+
+# return in a format that is similar as EnergyPlus CSV output with
+# extra columns
+bc$report_data(c(1, 4), dict[1], wide = TRUE, all = TRUE)
+
+# only get data at the working hour on the first Monday
+bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_days = 1:7)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_tabular_data"></a></p><h3>Method <code>eplus_tabular_data()</code></h3>
+<p>Read EnergyPlus tabular data</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_tabular_data(
+  which = NULL,
+  report_name = NULL,
+  report_for = NULL,
+  table_name = NULL,
+  column_name = NULL,
+  row_name = NULL
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
+or names of parametric simulations. If <code>NULL</code>, results of all
+parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>report_name, report_for, table_name, column_name, row_name</code></dt><dd><p>Each is
+a character vector for subsetting when querying the SQL
+database.  For the meaning of each argument, please see the
+description above.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_tabular_data()</code> extracts the tabular data in a
+<code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> using report, table, column and row name
+specifications. The returned <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> has
+9 columns:</p><ul>
+<li><p><code>case</code>: The model name. This column can be used to distinguish
+output from different simulations</p></li>
+<li><p><code>index</code>: Tabular data index</p></li>
+<li><p><code>report_name</code>: The name of the report that the record belongs to</p></li>
+<li><p><code>report_for</code>: The <code>For</code> text that is associated with the record</p></li>
+<li><p><code>table_name</code>: The name of the table that the record belongs to</p></li>
+<li><p><code>column_name</code>: The name of the column that the record belongs to</p></li>
+<li><p><code>row_name</code>: The name of the row that the record belongs to</p></li>
+<li><p><code>units</code>: The units of the record</p></li>
+<li><p><code>value</code>: The value of the record <strong>in string format</strong></p></li>
+</ul>
+
+<p>For convenience, input character arguments matching in
+<code>$eplus_tabular_data()</code> are <strong>case-insensitive</strong>.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with 8 columns.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# read all tabular data
+bc$eplus_tabular_data(c(1, 4))
+
+# explicitly specify data you want
+str(bc$eplus_tabular_data(c(1, 4),
+    report_name = "AnnualBuildingUtilityPerformanceSummary",
+    table_name = "Site and Source Energy",
+    column_name = "Total Energy",
+    row_name = "Total Site Energy"
+))
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-eplus_save"></a></p><h3>Method <code>eplus_save()</code></h3>
+<p>Save EnergyPlus parametric models</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>dir</code></dt><dd><p>The parent output directory for models to be saved. If
+<code>NULL</code>, the directory of the seed model will be used. Default:
+<code>NULL</code>.</p></dd>
+
+<dt><code>separate</code></dt><dd><p>If <code>TRUE</code>, all models are saved in a separate folder
+with each model's name under specified directory. If <code>FALSE</code>,
+all models are saved in the specified directory. Default:
+<code>TRUE</code>.</p></dd>
+
+<dt><code>copy_external</code></dt><dd><p>Only applicable when <code>separate</code> is <code>TRUE</code>. If
+<code>TRUE</code>, the external files that every <code>Idf</code> object depends on
+will also be copied into the saving directory. The values of
+file paths in the Idf will be changed automatically.
+Currently, only <code>Schedule:File</code> class is supported.  This
+ensures that the output directory will have all files needed
+for the model to run. Default: <code>FALSE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$eplus_save()</code> saves all parametric models in specified folder. An
+error will be issued if no measure has been applied.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with two columns:</p><ul>
+<li><p>model: The path of saved parametric model files.</p></li>
+<li><p>weather: The path of saved weather files.</p></li>
+</ul>
+
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+# save all parametric models with each model in a separate folder
+bc$save(tempdir())
+
+# save all parametric models with all models in the same folder
+bc$save(tempdir(), separate = FALSE)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-stan_run"></a></p><h3>Method <code>stan_run()</code></h3>
+<p>Run Bayesian calibration using Stan</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$stan_run(
+  file = NULL,
+  data = NULL,
+  iter = 2000L,
+  chains = 4L,
+  echo = TRUE,
+  ...
+)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>file</code></dt><dd><p>The path to the Stan program to use. If <code>NULL</code>, the
+pre-compiled Stan code from Chong (2018) will be used.
+Default: <code>NULL</code>.</p></dd>
+
+<dt><code>data</code></dt><dd><p>Only applicable when <code>file</code> is not <code>NULL</code>. The data to be
+used for Bayesian calibration. If <code>NULL</code>, the data that
+<code>$data_bc()</code> returns is used. Default: <code>NULL</code>.</p></dd>
+
+<dt><code>iter</code></dt><dd><p>A positive integer specifying the number of iterations
+for each chain (including warmup). Default: <code>2000</code>.</p></dd>
+
+<dt><code>chains</code></dt><dd><p>A positive integer specifying the number of Markov
+chains. Default: <code>4</code>.</p></dd>
+
+<dt><code>echo</code></dt><dd><p>Whether to print intermediate output from Stan on the
+console, which might be helpful for model debugging. Default:
+<code>TRUE</code>.</p></dd>
+
+<dt><code>...</code></dt><dd><p>Additional arguments to pass to <a href='https://rdrr.io/pkg/rstan/man/stanmodel-method-sampling.html'>rstan::sampling</a> (when
+<code>file</code> is <code>NULL</code>) or <a href='https://rdrr.io/pkg/rstan/man/stan.html'>rstan::stan</a> (when <code>file</code> is not
+<code>NULL</code>).</p></dd>
+
+<dt><code>mc.cores</code></dt><dd><p>An integer specifying how many cores to be used for
+Stan. Default: <code><a href='https://rdrr.io/r/parallel/detectCores.html'>parallel::detectCores()</a></code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
 <p><code>$stan_run()</code> runs Bayesian calibration using <a href='https://rdrr.io/pkg/rstan/man/stan.html'>Stan</a> and
 returns a list of 2 elements:</p><ul>
 <li><p><code>fit</code>: An object of S4 class <a href='https://rdrr.io/pkg/rstan/man/stanfit-class.html'>rstan::stanfit</a>.</p></li>
-<li><p><code>y_pred</code>: A <a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table</a> with predicted output
+<li><p><code>y_pred</code>: A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with predicted output
 values.</p></li>
 </ul>
 
-<p><code>$stan_file()</code> saves the Stan file used internally for Bayesican calibration.
-If no path is given, a character vector of the Stan code is returned. If
-given, the code will be save to the path and the file path is returned.</p>
-<p><strong>Arguments</strong></p><ul>
-<li><p><code>file</code>: The path to the Stan program to use. If <code>NULL</code>, the pre-compiled
-Stan code from Chong (2018) will be used. Default: <code>NULL</code>.</p></li>
-<li><p><code>data</code>: Only applicable when <code>file</code> is not <code>NULL</code>. The data to be used for
-Bayesican calibration. If <code>NULL</code>, the data that <code>$data_bc()</code> returns is
-used. Default: <code>NULL</code>.</p></li>
-<li><p><code>path</code>: A path to save the Stan code. If <code>NULL</code>, a character vector of the
-Stan code is returned.</p></li>
-<li><p><code>iter</code>: A positive integer specifying the number of iterations for each
-chain (including warmup). Default: <code>2000</code>.</p></li>
-<li><p><code>chains</code>: A positive integer specifying the number of Markov chains.
-Default: <code>4</code>.</p></li>
-<li><p><code>echo</code>: Whether to print intermediate output from Stan on the console,
-which might be helpful for model debugging. Default: <code>TRUE</code>.</p></li>
-<li><p><code>mc.cores</code>: An integer specifying how many cores to be used for Stan.
-Default: <code><a href='https://rdrr.io/r/parallel/detectCores.html'>parallel::detectCores()</a></code>.</p></li>
-<li><p><code>...</code>: Additional arguments to pass to <a href='https://rdrr.io/pkg/rstan/man/stanmodel-method-sampling.html'>rstan::sampling</a> (when <code>file</code> is
-<code>NULL</code>) or <a href='https://rdrr.io/pkg/rstan/man/stan.html'>rstan::stan</a> (when <code>file</code> is not <code>NULL</code>).</p></li>
-</ul>
 
-    <h2 class="hasAnchor" id="inherited-methods-from-parametricjob"><a class="anchor" href="#inherited-methods-from-parametricjob"></a>Inherited Methods from <code>ParametricJob</code></h2>
+<h3>Returns</h3>
+<p>A list of 2 elements.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$stan_run()
+}
 
-    
-<pre>bc$eplus_kill()
-bc$eplus_status()
-bc$eplus_output_dir(which = NULL)
-bc$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)
-bc$eplus_errors(which = NULL, info = FALSE)
-bc$eplus_report_data_dict(which = NULL)
-bc$eplus_report_data(which = NULL, key_value = NULL, name = NULL,
-                     year = NULL, tz = "UTC", all = FALSE, wide = FALSE,
-                     period = NULL, month = NULL, day = NULL, hour = NULL, minute = NULL,
-                     interval = NULL, simulation_days = NULL, day_type = NULL,
-                     environment_name = NULL)
-bc$eplus_tabular_data(which = NULL, report_name = NULL, report_for = NULL,
-                      table_name = NULL, column_name = NULL, row_name = NULL)
-bc$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)
-</pre>
+</pre><p></div></p>
 
-<p>All methods listed above are inherited from eplusr's
-<code><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>ParametricJob</a></code>. Each method has been renamed with a
-prefix <code>eplus_</code>, e.g. <code>$output_dir()</code> in <a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a> becomes
-<code>$eplus_output_dir()</code>. For detailed documentation on each
-method, please see <a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr's documentation</a>.</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+<p><hr>
+<a id="method-stan_file"></a></p><h3>Method <code>stan_file()</code></h3>
+<p>Extract Stan file for Bayesian calibration</p><h3>Usage</h3>
+<p><div class="r"></p><pre>BayesCalibJob$stan_file(path = NULL)</pre><p></div></p>
 
-    <p>A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
-energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
-10.1016/j.enbuild.2018.06.028</p>
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl class='dl-horizontal'>
+<dt><code>path</code></dt><dd><p>A path to save the Stan code. If <code>NULL</code>, a character
+vector of the Stan code is returned.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$stan_file()</code> saves the Stan file used internally for Bayesian
+calibration. If no path is given, a character vector of the Stan
+code is returned. If given, the code will be save to the path and the
+file path is returned.</p>
+
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$stan_file()
+}
+
+</pre><p></div></p>
+
+
+
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='kw'>if</span> (<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>is_avail_eplus</a></span>(<span class='fl'>8.8</span>)) {
-    <span class='no'>idf_name</span> <span class='kw'>&lt;-</span> <span class='st'>"5Zone_Transformer.idf"</span>
-    <span class='no'>epw_name</span> <span class='kw'>&lt;-</span>  <span class='st'>"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>
-
-    <span class='no'>idf_path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)$<span class='no'>dir</span>, <span class='st'>"ExampleFiles"</span>, <span class='no'>idf_name</span>)
-    <span class='no'>epw_path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)$<span class='no'>dir</span>, <span class='st'>"WeatherData"</span>, <span class='no'>epw_name</span>)
-
-    <span class='co'># create from local files</span>
-    <span class='fu'>bayes_job</span>(<span class='no'>idf_path</span>, <span class='no'>epw_path</span>)
-
-    <span class='co'># create from an Idf and an Epw object</span>
-    <span class='no'>bc</span> <span class='kw'>&lt;-</span> <span class='fu'>bayes_job</span>(<span class='fu'>read_idf</span>(<span class='no'>idf_path</span>), <span class='fu'>read_epw</span>(<span class='no'>epw_path</span>))
-
-    <span class='co'># get the seed model</span>
-    <span class='no'>bc</span>$<span class='fu'>seed</span>()
-
-    <span class='co'># get the weather</span>
-    <span class='no'>bc</span>$<span class='fu'>weather</span>()
-
-    <span class='co'># read rdd</span>
-    <span class='no'>bc</span>$<span class='fu'>read_rdd</span>()
-
-    <span class='co'># read mdd</span>
-    <span class='no'>bc</span>$<span class='fu'>read_mdd</span>()
-
-    <span class='co'># set input and output parameters</span>
-    <span class='no'>bc</span>$<span class='fu'>input</span>(<span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"fan air mass flow rate"</span>, <span class='kw'>reporting_frequency</span> <span class='kw'>=</span> <span class='st'>"hourly"</span>)
-    <span class='co'># set input parameters</span>
-    <span class='no'>bc</span>$<span class='fu'>output</span>(<span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"fan electric power"</span>, <span class='kw'>reporting_frequency</span> <span class='kw'>=</span> <span class='st'>"hourly"</span>)
-
-    <span class='co'># get existing input and output</span>
-    <span class='no'>bc</span>$<span class='fu'>input</span>()
-    <span class='no'>bc</span>$<span class='fu'>output</span>()
-
-    <span class='co'># set sensitivity parameters using $param()</span>
-    <span class='no'>bc</span>$<span class='fu'>param</span>(<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>)),
-        <span class='kw'>.names</span> <span class='kw'>=</span> <span class='st'>"faneff"</span>, <span class='kw'>.num_sim</span> <span class='kw'>=</span> <span class='fl'>2</span>
-    )
-
-    <span class='co'># extract samples</span>
-    <span class='no'>bc</span>$<span class='fu'>samples</span>()
-
-    <span class='co'># extract all models</span>
-    <span class='no'>bc</span>$<span class='fu'>models</span>()
-
-    <span class='co'># run parametric simulations</span>
-    <span class='no'>bc</span>$<span class='fu'>eplus_run</span>(<span class='kw'>dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>(), <span class='kw'>run_period</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='st'>"example"</span>, <span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>31</span>))
-
-    <span class='co'># print simulation errors</span>
-    <span class='no'>bc</span>$<span class='fu'>eplus_errors</span>()
-
-    <span class='co'># extract simulation data</span>
-    <span class='no'>bc</span>$<span class='fu'>data_sim</span>()
-
-    <span class='co'># specify field data</span>
-    <span class='co'># here use the seed model as an example</span>
-    <span class='co'>## clone the seed model</span>
-    <span class='no'>seed</span> <span class='kw'>&lt;-</span> <span class='no'>bc</span>$<span class='fu'>seed</span>()$<span class='fu'>clone</span>()
-    <span class='co'>## remove existing RunPeriod objects</span>
-    <span class='no'>seed</span>$<span class='no'>RunPeriod</span> <span class='kw'>&lt;-</span> <span class='kw'>NULL</span>
-    <span class='co'>## set run period as the same as in `$eplus_run()`</span>
-    <span class='no'>seed</span>$<span class='fu'>add</span>(<span class='kw'>RunPeriod</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='st'>"test"</span>, <span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>31</span>))
-    <span class='co'>## save the model to tempdir</span>
-    <span class='no'>seed</span>$<span class='fu'><a href='https://rdrr.io/r/base/save.html'>save</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempfile</a></span>(<span class='kw'>fileext</span> <span class='kw'>=</span> <span class='st'>".idf"</span>))
-    <span class='no'>job</span> <span class='kw'>&lt;-</span> <span class='no'>seed</span>$<span class='fu'>run</span>(<span class='no'>epw_path</span>, <span class='kw'>echo</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
-    <span class='no'>fan_power</span> <span class='kw'>&lt;-</span> <span class='no'>job</span>$<span class='fu'>report_data</span>(<span class='kw'>name</span> <span class='kw'>=</span> <span class='no'>bc</span>$<span class='fu'>output</span>()$<span class='no'>variable_name</span>, <span class='kw'>wide</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-    <span class='no'>bc</span>$<span class='fu'>data_field</span>(<span class='no'>fan_power</span>[, -<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"case"</span>, <span class='st'>"Date/Time"</span>)])
-
-    <span class='co'># run stan</span>
-    <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='no'>bc</span>$<span class='fu'>stan_run</span>()
-}
-}</div></pre>
+    <pre class="examples"></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#usage">Usage</a></li>
-      <li><a href="#create">Create</a></li>
-      <li><a href="#get-seed-model-and-weather">Get Seed Model and Weather</a></li>
-      <li><a href="#get-rdd-amd-mdd-data-of-seed-model">Get RDD amd MDD Data of Seed Model</a></li>
-      <li><a href="#set-input-and-output-parameters">Set Input and Output Parameters</a></li>
-      <li><a href="#set-parameters">Set Parameters</a></li>
-      <li><a href="#run-parametric-simulations">Run Parametric Simulations</a></li>
-      <li><a href="#collect-simulation-data">Collect Simulation Data</a></li>
-      <li><a href="#specify-measured-data">Specify Measured Data</a></li>
-      <li><a href="#run-bayesian-calibration-using-stan">Run Bayesian Calibration Using Stan</a></li>
-      <li><a href="#inherited-methods-from-parametricjob">Inherited Methods from <code>ParametricJob</code></a></li>
+      <li><a href="#details">Details</a></li>
       <li><a href="#references">References</a></li>
+      <li><a href="#super-classes">Super classes</a></li>
+      <li><a href="#methods">Methods</a></li>
       <li><a href="#examples">Examples</a></li>
     </ul>
 
