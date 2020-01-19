@@ -104,7 +104,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #'        [sensitivity::morris].
         #' @param .scale If `TRUE`, the input design of experiments is scaled
         #'        after building the design and before computing the elementary
-        #'        effects so that all factors vary within the range \\[0,1\\].
+        #'        effects so that all factors vary within the range \[0,1\].
         #'        Default: `TRUE`. For details, see [sensitivity::morris].
         #'
         #' @return The modified `SensitivityJob` object itself.
@@ -174,7 +174,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #'        [sensitivity::morris].
         #' @param .scale If `TRUE`, the input design of experiments is scaled
         #'        after building the design and before computing the elementary
-        #'        effects so that all factors vary within the range \\[0,1\\].
+        #'        effects so that all factors vary within the range \[0,1\].
         #'        Default: `TRUE`. For details, see [sensitivity::morris].
         #'
         #'

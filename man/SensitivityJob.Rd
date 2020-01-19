@@ -185,7 +185,7 @@ the elementary effects. Default: \code{1L}. For details, see
 
 \item{\code{.scale}}{If \code{TRUE}, the input design of experiments is scaled
 after building the design and before computing the elementary
-effects so that all factors vary within the range \[0,1\].
+effects so that all factors vary within the range [0,1].
 Default: \code{TRUE}. For details, see \link[sensitivity:morris]{sensitivity::morris}.}
 }
 \if{html}{\out{</div>}}
@@ -285,7 +285,7 @@ the elementary effects.  For details, see
 
 \item{\code{.scale}}{If \code{TRUE}, the input design of experiments is scaled
 after building the design and before computing the elementary
-effects so that all factors vary within the range \[0,1\].
+effects so that all factors vary within the range [0,1].
 Default: \code{TRUE}. For details, see \link[sensitivity:morris]{sensitivity::morris}.}
 }
 \if{html}{\out{</div>}}
