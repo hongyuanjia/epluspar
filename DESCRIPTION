@@ -23,7 +23,7 @@ BugReports: https://github.com/ideas-lab-nus/epluspar
 License: MIT + file LICENSE
 Depends:
     R (>= 3.4.0),
-    eplusr
+    eplusr (>= 0.11.0)
 Imports:
     data.table,
     lhs,
@@ -46,10 +46,7 @@ Suggests:
     pkgdown,
     pkgload,
     knitr,
-    rmarkdown,
-    stringi
-Remotes:
-    hongyuanjia/eplusr
+    rmarkdown
 SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>); GNU make
 Encoding: UTF-8
 LazyData: true
