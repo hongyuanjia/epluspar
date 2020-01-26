@@ -1,7 +1,6 @@
 #' @include utils.R
 #' @importFrom data.table data.table set setorder setattr ":="
 #' @importFrom sensitivity morris tell
-#' @importFrom purrr pmap
 NULL
 
 #' Conduct Sensitivity Analysis for An EnergyPlus Model
@@ -718,9 +717,12 @@ create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, typ
             idf
         })
     } else {
-        private$m_idfs <- purrr::pmap(private$m_log$sample$sample[, -"case"],
-            private$m_log$measure_wrapper, idf = private$m_seed
-        )
+        private$m_idfs <- do.call("mapply", c(
+            FUN = list(quote(private$m_log$measure_wrapper)),
+            private$m_log$sample$sample[, -"case"],
+            MoreArgs = quote(list(idf = private$m_seed)),
+            SIMPLIFY = FALSE, USE.NAMES = FALSE
+        ))
     }
 
     # assign name
