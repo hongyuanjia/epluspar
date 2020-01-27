@@ -32,8 +32,6 @@ NULL
 #'    \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
 #' 1. Specify field measured data of input and output parameters using
 #'    \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
-#' 1.  Specify field measured data of input and output parameters using
-#'    \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
 #' 1. Specify input data for Stan for Bayesian calibration using
 #'    \href{../../epluspar/html/BayesCalibJob.html#method-data_bc}{\code{$data_bc()}}.
 #' 1. Run bayesian calibration using stan using
@@ -80,6 +78,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' @return An `BayesCalibJob` object.
         #'
         #' @examples
+        #' \dontrun{
         #' if (eplusr::is_avail_eplus(8.8)) {
         #'     idf_name <- "1ZoneUncontrolled.idf"
         #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
@@ -92,6 +91,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         #'     # create from an Idf and an Epw object
         #'     bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+        #' }
         #' }
         #'
         initialize = function (idf, epw) {
@@ -609,8 +609,10 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         #' By default, `$data_sim()` returns minimal columns, i.e. the
         #' `Date/Time` column together with all input and output parameters are
-        #' returned. You can retrieve extra columns by setting `all` to `TRUE`.
-        #' Those column include:
+        #' returned.
+        #'
+        #' You can retrieve extra columns by setting `all` to `TRUE`.  Those
+        #' column include:
         #'
         #' * `case`: Integer type. Indices of parametric simulations.
         #' * `environment_period_index`: Integer type. The indice of environment.
@@ -701,14 +703,27 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' @param output A [data.frame()] containing measured value of output
         #'        parameters.
         #' @param new_input A [data.frame()] containing newly measured value of
-        #'        input parameters.
+        #'        input parameters used for prediction. If `NULL`, values of the
+        #'        first case in
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
+        #'        will be used.
         #' @param all If `TRUE`, extra columns are also included in the returned
         #'        [data.table::data.table()] describing the simulation case and
         #'        datetime components. For details, please see
         #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
         #'        Default: `FALSE`.
         #'
-        #' @return A list of [data.table::data.table()].
+        #' @return A list of 3 elements:
+        #'
+        #' * `input`: a [data.table::data.table()] which is basically the input
+        #'   variable values of the first case in
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+        #' * `output`: a [data.table::data.table()] of output variable values.
+        #' * `new_output`: `NULL` or a [data.table::data.table()] of newly
+        #'   measured input variable values.
+        #'
+        #' For details on the meaning of each columns, see
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
         #'
         data_field = function (output, new_input = NULL, all = FALSE)
             bc_data_field(super, self, private, output, new_input, all),
@@ -764,6 +779,64 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         data_bc = function (data_field = NULL, data_sim = NULL)
             bc_data_bc(super, self, private, data_field, data_sim),
+        # }}}
+
+        # data_pred {{{
+        #' @description
+        #' Extract prediction data
+        #'
+        #' @details
+        #' `$data_pred()` calculates predicted output variable values based
+        #' on the results of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+        #' and returns a [data.table::data.table()] which combines the output of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+        #' and predicted output values.
+        #'
+        #' Possible returned meta data columns:
+        #'
+        #' - `index`: Integer type. Row indices of field input data in
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+        #' - `type`: Character type. Only exists when `merge` is `FALSE`. The
+        #'   type of output values. `field` indicates field measured output
+        #'   values while `prediction` means predicted output values.
+        #' - `Data/Time`: Character type. The date time in EnergyPlus-format.
+        #' - `environment_period_index`: Integer type. The indice of environment.
+        #' - `environment_name`: Character type. A text string identifying the
+        #'   simulation environment.
+        #' - `simulation_days`: Integer type. Day of simulation.
+        #' - `datetime`: DateTime type. The date time of simulation result. Note
+        #'   that the year valueas are automatically calculated to meets the
+        #'   start day of week restriction for each simulation environment.
+        #' - `month`: Integer type. The month of reported date time.
+        #' - `day`: Integer type. The day of month of reported date time.
+        #' - `hour`: Integer type. The hour of reported date time.
+        #' - `minute`: Integer type. The minute of reported date time.
+        #' - `day_type`: Character type. The type of day, e.g. `Monday`,
+        #'   `Tuesday` and etc. Note that `day_type` will always be `NA` if
+        #'   `resolution` is specified.
+        #'
+        #' @param all If `FALSE`, among above meta data columns, only `index`,
+        #'        `type` and `Date/Time` will be returned. Default: `FALSE`.
+        #' @param merge If `TRUE`, `y_pred` in returned list will merge all
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+        #'        and predicted output into one [data.table::data.table()] with
+        #'        all predicted values put in columns with a `\\[prediction\\]`
+        #'        prefix. If `FALSE`, similar like above, but combine rows of
+        #'        field measured output and predicted output together, with a
+        #'        new column `type` added giving `field` indicating field
+        #'        measured output and `prediction` indicating predicted output.
+        #'        Default: `TRUE`.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$data_pred()
+        #' }
+        #'
+        data_pred = function (all = FALSE, merge = TRUE)
+            bc_data_pred(super, self, private, all = all, merge = merge),
         # }}}
 
         # eplus_run {{{
@@ -1332,8 +1405,13 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' returns a list of 2 elements:
         #'
         #' * `fit`: An object of S4 class [rstan::stanfit].
-        #' * `y_pred`: A [data.table::data.table()] with predicted output
-        #'   values.
+        #' * `y_pred`: The output of
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_pred}{\code{$data_pred()}}
+        #'
+        #' @note
+        #' Currently, when using builtin Bayesian calibration algorithm, only
+        #' one prediction output variable is supported. An error will be issued
+        #' if multiple output variables found in `data`.
         #'
         #' @param file The path to the Stan program to use. If `NULL`, the
         #'        pre-compiled Stan code from Chong (2018) will be used.
@@ -1350,6 +1428,17 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'        `TRUE`.
         #' @param mc.cores An integer specifying how many cores to be used for
         #'        Stan. Default: `parallel::detectCores()`.
+        #' @param all If `FALSE`, among above meta data columns, only `index`,
+        #'        `type` and `Date/Time` will be returned. Default: `FALSE`.
+        #' @param merge If `TRUE`, `y_pred` in returned list will merge all
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+        #'        and predicted output into one [data.table::data.table()] with
+        #'        all predicted values put in columns with a `\\[prediction\\]`
+        #'        prefix. If `FALSE`, similar like above, but combine rows of
+        #'        field measured output and predicted output together, with a
+        #'        new column `type` added giving `field` indicating field
+        #'        measured output and `prediction` indicating predicted output.
+        #'        Default: `TRUE`.
         #' @param ... Additional arguments to pass to [rstan::sampling] (when
         #'        `file` is `NULL`) or [rstan::stan] (when `file` is not
         #'        `NULL`).
@@ -1361,8 +1450,11 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' bc$stan_run()
         #' }
         #'
-        stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE, ...)
-            bc_stan_run(super, self, private, file, data, iter, chains, echo, ...),
+        stan_run = function (file = NULL, data = NULL, iter = 2000L, chains = 4L, echo = TRUE,
+                             mc.cores = parallel::detectCores(), all = FALSE, merge = TRUE, ...)
+            bc_stan_run(super, self, private, file = file, data = data, iter = iter,
+                        chains = chains, echo = echo, mc.cores = mc.cores, all = all,
+                        merge = merge, ...),
         # }}}
 
         # stan_file {{{
@@ -1799,6 +1891,7 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, all =
         setnames(new_input, names(private$m_log$data_sim$input)[-(1L:11L)])
         set(new_input, NULL, names(input)[1L:11L], input[, .SD, .SDcols = 1L:11L])
     }
+    setcolorder(new_input, names(input))
 
     # log
     private$m_log$data_field$input <- copy(input)
@@ -1811,7 +1904,9 @@ bc_data_field <- function (super, self, private, output, new_input = NULL, all =
     set(output, NULL, "case", NA_integer_)
     set(new_input, NULL, "case", NA_integer_)
 
-    c(combine_input_output_data(input, output, all), list(new_input = new_input))
+    c(combine_input_output_data(input, output, all),
+      list(new_input = combine_input_output_data(new_input, NULL, all)$input)
+    )
 }
 # }}}
 # bc_data_bc {{{
@@ -1855,10 +1950,41 @@ bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL
     data_bc$stan_data
 }
 # }}}
+# bc_data_pred {{{
+bc_data_pred <- function (super, self, private, all = FALSE, merge = TRUE) {
+    bc_assert_can_stan(super, self, private, stop = TRUE)
+
+    if (is.null(private$m_log$stan$fit)) {
+        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
+            "because Stan data is not available. Please use `$stan_run()` to ",
+            "retrieve output of Bayesican calibration before caling `$data_pred()`."
+        ))
+    }
+
+    samples <- rstan::extract(private$m_log$stan$fit)
+
+    # get predictive inference y_pred and convert back to original scale
+    y_pred <- cal_y_pred(samples$y_pred,
+        yc_mean = private$m_log$stan$yc_mean[[1L]],
+        yc_sd = private$m_log$stan$yc_sd[[1L]],
+        xf = private$m_log$data_field$input,
+        yf = private$m_log$data_field$output,
+        merge = merge
+    )
+
+    private$m_log$stan$y_pred <- copy(y_pred)
+    private$m_log$stan$all <- all
+
+    # remove case column since it only makes since for simulation data
+    set(y_pred, NULL, "case", NULL)
+
+    combine_input_output_data(output = y_pred, all = all)$output
+}
+# }}}
 # bc_stan_run {{{
 #' @importFrom stats sd
 bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 2000L, chains = 4L,
-                         echo = TRUE, mc.cores = parallel::detectCores(), ...) {
+                         echo = TRUE, mc.cores = parallel::detectCores(), all = FALSE, merge = TRUE, ...) {
     opts <- options(mc.cores = mc.cores)
     on.exit(options(opts), add = TRUE)
 
@@ -1870,16 +1996,16 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
             chains = chains, iter = iter, show_messages = echo,
             ...
         )
-    # update this when multiple output bc code is ready
-    } else if ("x_pred" %in% names(data_bc)){
-        data_bc$y <- data_bc$y[[1L]]
-        data_bc$eta <- data_bc$eta[[1L]]
-        fit <- rstan::sampling(stanmodels$bc_with_pred, data = data_bc,
-            chains = chains, iter = iter, show_messages = echo,
-            ...
-        )
     } else {
-        fit <- rstan::sampling(stanmodels$bc_without_pred, data = data_bc,
+        if (!is.numeric(data_bc$yf) || !is.numeric(data_bc$yc)) {
+            abort("error_bc_multi_output", paste0(
+                "When using builtin Bayesian calibration algorithm, ",
+                "only one output variable is supported. ",
+                "Invalid output variable number found: ", length(data_bc$yf)
+            ))
+        }
+
+        fit <- rstan::sampling(stanmodels$bc_with_pred, data = data_bc,
             chains = chains, iter = iter, show_messages = echo,
             ...
         )
@@ -1887,15 +2013,9 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
 
     # store
     private$m_log$stan$fit <- fit
+    private$m_log$stan$data$x_pred
 
-    if ("x_pred" %in% names(data_bc)) {
-        samples <- rstan::extract(fit)
-        y_pred <- as.data.table(samples$y_pred * private$m_log$stan$yc_sd[[1L]] + private$m_log$stan$yc_mean[[1L]])
-    } else {
-        y_pred <- NULL
-    }
-
-    list(fit = fit, y_pred = y_pred)
+    list(fit = fit, y_pred = bc_data_pred(super, self, private, all = all, merge = merge))
 }
 # }}}
 # bc_stan_file {{{
@@ -2845,14 +2965,17 @@ report_dt_aggregate <- function (dt, resolution) {
 }
 # }}}
 # combine_input_output_data {{{
-combine_input_output_data <- function (input, output, all = FALSE) {
+combine_input_output_data <- function (input = NULL, output = NULL, all = FALSE) {
     if (!all) {
-        set(input, NULL, c("environment_period_index", "environment_name",
-            "simulation_days", "datetime", "month", "day", "hour", "minute", "day_type"), NULL
-        )
-        set(output, NULL, c("environment_period_index", "environment_name",
-            "simulation_days", "datetime", "month", "day", "hour", "minute", "day_type"), NULL
-        )
+        cols <- c("environment_period_index", "environment_name", "simulation_days",
+            "datetime", "month", "day", "hour", "minute", "day_type")
+
+        if (!is.null(input) && length(cols_del <- intersect(names(input), cols))) {
+            set(input, NULL, cols_del, NULL)
+        }
+        if (!is.null(output) && length(cols_del <- intersect(names(output), cols))) {
+            set(output, NULL, cols_del, NULL)
+        }
     }
 
     list(input = input, output = output)
@@ -2989,5 +3112,45 @@ init_data_bc <- function (yf, xf, x_pred, yc, xc, tc) {
     # }}}
 
     list(stan_data = stan_data, yc_mean = yc_mean, yc_sd = yc_sd)
+}
+# }}}
+# cal_y_pred {{{
+cal_y_pred <- function (yc_pred, yc_mean, yc_sd, xf, yf, merge = TRUE) {
+    y_pred <- as.data.table(yc_pred * yc_sd + yc_mean)
+
+    # add additional meta columns
+    y_pred <- melt.data.table(y_pred, measure.vars = names(y_pred),
+        variable.name = "index", value.name = "pred", variable.factor = FALSE
+    )
+    y_pred[, index := as.integer(gsub("V", "", index))]
+
+    if (merge) {
+        # rename prediction
+        setnames(y_pred, c("index", paste(names(yf)[-(1L:11L)], "[Prediction]")))
+
+        # combine field input, output and prediction
+        y_pred <- copy(xf)[, index := .I ][
+            yf[, .SD, .SDcols = -c(1L:11L)][, index := .I], on = "index"][
+            y_pred, on = "index"]
+
+        # fix column order
+        setcolorder(y_pred, c("index", setdiff(names(y_pred), c("index"))))
+    } else {
+        # rename prediction
+        setnames(y_pred, c("index", names(yf)[-(1L:11L)]))
+
+        # add type to distinguish field and predicted
+        y_pred <- rbindlist(list(
+            copy(xf)[, index := .I ][
+                yf[, .SD, .SDcols = -c(1L:11L)][, index := .I], on = "index"][
+                , `:=`(type = "field")],
+            copy(xf)[, index := .I ][y_pred, on = "index"][
+                , `:=`(type = "prediction")]
+        ))
+        # fix column order
+        setcolorder(y_pred, c("index", "type", setdiff(names(y_pred), c("index", "type"))))
+    }
+
+    y_pred
 }
 # }}}

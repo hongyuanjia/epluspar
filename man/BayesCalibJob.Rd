@@ -33,13 +33,16 @@ respectively.
 \href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
 \item Specify field measured data of input and output parameters using
 \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
-\item Specify field measured data of input and output parameters using
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
 \item Specify input data for Stan for Bayesian calibration using
 \href{../../epluspar/html/BayesCalibJob.html#method-data_bc}{\code{$data_bc()}}.
 \item Run bayesian calibration using stan using
 \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}.
 }
+}
+\note{
+Currently, when using builtin Bayesian calibration algorithm, only
+one prediction output variable is supported. An error will be issued
+if multiple output variables found in \code{data}.
 }
 \examples{
 
@@ -47,6 +50,7 @@ respectively.
 ## Method `BayesCalibJob$new`
 ## ------------------------------------------------
 
+\dontrun{
 if (eplusr::is_avail_eplus(8.8)) {
     idf_name <- "1ZoneUncontrolled.idf"
     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
@@ -59,6 +63,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 
     # create from an Idf and an Epw object
     bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
 }
 
 
@@ -198,6 +203,15 @@ bc$data_sim()
 
 \dontrun{
 bc$data_bc()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$data_pred`
+## ------------------------------------------------
+
+\dontrun{
+bc$data_pred()
 }
 
 
@@ -398,6 +412,7 @@ Hongyuan Jia, Adrian Chong
 \item \href{#method-data_sim}{\code{BayesCalibJob$data_sim()}}
 \item \href{#method-data_field}{\code{BayesCalibJob$data_field()}}
 \item \href{#method-data_bc}{\code{BayesCalibJob$data_bc()}}
+\item \href{#method-data_pred}{\code{BayesCalibJob$data_pred()}}
 \item \href{#method-eplus_run}{\code{BayesCalibJob$eplus_run()}}
 \item \href{#method-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
 \item \href{#method-eplus_status}{\code{BayesCalibJob$eplus_status()}}
@@ -474,7 +489,8 @@ An \code{BayesCalibJob} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{if (eplusr::is_avail_eplus(8.8)) {
+\preformatted{\dontrun{
+if (eplusr::is_avail_eplus(8.8)) {
     idf_name <- "1ZoneUncontrolled.idf"
     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
@@ -486,6 +502,7 @@ An \code{BayesCalibJob} object.
 
     # create from an Idf and an Epw object
     bc <- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
 }
 
 }
@@ -1129,8 +1146,10 @@ output file, i.e. \code{KeyValue:VariableName [Unit](Frequency)}.
 
 By default, \verb{$data_sim()} returns minimal columns, i.e. the
 \code{Date/Time} column together with all input and output parameters are
-returned. You can retrieve extra columns by setting \code{all} to \code{TRUE}.
-Those column include:
+returned.
+
+You can retrieve extra columns by setting \code{all} to \code{TRUE}.  Those
+column include:
 \itemize{
 \item \code{case}: Integer type. Indices of parametric simulations.
 \item \code{environment_period_index}: Integer type. The indice of environment.
@@ -1180,7 +1199,10 @@ Specify field measured data
 parameters.}
 
 \item{\code{new_input}}{A \code{\link[=data.frame]{data.frame()}} containing newly measured value of
-input parameters.}
+input parameters used for prediction. If \code{NULL}, values of the
+first case in
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
+will be used.}
 
 \item{\code{all}}{If \code{TRUE}, extra columns are also included in the returned
 \code{\link[data.table:data.table]{data.table::data.table()}} describing the simulation case and
@@ -1236,7 +1258,18 @@ is performed.
 }
 
 \subsection{Returns}{
-A list of \code{\link[data.table:data.table]{data.table::data.table()}}.
+A list of 3 elements:
+\itemize{
+\item \code{input}: a \code{\link[data.table:data.table]{data.table::data.table()}} which is basically the input
+variable values of the first case in
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+\item \code{output}: a \code{\link[data.table:data.table]{data.table::data.table()}} of output variable values.
+\item \code{new_output}: \code{NULL} or a \code{\link[data.table:data.table]{data.table::data.table()}} of newly
+measured input variable values.
+}
+
+For details on the meaning of each columns, see
+\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1299,6 +1332,80 @@ A list of 11 elements.
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
 bc$data_bc()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-data_pred"></a>}}
+\subsection{Method \code{data_pred()}}{
+Extract prediction data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$data_pred(all = FALSE, merge = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{all}}{If \code{FALSE}, among above meta data columns, only \code{index},
+\code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
+
+\item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
+all predicted values put in columns with a \verb{\\\[prediction\\\]}
+prefix. If \code{FALSE}, similar like above, but combine rows of
+field measured output and predicted output together, with a
+new column \code{type} added giving \code{field} indicating field
+measured output and \code{prediction} indicating predicted output.
+Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$data_pred()} calculates predicted output variable values based
+on the results of
+\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+and returns a \code{\link[data.table:data.table]{data.table::data.table()}} which combines the output of
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+and predicted output values.
+
+Possible returned meta data columns:
+\itemize{
+\item \code{index}: Integer type. Row indices of field input data in
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+\item \code{type}: Character type. Only exists when \code{merge} is \code{FALSE}. The
+type of output values. \code{field} indicates field measured output
+values while \code{prediction} means predicted output values.
+\item \code{Data/Time}: Character type. The date time in EnergyPlus-format.
+\item \code{environment_period_index}: Integer type. The indice of environment.
+\item \code{environment_name}: Character type. A text string identifying the
+simulation environment.
+\item \code{simulation_days}: Integer type. Day of simulation.
+\item \code{datetime}: DateTime type. The date time of simulation result. Note
+that the year valueas are automatically calculated to meets the
+start day of week restriction for each simulation environment.
+\item \code{month}: Integer type. The month of reported date time.
+\item \code{day}: Integer type. The day of month of reported date time.
+\item \code{hour}: Integer type. The hour of reported date time.
+\item \code{minute}: Integer type. The minute of reported date time.
+\item \code{day_type}: Character type. The type of day, e.g. \code{Monday},
+\code{Tuesday} and etc. Note that \code{day_type} will always be \code{NA} if
+\code{resolution} is specified.
+}
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$data_pred()
 }
 
 }
@@ -2041,6 +2148,9 @@ Run Bayesian calibration using Stan
   iter = 2000L,
   chains = 4L,
   echo = TRUE,
+  mc.cores = parallel::detectCores(),
+  all = FALSE,
+  merge = TRUE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -2066,12 +2176,25 @@ chains. Default: \code{4}.}
 console, which might be helpful for model debugging. Default:
 \code{TRUE}.}
 
+\item{\code{mc.cores}}{An integer specifying how many cores to be used for
+Stan. Default: \code{parallel::detectCores()}.}
+
+\item{\code{all}}{If \code{FALSE}, among above meta data columns, only \code{index},
+\code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
+
+\item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
+all predicted values put in columns with a \verb{\\\[prediction\\\]}
+prefix. If \code{FALSE}, similar like above, but combine rows of
+field measured output and predicted output together, with a
+new column \code{type} added giving \code{field} indicating field
+measured output and \code{prediction} indicating predicted output.
+Default: \code{TRUE}.}
+
 \item{\code{...}}{Additional arguments to pass to \link[rstan:sampling]{rstan::sampling} (when
 \code{file} is \code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not
 \code{NULL}).}
-
-\item{\code{mc.cores}}{An integer specifying how many cores to be used for
-Stan. Default: \code{parallel::detectCores()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2080,8 +2203,8 @@ Stan. Default: \code{parallel::detectCores()}.}
 returns a list of 2 elements:
 \itemize{
 \item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
-\item \code{y_pred}: A \code{\link[data.table:data.table]{data.table::data.table()}} with predicted output
-values.
+\item \code{y_pred}: The output of
+\href{../../epluspar/html/BayesCalibJob.html#method-data_pred}{\code{$data_pred()}}
 }
 }
 
