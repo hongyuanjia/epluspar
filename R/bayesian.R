@@ -1423,9 +1423,10 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'        for each chain (including warmup). Default: `2000`.
         #' @param chains A positive integer specifying the number of Markov
         #'        chains. Default: `4`.
-        #' @param echo Whether to print intermediate output from Stan on the
-        #'        console, which might be helpful for model debugging. Default:
-        #'        `TRUE`.
+        #' @param echo Only applicable when `file` is NULL. Whether to print the
+        #'        summary of Informational Messages to the screen after a chain
+        #'        is finished or a character string naming a path where the
+        #'        summary is stored. Default: `TRUE`.
         #' @param mc.cores An integer specifying how many cores to be used for
         #'        Stan. Default: `parallel::detectCores()`.
         #' @param all If `FALSE`, among above meta data columns, only `index`,
@@ -1993,7 +1994,7 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
     if (!is.null(file)) {
         data <- if (is.null(data)) data_bc else data
         fit <- rstan::stan(file, data = data,
-            chains = chains, iter = iter, show_messages = echo,
+            chains = chains, iter = iter,
             ...
         )
     } else {

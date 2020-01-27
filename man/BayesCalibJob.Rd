@@ -2172,9 +2172,10 @@ for each chain (including warmup). Default: \code{2000}.}
 \item{\code{chains}}{A positive integer specifying the number of Markov
 chains. Default: \code{4}.}
 
-\item{\code{echo}}{Whether to print intermediate output from Stan on the
-console, which might be helpful for model debugging. Default:
-\code{TRUE}.}
+\item{\code{echo}}{Only applicable when \code{file} is NULL. Whether to print the
+summary of Informational Messages to the screen after a chain
+is finished or a character string naming a path where the
+summary is stored. Default: \code{TRUE}.}
 
 \item{\code{mc.cores}}{An integer specifying how many cores to be used for
 Stan. Default: \code{parallel::detectCores()}.}
