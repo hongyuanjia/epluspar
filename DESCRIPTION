@@ -1,5 +1,5 @@
 Package: epluspar
-Title: Conduct parametric analysis on 'EnergyPlus' models
+Title: Conduct Parametric Analysis on 'EnergyPlus' Models
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Hongyuan",
