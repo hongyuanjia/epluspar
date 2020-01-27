@@ -2860,7 +2860,7 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
     if (nrow(key_all)) {
         dt_all <- super$report_data(NULL, name = key_all$variable_name, all = TRUE)
         if (nrow(dt_all)) {
-            set(dt_all, NULL, "case", as.integer(stringi::stri_extract_first_regex(dt_all$case, "^\\d+")))
+            set(dt_all, NULL, "case", as.integer(gsub("^(\\d+).*", "\\1", dt_all$case)))
         }
     } else {
         dt_all <- data.table()
