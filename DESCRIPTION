@@ -22,10 +22,10 @@ URL: https://github.com/ideas-lab-nus/epluspar
 BugReports: https://github.com/ideas-lab-nus/epluspar
 License: MIT + file LICENSE
 Depends:
-    R (>= 3.4.0),
-    eplusr (>= 0.11.0)
+    R (>= 3.4.0)
 Imports:
     data.table,
+    eplusr (>= 0.11.0),
     lhs,
     lubridate,
     methods,
