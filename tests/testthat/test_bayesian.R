@@ -282,4 +282,128 @@ test_that("BayesCalib Class", {
     expect_silent(bc$data_bc(data_field = dt_field))
     expect_silent(bc$data_bc(data_field = dt_field, data_sim = dt_sim))
     # }}}
+
+    # a whole game {{{
+    path_idf <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", "RefBldgLargeOfficeNew2004_Chicago.idf")
+    path_epw <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw")
+    bc <- bayes_job(path_idf, path_epw)
+
+    # set parameters
+    expect_equivalent(
+        bc$input("CoolSys1 Chiller 1", paste("chiller evaporator", c("inlet temperature", "outlet temperature", "mass flow rate")), "hourly"),
+        data.table(index = 1L:3L, class = "Output:Variable",
+            key_value = "CoolSys1 Chiller 1",
+            variable_name = c(
+                "Chiller Evaporator Inlet Temperature",
+                "Chiller Evaporator Outlet Temperature",
+                "Chiller Evaporator Mass Flow Rate"
+            ),
+            reporting_frequency = "Hourly"
+        )
+    )
+    expect_equivalent(
+        bc$output("CoolSys1 Chiller 1", "chiller electric power", "hourly"),
+        data.table(index = 1L, class = "Output:Variable",
+            key_value = "CoolSys1 Chiller 1",
+            variable_name = "Chiller Electric Power",
+            reporting_frequency = "Hourly"
+        )
+    )
+
+    # set parameter
+    bc$param(
+        `CoolSys1 Chiller 1` = list(reference_cop = c(4, 6), reference_capacity = c(2.5e6, 3.0e6)),
+        .names = c("cop1", "cap1"), .num_sim = 5
+    )
+    # run simulations
+    bc$eplus_run(dir = tempdir(), run_period = list("example", 7, 1, 7, 3), echo = FALSE)
+    s <- bc$eplus_status()
+
+    expect_equal(s[c("run_before", "alive", "terminated", "successful")],
+        list(run_before = TRUE, alive = FALSE, terminated = FALSE, successful = TRUE)
+    )
+
+    # set simulation data
+    expect_silent(dt_sim <- bc$data_sim("6 hour"))
+    expect_equal(names(dt_sim), c("input", "output"))
+    expect_equal(names(dt_sim$input), c("case", "Date/Time",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour)"
+    ))
+    expect_equal(names(dt_sim$output), c("case", "Date/Time",
+        "COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour)"
+    ))
+    expect_equal(nrow(dt_sim$input), 60)
+    expect_equal(nrow(dt_sim$output), 60)
+
+    # use the seed model to get field data
+    ## clone the seed model
+    seed <- bc$seed()$clone()
+    ## remove existing RunPeriod objects
+    seed$RunPeriod <- NULL
+    ## set run period as the same as in `$eplus_run()`
+    seed$add(RunPeriod = list("test", 7, 1, 7, 3))
+    seed$SimulationControl$set(
+        `Run Simulation for Sizing Periods` = "No",
+        `Run Simulation for Weather File Run Periods` = "Yes"
+    )
+    ## save the model to tempdir
+    seed$save(tempfile(fileext = ".idf"))
+    ## run
+    job <- seed$run(bc$weather(), echo = FALSE)
+    ## get output data
+    fan_power <- epluspar:::report_dt_aggregate(job$report_data(name = bc$output()$variable_name, all = TRUE), "6 hour")
+    fan_power <- eplusr:::report_dt_to_wide(fan_power)
+    # add Gaussian noice
+    fan_power <- fan_power[, -"Date/Time"][
+        , lapply(.SD, function (x) x + rnorm(length(x), sd = 0.05 * sd(x)))][
+        , lapply(.SD, function (x) {x[x < 0] <- 0; x})
+    ]
+
+    # set field data
+    expect_silent(dt_fld <- bc$data_field(fan_power))
+    expect_equal(names(dt_fld), c("input", "output", "new_input"))
+    expect_equal(names(dt_fld$input), c("case", "Date/Time",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour)"
+    ))
+    expect_equal(names(dt_fld$output), c("case", "Date/Time",
+        "COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour)"
+    ))
+    expect_equal(nrow(dt_fld$input), 12)
+    expect_equal(nrow(dt_fld$output), 12)
+    expect_equal(nrow(dt_fld$new_input), 12)
+
+    # check stan input
+    expect_silent(stan_data <- bc$data_bc())
+    expect_equal(sapply(stan_data, function (x) class(x)[1]),
+        c("n" = "integer", "n_pred" = "integer", "m" = "integer", "p" = "integer", "q" = "integer",
+          "yf" = "numeric", "yc" = "numeric",
+          "xf" = "data.table", "xc" = "data.table", "x_pred" = "data.table", "tc" = "data.table"
+        )
+    )
+
+    expect_error(bc$data_pred(), class = "error_bc_stan_not_ready")
+
+    # run stan
+    suppressWarnings(res <- bc$stan_run(iter = 300, chains = 3))
+
+    expect_equal(names(res), c("fit", "y_pred"))
+    expect_is(res$fit, "stanfit")
+    expect_equal(names(res$y_pred), c("index", "Date/Time",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour)",
+        "COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour) [Prediction]"
+    ))
+
+    expect_is(bc$stan_file(), "character")
+    expect_silent(f <- bc$stan_file(tempfile()))
+    expect_equal(bc$stan_file(), readLines(f))
+
+    expect_equivalent(bc$data_pred(), res$y_pred)
+    # }}}
 })
