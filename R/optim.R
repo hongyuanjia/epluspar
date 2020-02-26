@@ -1,29 +1,29 @@
 #' Conduct Multi-Objective Optimization on An EnergyPlus Model
 #'
-#' `OptimJob` class provides a prototype of conducting Bayesian calibration
-#' of EnergyPlus model.
+#' `GAOptimJob` class provides a prototype of conducting single- or multi-
+#' objective(s) optimizations on an EnergyPlus model using Genetic Algorithm
 #'
 #' The basic workflow is basically:
 #'
 #' @docType class
-#' @name OptimJob
+#' @name GAOptimJob
 #' @author Hongyuan Jia
 NULL
 
 #' @export
-# OptimJob {{{
-OptimJob <- R6::R6Class(classname = "OptimJob",
+# GAOptimJob {{{
+GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
     inherit = eplusr::ParametricJob, cloneable = FALSE, lock_objects = FALSE,
 
     public = list(
         # INITIALIZE {{{
         #' @description
-        #' Create a `OptimJob` object
+        #' Create a `GAOptimJob` object
         #'
         #' @param idf A path to an local EnergyPlus IDF file or an [eplusr::Idf] object.
         #' @param epw A path to an local EnergyPlus EPW file or an [eplusr::Epw] object.
         #'
-        #' @return A `OptimJob` object.
+        #' @return A `GAOptimJob` object.
         #'
         #' @examples
         #' \dontrun{
@@ -35,10 +35,10 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         #'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
         #'
         #'     # create from local files
-        #'     OptimJob$new(idf_path, epw_path)
+        #'     GAOptimJob$new(idf_path, epw_path)
         #'
         #'     # create from an Idf and an Epw object
-        #'     opt <- OptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+        #'     opt <- GAOptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
         #' }
         #' }
         #'
@@ -64,12 +64,12 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         # PUBLIC FUNCTIONS {{{
         # apply_measure {{{
         apply_measure = function (measure, ..., .names = NULL)
-            optim_apply_measure(super, self, private, measure, ..., .names = .names),
+            gaopt_apply_measure(super, self, private, measure, ..., .names = .names),
         # }}}
 
         # objective {{{
         objective = function (..., .n = NULL, .dir = "min")
-            optim_objective(super, self, private, ..., .n = .n, .dir = .dir, .env = parent.frame()),
+            gaopt_objective(super, self, private, ..., .n = .n, .dir = .dir, .env = parent.frame()),
         # }}}
 
         # parameter {{{
@@ -86,7 +86,7 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
                                  .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
                                  .integer = setwith(mosmafs::recPCrossover, p = 0.7),
                                  .choice = setwith(mosmafs::recPCrossover, p = 0.7))
-            optim_recombinator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
+            gaopt_recombinator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
         # mutator {{{
@@ -94,34 +94,34 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
                             .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.1),
                             .integer = mosmafs::mutRandomChoice,
                             .choice = mosmafs::mutRandomChoice)
-            optim_mutator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
+            gaopt_mutator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
         # selector {{{
         selector = function (parent = ecr::selSimple, survival = ecr::selNondom, strategy = "plus")
-            optim_selector(super, self, private, parent = parent, survival = survival, strategy = strategy),
+            gaopt_selector(super, self, private, parent = parent, survival = survival, strategy = strategy),
         # }}}
 
         # terminator {{{
         terminator = function (fun = NULL, name, message, max_gen = NULL, max_eval = NULL, max_time = NULL)
-            optim_terminator(super, self, private, fun = fun, name = name, message = message,
+            gaopt_terminator(super, self, private, fun = fun, name = name, message = message,
                 max_gen = max_gen, max_eval = max_eval, max_time = max_time),
         # }}}
 
         # validate {{{
         validate = function (param = NULL, verbose = TRUE)
-            optim_validate(super, self, private, param = param, verbose = verbose),
+            gaopt_validate(super, self, private, param = param, verbose = verbose),
         # }}}
 
         # run {{{
         run = function (mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE)
-            optim_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
+            gaopt_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
         # }}}
 
         # plot {{{
         # plot results
         plot = function (pareto_front = TRUE, pareto_set = TRUE)
-            optim_plot(super, self, private, pareto_front, pareto_set),
+            gaopt_plot(super, self, private, pareto_front, pareto_set),
         # }}}
 
         # print {{{
@@ -129,7 +129,7 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         # similar interface as GA::plot.ga() to get a summary of optimization
         # results
         print = function ()
-            optim_print(super, self, private)
+            gaopt_print(super, self, private)
         # }}}
         # }}}
     ),
@@ -151,13 +151,13 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
 
 #' Create an Optimization Job
 #'
-#' `optim_job()` takes an IDF and EPW as input, and returns an `OptimJob`
+#' `gaoptim_job()` takes an IDF and EPW as input, and returns an `GAOptimJob`
 #' object for conducting optimization on an EnergyPlus model. For more
-#' details, please see [OptimJob].
+#' details, please see [GAOptimJob].
 #'
 #' @param idf A path to an local EnergyPlus IDF file or an `Idf` object.
 #' @param epw A path to an local EnergyPlus EPW file or an `Epw` object.
-#' @return A `OptimJob` object.
+#' @return A `GAOptimJob` object.
 #' @examples
 #' \dontrun{
 #' if (eplusr::is_avail_eplus(8.8)) {
@@ -168,26 +168,26 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
 #'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 #'
 #'     # create from local files
-#'     optim_job(idf_path, epw_path)
+#'     gaoptim_job(idf_path, epw_path)
 #'
 #'     # create from an Idf and an Epw object
-#'     optim_job(read_idf(idf_path), read_epw(epw_path))
+#'     gaoptim_job(read_idf(idf_path), read_epw(epw_path))
 #' }
 #' }
 #' @seealso [sensi_job()] for creating a sensitivity analysis job.
 #' @author Hongyuan Jia
 #' @export
-# optim_job {{{
-optim_job <- function (idf, epw) {
-    bc <- OptimJob$new(idf, epw)
+# gaoptim_job {{{
+gaoptim_job <- function (idf, epw) {
+    bc <- GAOptimJob$new(idf, epw)
     lockEnvironment(bc)
     bc
 }
 # }}}
 
-# optim_apply_measure {{{
+# gaopt_apply_measure {{{
 # TODO: How to solve mixed-encoding problems?
-optim_apply_measure <- function (super, self, private, measure, ..., .names = NULL) {
+gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NULL) {
     # measure name
     measure_name <- deparse(substitute(measure, parent.frame()))
 
@@ -226,13 +226,13 @@ optim_apply_measure <- function (super, self, private, measure, ..., .names = NU
     self
 }
 # }}}
-# optim_parameter {{{
-optim_parameter <- function (super, self, private) {
+# gaopt_parameter {{{
+gaopt_parameter <- function (super, self, private) {
     private$m_log$parameter
 }
 # }}}
-# optim_objective {{{
-optim_objective <- function (super, self, private, ..., .n = NULL, .dir = "min", .env = parent.frame()) {
+# gaopt_objective {{{
+gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min", .env = parent.frame()) {
     l <- eval(substitute(alist(...)))
 
     # stop if empty input
@@ -283,58 +283,58 @@ optim_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
     self
 }
 # }}}
-# optim_recombinator {{{
-optim_recombinator <- function (super, self, private, ...,
+# gaopt_recombinator {{{
+gaopt_recombinator <- function (super, self, private, ...,
                                 .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
                                 .integer = setwith(mosmafs::recPCrossover, p = 0.7),
                                 .choice = setwith(mosmafs::recPCrossover, p = 0.7)) {
     rec <- list(...)
     if (length(rec)) {
         for (i in seq_along(rec)) {
-            do.call(optim_register_operator, list(super, self, private,
+            do.call(gaopt_register_operator, list(super, self, private,
                 slot = paste0("recombine_", names(rec)[i]),
                 fun = rec[[i]]
             ))
         }
     }
     # TODO: check unused
-    optim_register_operator(super, self, private, "recombine_.float", .float)
-    optim_register_operator(super, self, private, "recombine_.integer", .integer)
-    optim_register_operator(super, self, private, "recombine_.choice", .choice)
+    gaopt_register_operator(super, self, private, "recombine_.float", .float)
+    gaopt_register_operator(super, self, private, "recombine_.integer", .integer)
+    gaopt_register_operator(super, self, private, "recombine_.choice", .choice)
     self
 }
 # }}}
-# optim_mutator {{{
-optim_mutator <- function (super, self, private, ...,
+# gaopt_mutator {{{
+gaopt_mutator <- function (super, self, private, ...,
                            .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.2),
                            .integer = ecr::mutSwap,
                            .choice = ecr::mutSwap) {
     mut <- list(...)
     if (length(mut)) {
         for (i in seq_along(mut)) {
-            do.call(optim_register_operator, list(super, self, private,
+            do.call(gaopt_register_operator, list(super, self, private,
                 slot = paste0("recombine_", names(mut)[i]),
                 fun = mut[[i]]
             ))
         }
     }
     # TODO: check unused
-    optim_register_operator(super, self, private, "mutate_.float", .float)
-    optim_register_operator(super, self, private, "mutate_.integer", .integer)
-    optim_register_operator(super, self, private, "mutate_.choice", .choice)
+    gaopt_register_operator(super, self, private, "mutate_.float", .float)
+    gaopt_register_operator(super, self, private, "mutate_.integer", .integer)
+    gaopt_register_operator(super, self, private, "mutate_.choice", .choice)
     self
 }
 # }}}
-# optim_selector {{{
-optim_selector <- function (super, self, private, parent = ecr::selSimple, survival = ecr::selNondom, strategy = "plus") {
-    optim_register_operator(super, self, private, "selectForMating", parent)
-    optim_register_operator(super, self, private, "selectForSurvival", survival)
+# gaopt_selector {{{
+gaopt_selector <- function (super, self, private, parent = ecr::selSimple, survival = ecr::selNondom, strategy = "plus") {
+    gaopt_register_operator(super, self, private, "selectForMating", parent)
+    gaopt_register_operator(super, self, private, "selectForSurvival", survival)
     private$m_ctrl$survival.strategy <- match.arg(strategy, c("plus", "comma"))
     self
 }
 # }}}
-# optim_terminator {{{
-optim_terminator <- function (super, self, private, fun = NULL, name, message,
+# gaopt_terminator {{{
+gaopt_terminator <- function (super, self, private, fun = NULL, name, message,
                               max_eval = NULL, max_gen = NULL, max_time = NULL) {
     term <- list()
 
@@ -351,25 +351,25 @@ optim_terminator <- function (super, self, private, fun = NULL, name, message,
     self
 }
 # }}}
-# optim_run {{{
-optim_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE) {
+# gaopt_run {{{
+gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE) {
     assert_ready_optim(super, self, private)
 
     cli::cat_rule("Initialization")
     # get initial population of parameters
     cli::cat_line("  * Create initial population")
-    init <- optim_init_population(super, self, private, mu)
+    init <- gaopt_init_population(super, self, private, mu)
 
     # get objective dimension
-    if (is.null(private$m_log$objective$dim)) optim_validate(super, self, private, as.list(init[1L]), FALSE)
+    if (is.null(private$m_log$objective$dim)) gaopt_validate(super, self, private, as.list(init[1L]), FALSE)
 
     # update controller
-    optim_update_controller(super, self, private)
+    gaopt_update_controller(super, self, private)
 
     # evaluate fitness
     population <- transpose_param(init)
     cli::cat_line("  * Evaluate fitness values")
-    fitness <- optim_evaluate_fitness(super, self, private, gen = -1, population,
+    fitness <- gaopt_evaluate_fitness(super, self, private, gen = -1, population,
         private$m_epws[[1L]], dir = dir, parallel = parallel)
     for (i in seq_along(population)) {
         data.table::setattr(population[[i]], "fitness", fitness[, i])
@@ -379,11 +379,11 @@ optim_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
         cli::cat_rule(sprintf("Generation [%i]", private$m_logger$env$n.gens + 1L))
         # generate offspring
         cli::cat_line("  * Generate offspring")
-        offspring <- optim_gen_offspring(super, self, private, population, fitness,
+        offspring <- gaopt_gen_offspring(super, self, private, population, fitness,
             p.recomb = p_recomb, p.mut = p_mut)
 
         cli::cat_line("  * Evaluate fitness values")
-        fitness.offspring <- optim_evaluate_fitness(super, self, private,
+        fitness.offspring <- gaopt_evaluate_fitness(super, self, private,
             gen = private$m_logger$env$n.gens, offspring, private$m_epws[[1L]],
             dir = dir, parallel)
 
@@ -422,8 +422,8 @@ optim_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
     self
 }
 # }}}
-# optim_print {{{
-optim_print <- function (super, self, private) {
+# gaopt_print {{{
+gaopt_print <- function (super, self, private) {
     path_epw <- if (is.null(private$m_epws)) NULL else vapply(private$m_epws, function (epw) epw$path(), character(1))
     eplusr:::print_job_header(title = "EnergPlus Optimization Simulation Job",
         path_idf = private$m_seed$path(),
@@ -467,8 +467,8 @@ optim_print <- function (super, self, private) {
     return(invisible(self))
 }
 # }}}
-# optim_init_population {{{
-optim_init_population <- function (super, self, private, mu = 20L) {
+# gaopt_init_population {{{
+gaopt_init_population <- function (super, self, private, mu = 20L) {
     parameter <- private$m_log$parameter
 
     if (is.null(parameter)) {
@@ -507,15 +507,15 @@ optim_init_population <- function (super, self, private, mu = 20L) {
     pop
 }
 # }}}
-# optim_fitness_fun {{{
-optim_fitness_fun <- function (super, self, private, param, path, weather) {
-    idf <- optim_gen_fitness_idf(super, self, private, param, path)
+# gaopt_fitness_fun {{{
+gaopt_fitness_fun <- function (super, self, private, param, path, weather) {
+    idf <- gaopt_gen_fitness_idf(super, self, private, param, path)
     idf$run(weather, NULL, force = TRUE, echo = FALSE)
-    optim_gen_fitness_obj(super, self, private, idf, param)
+    gaopt_gen_fitness_obj(super, self, private, idf, param)
 }
 # }}}
-# optim_gen_fitness_idf {{{
-optim_gen_fitness_idf <- function (super, self, private, param, outfile = NULL) {
+# gaopt_gen_fitness_idf {{{
+gaopt_gen_fitness_idf <- function (super, self, private, param, outfile = NULL) {
     # initial run on a single individual
     measure <- private$m_log$measure
     idf <- do.call(measure$fun, c(private$m_seed$clone(), param))
@@ -523,8 +523,8 @@ optim_gen_fitness_idf <- function (super, self, private, param, outfile = NULL) 
     idf
 }
 # }}}
-# optim_gen_fitness_obj {{{
-optim_gen_fitness_obj <- function (super, self, private, idf, param) {
+# gaopt_gen_fitness_obj {{{
+gaopt_gen_fitness_obj <- function (super, self, private, idf, param) {
     objective <- private$m_log$objective
 
     n_fun <- length(objective$name)
@@ -557,8 +557,8 @@ optim_gen_fitness_obj <- function (super, self, private, idf, param) {
     unlist(obj)
 }
 # }}}
-# optim_validate {{{
-optim_validate <- function (super, self, private, param = NULL, verbose = TRUE) {
+# gaopt_validate {{{
+gaopt_validate <- function (super, self, private, param = NULL, verbose = TRUE) {
     if (verbose) message("Checking if parameter(s) has been set ...")
     assert_ready_parameter(super, self, private)
 
@@ -566,11 +566,11 @@ optim_validate <- function (super, self, private, param = NULL, verbose = TRUE) 
     assert_ready_objective(super, self, private)
 
     if (is.null(param)) {
-        param <- as.list(optim_init_population(super, self, private, mu = 1))
+        param <- as.list(gaopt_init_population(super, self, private, mu = 1))
     }
 
     if (verbose) message(sprintf("Validating parameter function '%s' ...", private$m_log$measure$name))
-    idf <- optim_gen_fitness_idf(super, self, private, param, tempfile(fileext = ".idf"))
+    idf <- gaopt_gen_fitness_idf(super, self, private, param, tempfile(fileext = ".idf"))
 
     if (verbose) message("Validating objective function(s)...")
     # check if model has DDY
@@ -617,11 +617,11 @@ optim_validate <- function (super, self, private, param = NULL, verbose = TRUE) 
     invisible(TRUE)
 }
 # }}}
-# optim_update_controller {{{
-optim_update_controller <- function (super, self, private) {
+# gaopt_update_controller {{{
+gaopt_update_controller <- function (super, self, private) {
     objective <- private$m_log$objective
 
-    private$m_ctrl$task$fitness.fun <- optim_fitness_fun
+    private$m_ctrl$task$fitness.fun <- gaopt_fitness_fun
     private$m_ctrl$task$n.objectives <- sum(objective$dim)
     private$m_ctrl$task$minimize <- ifelse(objective$direction == -1L, TRUE, FALSE)
     private$m_ctrl$task$objective.names <- make.unique(rep(objective$name, objective$dim), sep = "_")
@@ -629,8 +629,8 @@ optim_update_controller <- function (super, self, private) {
     private$m_ctrl
 }
 # }}}
-# optim_evaluate_fitness {{{
-optim_evaluate_fitness <- function (super, self, private, gen, population, weather, dir = NULL, parallel = TRUE) {
+# gaopt_evaluate_fitness {{{
+gaopt_evaluate_fitness <- function (super, self, private, gen, population, weather, dir = NULL, parallel = TRUE) {
     if (is.null(dir)) dir <- dirname(private$m_seed$path())
 
     # construct IDF path
@@ -647,21 +647,21 @@ optim_evaluate_fitness <- function (super, self, private, gen, population, weath
     }
 
     fitness <- future.apply::future_mapply(
-        optim_fitness_fun, param = population, path = path,
+        gaopt_fitness_fun, param = population, path = path,
         MoreArgs = list(super = super, self = self, private = private, weather = weather),
         SIMPLIFY = FALSE
     )
     ecr:::makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
 }
 # }}}
-# optim_gen_offspring {{{
-optim_gen_offspring <- function (super, self, private, inds, fitness, p.recomb = 0.7, p.mut = 0.1) {
-    offspring <- optim_gen_offspring_action(super, self, private, "recombine", inds, fitness, p.recomb)
-    optim_gen_offspring_action(super, self, private, "mutate", offspring, fitness, p.mut)
+# gaopt_gen_offspring {{{
+gaopt_gen_offspring <- function (super, self, private, inds, fitness, p.recomb = 0.7, p.mut = 0.1) {
+    offspring <- gaopt_gen_offspring_action(super, self, private, "recombine", inds, fitness, p.recomb)
+    gaopt_gen_offspring_action(super, self, private, "mutate", offspring, fitness, p.mut)
 }
 # }}}
-# optim_gen_offspring_action {{{
-optim_gen_offspring_action <- function (super, self, private, action, inds, fitness, p) {
+# gaopt_gen_offspring_action {{{
+gaopt_gen_offspring_action <- function (super, self, private, action, inds, fitness, p) {
     param <- private$m_log$parameter
 
     # get parameter type
@@ -745,8 +745,8 @@ optim_gen_offspring_action <- function (super, self, private, action, inds, fitn
     transpose_param(pop)
 }
 # }}}
-# optim_register_operator {{{
-optim_register_operator <- function (super, self, private, slot, fun, ...) {
+# gaopt_register_operator {{{
+gaopt_register_operator <- function (super, self, private, slot, fun, ...) {
     # remove existing
     private$m_ctrl[[slot]] <- NULL
 
@@ -760,8 +760,8 @@ optim_register_operator <- function (super, self, private, slot, fun, ...) {
     private$m_ctrl
 }
 # }}}
-# optim_update_logger {{{
-optim_update_logger <- function (super, self, private, pop, fitness, n.evals) {
+# gaopt_update_logger {{{
+gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
     ecr::updateLogger(private$m_logger, pop, fitness, n.evals = mu)
 
     # add time passed
