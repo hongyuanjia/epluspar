@@ -1,3 +1,6 @@
+#' @importFrom ecr initECRControl initLogger
+NULL
+
 #' Conduct Multi-Objective Optimization on An EnergyPlus Model
 #'
 #' `GAOptimJob` class provides a prototype of conducting single- or multi-
@@ -62,6 +65,11 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # }}}
 
         # PUBLIC FUNCTIONS {{{
+        # {{{
+        param = function (..., .names = NULL)
+            gaopt_param(super, self, private, ..., .names = .names),
+        # }}}
+
         # apply_measure {{{
         apply_measure = function (measure, ..., .names = NULL)
             gaopt_apply_measure(super, self, private, measure, ..., .names = .names),
@@ -70,11 +78,6 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # objective {{{
         objective = function (..., .n = NULL, .dir = "min")
             gaopt_objective(super, self, private, ..., .n = .n, .dir = .dir, .env = parent.frame()),
-        # }}}
-
-        # parameter {{{
-        parameter = function ()
-            optim_parameter(super, self, private),
         # }}}
 
         # population {{{
@@ -773,59 +776,74 @@ gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
 
 # HELPERS
 # float_space {{{
+#' @export
 float_space <- function (min, max, init = mean(c(min, max))) {
     assert(is_number(min), is_number(max), is_number(init))
     assert(min <= max, min <= init, init <= max)
     structure(list(min = min, max = max, init = init), class = c("FloatSpace", "ParamSpace"))
 }
+#' @export
 format.FloatSpace <- function (x, ...) {
     sprintf("[%s, %s] | Init: %s", x[["min"]], x[["max"]], x[["init"]])
 }
+#' @export
 print.FloatSpace <- function (x, ...) {
     cat(format.FloatSpace(x), "\n", sep = "")
     invisible(x)
 }
 # for better print in data.table
+#' @export
 format.FloatRange <- function (x, ...) {
     sprintf("[%s, %s]", x[[1]], x[[2]])
 }
+#' @export
 print.FloatRange <- function (x, ...) {
     cat(format.FloatRange(x), "\n", sep = "")
     invisible(x)
 }
 # }}}
 # choice_space {{{
+#' @export
 choice_space <- function (choices, init = choices[1]) {
     assert(is.character(choices), !anyNA(choices))
     assert(eplusr:::is_string(init), init %in% choices)
     structure(list(x = choices, init = init), class = c("ChoiceSpace", "ParamSpace"))
 }
+#' @export
 format.ChoiceSpace <- function (x, ...) {
     val <- if (length(x$x) > 3L) c(x$x[1:3], "...") else x$x
     sprintf("%s | Init: '%s'", paste0(val, collapse = ", "), x$init)
 }
+#' @export
 print.ChoiceSpace <- function (x, ...) {
     cat(format.ChoiceSpace(x), "\n", sep = "")
     invisible(x)
 }
 # for better print in data.table
+#' @export
 format.ChoiceRange <- function (x, ...) {
     paste0(if (length(x) > 3L) c(x[1:3], "...") else x, collapse = ", ")
 }
+#' @export
 print.ChoiceRange <- function (x, ...) {
     cat(format.ChoiceRange(x), "\n", sep = "")
     invisible(x)
 }
 # }}}
 # integer_space {{{
+#' @export
 integer_space <- function (integers, init = integers[1]) {
     assert(eplusr:::are_integer(integers))
     assert(eplusr:::is_integer(init), init %in% integers)
     structure(list(x = integers, init = init), class = c("IntegerSpace", "ParamSpace"))
 }
+#' @export
 format.IntegerSpace <- format.ChoiceSpace
+#' @export
 print.IntegerSpace <- print.ChoiceSpace
+#' @export
 format.IntegerRange <- format.ChoiceRange
+#' @export
 printf.IntegerRange <- print.ChoiceRange
 # }}}
 # get_param_range {{{
@@ -886,12 +904,14 @@ flatten_list <- function (lst, recursive = FALSE, use.names = FALSE) {
 }
 # }}}
 # setwith {{{
+#' @export
 setwith <- function (fun, ...) {
     assert(inherits(fun, "ecr_operator"))
     structure(list(fun = fun, args = list(...)),  class = "ecr_operator_setwith")
 }
 # }}}
 # stopOnMaxTime {{{
+#' @export
 stopOnMaxTime <- function(max.time = NULL) {
     if (!is.null(max.time)) {
         assert(eplusr:::in_range(max.time, eplusr:::ranger(1L, TRUE)))
