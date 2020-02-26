@@ -22,11 +22,6 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         #'
         #' @param idf A path to an local EnergyPlus IDF file or an [eplusr::Idf] object.
         #' @param epw A path to an local EnergyPlus EPW file or an [eplusr::Epw] object.
-        #' @param type A single string specifying the internal method used for
-        #'        optimization. Possible values are:
-        #'     * `NSGA2`:
-        #'     * `GPareto`:
-        #'     * `GA`: Only for mono-objective optimization problem
         #'
         #' @return A `OptimJob` object.
         #'
@@ -49,9 +44,20 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         #'
         initialize = function (idf, epw) {
             eplusr:::with_silent(super$initialize(idf, epw))
-            private$m_controler <- ecr::initECRControl(identity, 1L)
-            private$m_logger <- ecr::initLogger(private$m_controller, log.pop = TRUE)
-            private$m_archive <- ecr::initParetoArchive(private$m_controller)
+
+            # init controller
+            private$m_ctrl <- ecr::initECRControl(identity, 1L)
+
+            self$recombinator()
+            self$mutator()
+            self$selector()
+            self$terminator()
+
+            # init logger
+            private$m_logger <- ecr::initLogger(private$m_ctrl, log.pop = TRUE)
+            private$m_logger$env$time.started <- proc.time()[3]
+
+            private$m_archive <- ecr::initParetoArchive(private$m_ctrl)
         },
         # }}}
 
@@ -76,49 +82,40 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         # }}}
 
         # recombinator {{{
-        recombinator = function (type = "cx", ...)
-            optim_recombinator(super, self, private, type = type, ...),
+        recombinator = function (...,
+                                 .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
+                                 .integer = setwith(mosmafs::recPCrossover, p = 0.7),
+                                 .choice = setwith(mosmafs::recPCrossover, p = 0.7))
+            optim_recombinator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
         # mutator {{{
-        mutator = function (type = "bitflip", ...)
-            optim_mutator(super, self, private, type = type, ...),
+        mutator = function (...,
+                            .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.1),
+                            .integer = mosmafs::mutRandomChoice,
+                            .choice = mosmafs::mutRandomChoice)
+            optim_mutator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
         # selector {{{
-        selector = function (parent = "simple", survival = "greedy", strategy = "plus")
+        selector = function (parent = ecr::selSimple, survival = ecr::selNondom, strategy = "plus")
             optim_selector(super, self, private, parent = parent, survival = survival, strategy = strategy),
         # }}}
 
         # terminator {{{
-        terminator = function (fun, name, message, max_eval = Inf, max_iter = Inf)
+        terminator = function (fun = NULL, name, message, max_gen = NULL, max_eval = NULL, max_time = NULL)
             optim_terminator(super, self, private, fun = fun, name = name, message = message,
-                max_eval = max_eval, max_iter = max_iter),
+                max_gen = max_gen, max_eval = max_eval, max_time = max_time),
         # }}}
 
-        # logger{{{
-        logger = function (stats = list(fitness = list("min", "mean", "max")), pop = TRUE, init.size = 1000L)
-            optim_logger(super, self, private, stats = stats, pop = pop, init.size = init.size),
-        # }}}
-
-        # pareto_archive {{{
-        pareto_archive = function (max_size = Inf, trunc.fun = NULL)
-            optim_pareto_archive(super, self, private, max_size = max_size, trunc.fun = trunc.fun),
-        # }}}
-
-        # pareto_front {{{
-        pareto_front = function ()
-            optim_pareto_front(super, self, private),
-        # }}}
-
-        # pareto_set {{{
-        pareto_set = function ()
-            optim_pareto_set(super, self, private),
+        # validate {{{
+        validate = function (param = NULL, verbose = TRUE)
+            optim_validate(super, self, private, param = param, verbose = verbose),
         # }}}
 
         # run {{{
-        run = function (dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait)
-            optim_run(super, self, private, dir, wait, force, copy_external, echo),
+        run = function (mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE)
+            optim_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
         # }}}
 
         # plot {{{
@@ -144,7 +141,7 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
         m_epws = NULL,
         m_job = NULL,
         m_log = NULL,
-        m_controller = NULL,
+        m_ctrl = NULL,
         m_logger = NULL,
         m_archive = NULL
         # }}}
@@ -152,7 +149,7 @@ OptimJob <- R6::R6Class(classname = "OptimJob",
 )
 # }}}
 
-#' Create a Bayesian Calibration Job
+#' Create an Optimization Job
 #'
 #' `optim_job()` takes an IDF and EPW as input, and returns an `OptimJob`
 #' object for conducting optimization on an EnergyPlus model. For more
@@ -200,22 +197,30 @@ optim_apply_measure <- function (super, self, private, measure, ..., .names = NU
     }
 
     # match fun arg
-    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
+    cl <- match.call(measure, quote(measure(private$m_seed, ...)))
+    mc <- cl[-1L]
     l <- vector("list", length(mc[-1L]))
     names(l) <- names(mc[-1L])
-    # get value
-    for (nm in names(l)) l[[nm]] <- eval(mc[-1L][[nm]])
 
-    measure_wrapper <- function (idf, ...) {
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should take an `Idf` object as input, not `", class(idf)[[1]], "`."))
-        idf <- idf$clone(deep = TRUE)
-        idf <- measure(idf, ...)
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should return an `Idf` object, not `", class(idf)[[1]], "`."))
-        idf
+    # stop if parameter contains reserved names
+    if (any(names(l) %in% c(".float", ".integer", ".choice"))) {
+        abort("error_invalid_param", "Parameters cannot contain any internal reserved names ('.float', '.integer', and '.choice')")
     }
 
-    private$m_log$measure_wrapper <- measure_wrapper
-    private$m_log$measure_name <- measure_name
+    # get value
+    for (nm in names(l)) {
+        l[[nm]] <- eval(mc[-1L][[nm]])
+
+        if (!inherits(l[[nm]], "ParamSpace")) {
+            abort("error_invalid_param", sprintf(
+                "Each parameter should be a 'ParamSpace' object. Invalid input found: '%s' ('%s').",
+                nm, class(l[[nm]])[1L]
+            ))
+        }
+    }
+
+    private$m_log$measure$name <- measure_name
+    private$m_log$measure$fun <- measure
     private$m_log$parameter <- l
 
     self
@@ -261,78 +266,179 @@ optim_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
         # get function content
         l[[i]] <- eval(l[[i]], .env, .env)
 
-        # check if parameters have been set
-        if (!is.null(private$m_log$measure_wrapper)) {
-            # TODO: how to get parameter values?
-            idf <- private$m_log$measure_wrapper(private$m_seed, 0)
-            # how to let the user to determine whether to run the simulation or
-            # not?
-            args <- formals(l[[i]])
-            if (!"idf" %in% names(args)) {
-                abort("error_objective_idf_arg", paste0(
-                    "Objective function '", obj[[i]], "' must have an parameter named 'idf'."
-                ))
-            }
+        args <- formals(l[[i]])
 
-            # store the call for future evaluation when run method is called
-            # add param if necessary
-            if ("param" %in% names(args)) {
-                cl[[i]] <- match.call(l[[i]], quote(l[[i]](idf = idf, param = private$m_log$parameter)))
-            } else {
-                cl[[i]] <- match.call(l[[i]], quote(l[[i]](idf = idf)))
-            }
+        if (!"idf" %in% names(args)) {
+            abort("error_objective_idf_arg", paste0(
+                "Objective function '", obj[[i]], "' must have an parameter named 'idf'."
+            ))
         }
     }
 
     # store
     private$m_log$objective$name <- obj
     private$m_log$objective$fun <- l
-    private$m_log$objective$call <- cl
     private$m_log$objective$direction <- .dir
 
     self
 }
 # }}}
+# optim_recombinator {{{
+optim_recombinator <- function (super, self, private, ...,
+                                .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
+                                .integer = setwith(mosmafs::recPCrossover, p = 0.7),
+                                .choice = setwith(mosmafs::recPCrossover, p = 0.7)) {
+    rec <- list(...)
+    if (length(rec)) {
+        for (i in seq_along(rec)) {
+            do.call(optim_register_operator, list(super, self, private,
+                slot = paste0("recombine_", names(rec)[i]),
+                fun = rec[[i]]
+            ))
+        }
+    }
+    # TODO: check unused
+    optim_register_operator(super, self, private, "recombine_.float", .float)
+    optim_register_operator(super, self, private, "recombine_.integer", .integer)
+    optim_register_operator(super, self, private, "recombine_.choice", .choice)
+    self
+}
+# }}}
+# optim_mutator {{{
+optim_mutator <- function (super, self, private, ...,
+                           .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.2),
+                           .integer = ecr::mutSwap,
+                           .choice = ecr::mutSwap) {
+    mut <- list(...)
+    if (length(mut)) {
+        for (i in seq_along(mut)) {
+            do.call(optim_register_operator, list(super, self, private,
+                slot = paste0("recombine_", names(mut)[i]),
+                fun = mut[[i]]
+            ))
+        }
+    }
+    # TODO: check unused
+    optim_register_operator(super, self, private, "mutate_.float", .float)
+    optim_register_operator(super, self, private, "mutate_.integer", .integer)
+    optim_register_operator(super, self, private, "mutate_.choice", .choice)
+    self
+}
+# }}}
+# optim_selector {{{
+optim_selector <- function (super, self, private, parent = ecr::selSimple, survival = ecr::selNondom, strategy = "plus") {
+    optim_register_operator(super, self, private, "selectForMating", parent)
+    optim_register_operator(super, self, private, "selectForSurvival", survival)
+    private$m_ctrl$survival.strategy <- match.arg(strategy, c("plus", "comma"))
+    self
+}
+# }}}
+# optim_terminator {{{
+optim_terminator <- function (super, self, private, fun = NULL, name, message,
+                              max_eval = NULL, max_gen = NULL, max_time = NULL) {
+    term <- list()
+
+    if (!is.null(max_eval)) term <- c(term, ecr::stopOnEvals(max_eval))
+    if (!is.null(max_gen)) term <- c(term, list(ecr::stopOnIters(max_gen)))
+    if (!is.null(max_time)) term <- c(term, list(stopOnMaxTime(max_time)))
+
+    if (!is.null(fun)) {
+        term <- c(term, list(ecr::makeTerminator(fun, name, message)))
+    }
+
+    private$m_log$term <- term
+
+    self
+}
+# }}}
 # optim_run {{{
-optim_run <- function (super, self, private, dir = NULL, wait = TRUE, force = FALSE, copy_external = FALSE, echo = wait) {
-    # initial run on a single sample to:
-    # 1. measure and parameter settings work fine
-    # 2. make sure objective functions return numeric values
-    # 3. determine number of objectives
+optim_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE) {
+    assert_ready_optim(super, self, private)
 
-    # procedure
-    # 1. generate initial population
-    # 2. calculate intital solutions
-    # 3. generate offspring:
-    #    1. ecr::generateOffspring
-    #    2. ecr::evaluateFitness
-    #    3. attr(offspring, "fitness") <- fitness
-    #    4. select based on survial strategy
-    #    5. do logging
-    #    6. check terminate condition
-    # 4. summary results using ecr::makeECRResults
+    cli::cat_rule("Initialization")
+    # get initial population of parameters
+    cli::cat_line("  * Create initial population")
+    init <- optim_init_population(super, self, private, mu)
 
-    # TODO:
-    # 1. is pareto archive really needed?
-    # 2. use ecr internal parallelization instead of eplusr?
+    # get objective dimension
+    if (is.null(private$m_log$objective$dim)) optim_validate(super, self, private, as.list(init[1L]), FALSE)
+
+    # update controller
+    optim_update_controller(super, self, private)
+
+    # evaluate fitness
+    population <- transpose_param(init)
+    cli::cat_line("  * Evaluate fitness values")
+    fitness <- optim_evaluate_fitness(super, self, private, gen = -1, population,
+        private$m_epws[[1L]], dir = dir, parallel = parallel)
+    for (i in seq_along(population)) {
+        data.table::setattr(population[[i]], "fitness", fitness[, i])
+    }
+
+    repeat {
+        cli::cat_rule(sprintf("Generation [%i]", private$m_logger$env$n.gens + 1L))
+        # generate offspring
+        cli::cat_line("  * Generate offspring")
+        offspring <- optim_gen_offspring(super, self, private, population, fitness,
+            p.recomb = p_recomb, p.mut = p_mut)
+
+        cli::cat_line("  * Evaluate fitness values")
+        fitness.offspring <- optim_evaluate_fitness(super, self, private,
+            gen = private$m_logger$env$n.gens, offspring, private$m_epws[[1L]],
+            dir = dir, parallel)
+
+        for (i in seq_along(offspring)) {
+            data.table::setattr(offspring[[i]], "fitness", fitness.offspring[, i])
+        }
+
+        cli::cat_line("  * Prepare next generation")
+        sel = if (private$m_ctrl$survival.strategy == "plus") {
+            ecr::replaceMuPlusLambda(private$m_ctrl, population, offspring, fitness, fitness.offspring)
+        } else {
+            ecr::replaceMuCommaLambda(private$m_ctrl, population, offspring, fitness, fitness.offspring)
+        }
+
+        population <- sel$population
+        fitness <- sel$fitness
+
+        # do some logging
+        cli::cat_line("  * Update log")
+        ecr::updateLogger(private$m_logger, population, fitness, n.evals = mu)
+
+        cli::cat_line("  * Check whether terminator conditions are met")
+        stop.object <- ecr:::doTerminate(private$m_logger, private$m_log$term)
+
+        if (length(stop.object) > 0L) {
+            cli::cat_rule("Terminated")
+            cli::cat_line(sprintf("  < %s: %s >", stop.object$name, stop.object$message))
+            break
+        }
+    }
+
+    private$m_log$results <- ecr:::makeECRResult(private$m_ctrl, private$m_logger, population, fitness, stop.object)
+
+    private$m_log$results
+
+    self
 }
 # }}}
 # optim_print {{{
 optim_print <- function (super, self, private) {
-    path_epw <- if (is.null(private$m_epws)) NULL else vcapply(private$m_epws, function (epw) epw$path())
+    path_epw <- if (is.null(private$m_epws)) NULL else vapply(private$m_epws, function (epw) epw$path(), character(1))
     eplusr:::print_job_header(title = "EnergPlus Optimization Simulation Job",
         path_idf = private$m_seed$path(),
         path_epw = path_epw,
         eplus_ver = private$m_seed$version(),
         name_idf = "Seed", name_epw = "Weather"
     )
+    print(private$m_ctrl)
 
-    if (is.null(private$m_log$measure_name)) {
+    if (is.null(private$m_log$measure)) {
         cli::cat_line(("Measure to apply: << No measure has been set >>"), col = "white", background_col = "blue")
         cli::cat_line("Parameter [0]: << No measure has been set >>", col = "white", background_col = "blue")
     } else {
         cli::cat_line(c(
-            sprintf("Measure to apply: '%s'", private$m_log$measure_name),
+            sprintf("Measure to apply: '%s'", private$m_log$measure$name),
             sprintf("Parameter [%i]: ", length(private$m_log$parameter))
         ))
         for (i in seq_along(private$m_log$parameter)) {
@@ -361,34 +467,447 @@ optim_print <- function (super, self, private) {
     return(invisible(self))
 }
 # }}}
+# optim_init_population {{{
+optim_init_population <- function (super, self, private, mu = 20L) {
+    parameter <- private$m_log$parameter
+
+    if (is.null(parameter)) {
+        abort("error_no_parameter", "No parameter has been set.")
+    }
+
+    assert(eplusr:::is_count(mu))
+
+    # get parameter types
+    type_par <- vapply(parameter, function (x) class(x)[1L], character(1))
+
+    # extract parameters of different types
+    # 1. for float search space
+    par_float <- parameter[type_par == "FloatSpace"]
+    # 2. for integer search space
+    par_integer <- parameter[type_par == "IntegerSpace"]
+    # 3. for choice search space
+    par_choice <- parameter[type_par == "ChoiceSpace"]
+
+    # create initial population
+    # 1. for float search space
+    pop_float <- lapply(par_float, function (mu, par) {
+        unlist(ecr::initPopulation(mu, ecr::genReal, n.dim = 1, lower = par$min, upper = par$max))
+    }, mu = mu)
+    # 2. for integer search space
+    pop_integer <- lapply(par_integer, function (mu, par) replicate(mu, sample(par$x, 1)), mu = mu)
+    # 3. for choice search space
+    pop_choice <- lapply(par_choice, function (mu, par) replicate(mu, sample(par$x, 1)), mu = mu)
+
+    # store results in a data.table
+    pop <- as.data.table(c(pop_float, pop_integer, pop_choice))
+
+    # restore the original order
+    data.table::setcolorder(pop, names(parameter))
+
+    pop
+}
+# }}}
+# optim_fitness_fun {{{
+optim_fitness_fun <- function (super, self, private, param, path, weather) {
+    idf <- optim_gen_fitness_idf(super, self, private, param, path)
+    idf$run(weather, NULL, force = TRUE, echo = FALSE)
+    optim_gen_fitness_obj(super, self, private, idf, param)
+}
+# }}}
+# optim_gen_fitness_idf {{{
+optim_gen_fitness_idf <- function (super, self, private, param, outfile = NULL) {
+    # initial run on a single individual
+    measure <- private$m_log$measure
+    idf <- do.call(measure$fun, c(private$m_seed$clone(), param))
+    if (!is.null(outfile)) suppressMessages(idf$save(outfile, overwrite = TRUE))
+    idf
+}
+# }}}
+# optim_gen_fitness_obj {{{
+optim_gen_fitness_obj <- function (super, self, private, idf, param) {
+    objective <- private$m_log$objective
+
+    n_fun <- length(objective$name)
+
+    obj <- vector("list", n_fun)
+
+    for (i in seq_len(n_fun)) {
+        # check if 'param' is in the arguments
+        if ("param" %in% names(formals(objective$fun[[i]]))) {
+            obj[[i]] <- do.call(objective$fun[[i]], list(idf = idf, param = param))
+        } else {
+            obj[[i]] <- do.call(objective$fun[[i]], list(idf = idf))
+        }
+
+        if (is.na(obj[[i]])) {
+            abort("error_optim_wrong_obj_val", sprintf(
+                "Objective function '%s' returns value(s) of NA.",
+                objective$name[i]
+            ))
+        }
+
+        if (length(obj[[i]]) != objective$dim[i]) {
+            abort("error_optim_wrong_obj_dim", sprintf(
+                "Objective function '%s' returns value(s) of wrong dimention '%i' (should be '%i').",
+                objective$name[i], length(obj[[i]]), objective$dim[i]
+            ))
+        }
+    }
+
+    unlist(obj)
+}
+# }}}
+# optim_validate {{{
+optim_validate <- function (super, self, private, param = NULL, verbose = TRUE) {
+    if (verbose) message("Checking if parameter(s) has been set ...")
+    assert_ready_parameter(super, self, private)
+
+    if (verbose) message("Checking if objective(s) has been set ...")
+    assert_ready_objective(super, self, private)
+
+    if (is.null(param)) {
+        param <- as.list(optim_init_population(super, self, private, mu = 1))
+    }
+
+    if (verbose) message(sprintf("Validating parameter function '%s' ...", private$m_log$measure$name))
+    idf <- optim_gen_fitness_idf(super, self, private, param, tempfile(fileext = ".idf"))
+
+    if (verbose) message("Validating objective function(s)...")
+    # check if model has DDY
+    if (!"SizingPeriod:DesignDay" %in% idf$class_name()) {
+        if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
+        idf$run(private$m_epws[[1]], echo = FALSE)
+    } else {
+        idf$run(NULL, echo = FALSE)
+    }
+
+    objective <- private$m_log$objective
+    n_fun <- length(objective$name)
+    obj <- vector("list", n_fun)
+    for (i in seq_len(n_fun)) {
+        # check if 'param' is in the arguments
+        if ("param" %in% names(formals(objective$fun[[i]]))) {
+            obj[[i]] <- do.call(objective$fun[[i]], list(idf = idf, param = param))
+        } else {
+            obj[[i]] <- do.call(objective$fun[[i]], list(idf = idf))
+        }
+
+        if (!length(obj[[i]])) {
+            abort("error_invalid_objective", sprintf(
+                "Objective function '%s' should return at least a length-one vector instead of a 0-length one.",
+                objective$name[[i]]
+            ))
+        }
+
+        if (!is.numeric(obj[[i]])) {
+            abort("error_invalid_objective", sprintf(
+                "Objective function '%s' should return a numeric vector instead of a '%s' object.",
+                objective$name[[i]], class(obj[[i]])[[1]]
+            ))
+        }
+
+        if (verbose) message(sprintf("  [%i] '%s' --> OK", i, objective$name[[i]]))
+    }
+
+    # store objective dimension
+    private$m_log$objective$dim <- vapply(obj, length, integer(1))
+
+    if (verbose) message("All checks have been passed.")
+
+    invisible(TRUE)
+}
+# }}}
+# optim_update_controller {{{
+optim_update_controller <- function (super, self, private) {
+    objective <- private$m_log$objective
+
+    private$m_ctrl$task$fitness.fun <- optim_fitness_fun
+    private$m_ctrl$task$n.objectives <- sum(objective$dim)
+    private$m_ctrl$task$minimize <- ifelse(objective$direction == -1L, TRUE, FALSE)
+    private$m_ctrl$task$objective.names <- make.unique(rep(objective$name, objective$dim), sep = "_")
+
+    private$m_ctrl
+}
+# }}}
+# optim_evaluate_fitness {{{
+optim_evaluate_fitness <- function (super, self, private, gen, population, weather, dir = NULL, parallel = TRUE) {
+    if (is.null(dir)) dir <- dirname(private$m_seed$path())
+
+    # construct IDF path
+    path <- file.path(dir, sprintf("Gen%i", gen), sprintf("Gen%i_Ind%i.idf", gen, seq_along(population)))
+
+    if (eplusr:::is_flag(parallel)) {
+        if (parallel) {
+            future::plan(future::multiprocess)
+        } else {
+            future::plan(future::sequential)
+        }
+    } else {
+        future::plan(parallel)
+    }
+
+    fitness <- future.apply::future_mapply(
+        optim_fitness_fun, param = population, path = path,
+        MoreArgs = list(super = super, self = self, private = private, weather = weather),
+        SIMPLIFY = FALSE
+    )
+    ecr:::makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
+}
+# }}}
+# optim_gen_offspring {{{
+optim_gen_offspring <- function (super, self, private, inds, fitness, p.recomb = 0.7, p.mut = 0.1) {
+    offspring <- optim_gen_offspring_action(super, self, private, "recombine", inds, fitness, p.recomb)
+    optim_gen_offspring_action(super, self, private, "mutate", offspring, fitness, p.mut)
+}
+# }}}
+# optim_gen_offspring_action {{{
+optim_gen_offspring_action <- function (super, self, private, action, inds, fitness, p) {
+    param <- private$m_log$parameter
+
+    # get parameter type
+    type <- vapply(param, function (x) class(x)[1L], character(1))
+
+    # store all individuals into a data.table
+    pop <- as.data.table(lapply(transpose_param(inds), unlist))
+
+    # first apply parameter-wise
+    self_act <- paste(action, names(type), sep = "_")
+    data.table::setattr(self_act, "names", names(type))
+
+    if (any(i_self_act <- self_act %in% names(private$m_ctrl))) {
+        for (var in names(type)[i_self_act]) {
+            if (type[var] == "FloatSpace" && "lower" %in% names(formals(private$self_act[var])) &&
+                is.null(private$m_ctrl[[paste0(self_act[var], ".pars")]]$lower)) {
+                r <- get_param_range(param[[var]])
+                private$m_ctrl[[paste0(self_act[var], ".pars")]]$lower <- r[1L]
+                private$m_ctrl[[paste0(self_act[var], ".pars")]]$upper <- r[2L]
+
+            }
+
+            if (type[var] != "FloatSpace" && "values" %in% names(formals(private$self_act[var])) &&
+                is.null(private$m_ctrl[[paste0(self_act[var], ".pars")]]$values)) {
+                r <- get_param_range(param[[var]])
+                private$m_ctrl[[paste0(slot, ".pars")]]$values <- list(r)
+            }
+
+            if (action == "recombine") {
+                data.table::set(pop, NULL, var,
+                    unlist(ecr::recombinate(private$m_ctrl, pop[[var]], fitness, length(pop[[var]]), p.recomb = p, slot = self_act[var]))
+                )
+            } else if (action == "mutate") {
+                data.table::set(pop, NULL, var,
+                    unlist(ecr::mutate(private$m_ctrl, pop[[var]], p.mut = p, slot = self_act[var]))
+                )
+            }
+            private$m_ctrl[[paste0(self_act[var], ".pars")]]$values <- NULL
+            private$m_ctrl[[paste0(self_act[var], ".pars")]]$lower <- NULL
+            private$m_ctrl[[paste0(self_act[var], ".pars")]]$upper <- NULL
+        }
+    }
+
+    # exclude self rec/mut param and split others by type
+    type_other <- split(type[!i_self_act], type)
+    for (ty in type_other) {
+        slot <- sprintf("%s_.%s", action,
+            switch(ty[[1L]], "FloatSpace" = "float", "IntegerSpace" = "integer", "ChoiceSpace" = "choice"))
+
+        for (nm in names(ty)) {
+
+            if (ty[[nm]] == "FloatSpace" && "lower" %in% names(formals(private$m_ctrl[[slot]])) &&
+                is.null(private$m_ctrl[[paste0(slot, ".pars")]]$lower)) {
+                r <- get_param_range(param[[nm]])
+                private$m_ctrl[[paste0(slot, ".pars")]]$lower <- r[1]
+                private$m_ctrl[[paste0(slot, ".pars")]]$upper <- r[2]
+            }
+
+            if (ty[[nm]] != "FloatSpace" && "values" %in% names(formals(private$m_ctrl[[slot]])) &&
+                is.null(private$m_ctrl[[paste0(slot, ".pars")]]$values)) {
+                r <- get_param_range(param[[nm]])
+                private$m_ctrl[[paste0(slot, ".pars")]]$values <- list(r)
+            }
+
+            if (action == "recombine") {
+                data.table::set(pop, NULL, nm, unlist(
+                    ecr::recombinate(private$m_ctrl, as.list(pop[[nm]]), fitness, nrow(pop), p.recomb = p, slot = slot)
+                ))
+            } else if (action == "mutate") {
+                data.table::set(pop, NULL, nm, unlist(
+                    ecr::mutate(private$m_ctrl, as.list(pop[[nm]]), p.mut = p, slot = slot),
+                    recursive = FALSE, use.names = FALSE
+                ))
+            }
+            private$m_ctrl[[paste0(slot, ".pars")]]$values <- NULL
+            private$m_ctrl[[paste0(slot, ".pars")]]$upper <- NULL
+            private$m_ctrl[[paste0(slot, ".pars")]]$lower <- NULL
+        }
+    }
+
+    transpose_param(pop)
+}
+# }}}
+# optim_register_operator {{{
+optim_register_operator <- function (super, self, private, slot, fun, ...) {
+    # remove existing
+    private$m_ctrl[[slot]] <- NULL
+
+    if (inherits(fun, "ecr_operator_setwith")) {
+        private$m_ctrl <- ecr::registerECROperator(private$m_ctrl, slot, fun$fun)
+        private$m_ctrl[[paste0(slot, ".pars")]] <- c(fun$args, ...)
+    } else {
+        private$m_ctrl <- ecr::registerECROperator(private$m_ctrl, slot, fun, ...)
+    }
+
+    private$m_ctrl
+}
+# }}}
+# optim_update_logger {{{
+optim_update_logger <- function (super, self, private, pop, fitness, n.evals) {
+    ecr::updateLogger(private$m_logger, pop, fitness, n.evals = mu)
+
+    # add time passed
+    private$m_logger$env$time.passed <- proc.time()[3] - private$m_logger$env$time.started
+
+    private$m_logger
+}
+# }}}
 
 # HELPERS
 # float_space {{{
 float_space <- function (min, max, init = mean(c(min, max))) {
     assert(is_number(min), is_number(max), is_number(init))
     assert(min <= max, min <= init, init <= max)
-    structure(list(min = min, max = max, init = init), class = "FloatSpace")
+    structure(list(min = min, max = max, init = init), class = c("FloatSpace", "ParamSpace"))
 }
-print.FloatSpace <- function (x, ...) {
-    cat(sprintf("[%s, %s] | Init: %s\n", x[["min"]], x[["max"]], x[["init"]]))
-    invisible(x)
-}
-
 format.FloatSpace <- function (x, ...) {
     sprintf("[%s, %s] | Init: %s", x[["min"]], x[["max"]], x[["init"]])
+}
+print.FloatSpace <- function (x, ...) {
+    cat(format.FloatSpace(x), "\n", sep = "")
+    invisible(x)
+}
+# for better print in data.table
+format.FloatRange <- function (x, ...) {
+    sprintf("[%s, %s]", x[[1]], x[[2]])
+}
+print.FloatRange <- function (x, ...) {
+    cat(format.FloatRange(x), "\n", sep = "")
+    invisible(x)
 }
 # }}}
 # choice_space {{{
 choice_space <- function (choices, init = choices[1]) {
     assert(is.character(choices), !anyNA(choices))
     assert(eplusr:::is_string(init), init %in% choices)
-    structure(list(x = choices, init = init), class = "ChoiceSpace")
+    structure(list(x = choices, init = init), class = c("ChoiceSpace", "ParamSpace"))
+}
+format.ChoiceSpace <- function (x, ...) {
+    val <- if (length(x$x) > 3L) c(x$x[1:3], "...") else x$x
+    sprintf("%s | Init: '%s'", paste0(val, collapse = ", "), x$init)
+}
+print.ChoiceSpace <- function (x, ...) {
+    cat(format.ChoiceSpace(x), "\n", sep = "")
+    invisible(x)
+}
+# for better print in data.table
+format.ChoiceRange <- function (x, ...) {
+    paste0(if (length(x) > 3L) c(x[1:3], "...") else x, collapse = ", ")
+}
+print.ChoiceRange <- function (x, ...) {
+    cat(format.ChoiceRange(x), "\n", sep = "")
+    invisible(x)
 }
 # }}}
 # integer_space {{{
 integer_space <- function (integers, init = integers[1]) {
     assert(eplusr:::are_integer(integers))
     assert(eplusr:::is_integer(init), init %in% integers)
-    structure(list(x = integers, init = init), class = "IntegerSpace")
+    structure(list(x = integers, init = init), class = c("IntegerSpace", "ParamSpace"))
+}
+format.IntegerSpace <- format.ChoiceSpace
+print.IntegerSpace <- print.ChoiceSpace
+format.IntegerRange <- format.ChoiceRange
+printf.IntegerRange <- print.ChoiceRange
+# }}}
+# get_param_range {{{
+get_param_range <- function (x, ...) {
+    UseMethod("get_param_range")
+}
+get_param_range.default <- function (x, ...) {
+    stop("Unknown parameter space type")
+}
+get_param_range.FloatSpace <- function (x, ...) {
+    structure(c(x[["min"]], x[["max"]]), class = "FloatRange")
+}
+get_param_range.ChoiceSpace <- function (x, ...) {
+    structure(x[["x"]], class = "ChoiceRange")
+}
+get_param_range.IntegerSpace <- function (x, ...) {
+    structure(x[["x"]], class = "IntegerRange")
+}
+# }}}
+# assert_ready_optim {{{
+assert_ready_optim <- function (super, self, private) {
+    assert_ready_parameter(super, self, private)
+    assert_ready_objective(super, self, private)
+
+    TRUE
+}
+# }}}
+# assert_ready_parameter {{{
+assert_ready_parameter <- function (super, self, private) {
+    if (is.null(private$m_log$parameter)) {
+        abort("error_no_parameter",
+            "No parameter has been set. Please run '$apply_measure()' first."
+        )
+    }
+
+    TRUE
+}
+# }}}
+# assert_ready_objective {{{
+assert_ready_objective <- function (super, self, private) {
+    if (is.null(private$m_log$objective)) {
+        abort("error_no_objective",
+            "No objecive has been set. Please run '$objective()' first."
+        )
+    }
+
+    TRUE
+}
+# }}}
+# transpose_param {{{
+transpose_param <- function (param) {
+    do.call(mapply, c(list(FUN = base::list, SIMPLIFY = FALSE), param))
+}
+# }}}
+# flatten_list {{{
+flatten_list <- function (lst, recursive = FALSE, use.names = FALSE) {
+    unname(lapply(lst, unlist, recursive = recursive, use.names=  use.names))
+}
+# }}}
+# setwith {{{
+setwith <- function (fun, ...) {
+    assert(inherits(fun, "ecr_operator"))
+    structure(list(fun = fun, args = list(...)),  class = "ecr_operator_setwith")
+}
+# }}}
+# stopOnMaxTime {{{
+stopOnMaxTime <- function(max.time = NULL) {
+    if (!is.null(max.time)) {
+        assert(eplusr:::in_range(max.time, eplusr:::ranger(1L, TRUE)))
+    } else {
+        max.time <- Inf
+    }
+    force(max.time)
+
+    condition.fun = function(log) {
+        return(log$env$time.passed >= max.time)
+    }
+
+    makeTerminator(
+        condition.fun,
+        name = "TimeLimit",
+        message = sprintf("Time limit reached: '%s' [seconds]", max.time)
+    )
 }
 # }}}
