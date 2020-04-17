@@ -1,4 +1,5 @@
 #' @importFrom ecr initECRControl initLogger
+#' @include utils.R
 NULL
 
 #' Conduct Multi-Objective Optimization on An EnergyPlus Model
@@ -65,7 +66,7 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # }}}
 
         # PUBLIC FUNCTIONS {{{
-        # {{{
+        # param {{{
         param = function (..., .names = NULL)
             gaopt_param(super, self, private, ..., .names = .names),
         # }}}
@@ -373,7 +374,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
     population <- transpose_param(init)
     cli::cat_line("  * Evaluate fitness values")
     fitness <- gaopt_evaluate_fitness(super, self, private, gen = -1, population,
-        private$m_epws[[1L]], dir = dir, parallel = parallel)
+        private$m_epws_path[[1L]], dir = dir, parallel = parallel)
     for (i in seq_along(population)) {
         data.table::setattr(population[[i]], "fitness", fitness[, i])
     }
@@ -387,7 +388,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
 
         cli::cat_line("  * Evaluate fitness values")
         fitness.offspring <- gaopt_evaluate_fitness(super, self, private,
-            gen = private$m_logger$env$n.gens, offspring, private$m_epws[[1L]],
+            gen = private$m_logger$env$n.gens, offspring, private$m_epws_path[[1L]],
             dir = dir, parallel)
 
         for (i in seq_along(offspring)) {
@@ -427,7 +428,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
 # }}}
 # gaopt_print {{{
 gaopt_print <- function (super, self, private) {
-    path_epw <- if (is.null(private$m_epws)) NULL else vapply(private$m_epws, function (epw) epw$path(), character(1))
+    path_epw <- if (is.null(private$m_epws_path)) NULL else private$m_epws_path
     eplusr:::print_job_header(title = "EnergPlus Optimization Simulation Job",
         path_idf = private$m_seed$path(),
         path_epw = path_epw,
@@ -579,7 +580,7 @@ gaopt_validate <- function (super, self, private, param = NULL, verbose = TRUE) 
     # check if model has DDY
     if (!"SizingPeriod:DesignDay" %in% idf$class_name()) {
         if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
-        idf$run(private$m_epws[[1]], echo = FALSE)
+        idf$run(private$m_epws_path[[1]], echo = FALSE)
     } else {
         idf$run(NULL, echo = FALSE)
     }
@@ -735,7 +736,7 @@ gaopt_gen_offspring_action <- function (super, self, private, action, inds, fitn
                 ))
             } else if (action == "mutate") {
                 data.table::set(pop, NULL, nm, unlist(
-                    ecr::mutate(private$m_ctrl, as.list(pop[[nm]]), p.mut = p, slot = slot),
+                    ecr::mutate(private$m_ctrl, as.list((pop[[nm]])), p.mut = p, slot = slot),
                     recursive = FALSE, use.names = FALSE
                 ))
             }

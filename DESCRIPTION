@@ -61,5 +61,6 @@ Collate:
     'epluspar.R'
     'optim.R'
     'utils.R'
+    'gaoptim.R'
     'sensitivity.R'
     'stanmodels.R'
