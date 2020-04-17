@@ -25,6 +25,7 @@ Depends:
     R (>= 3.4.0)
 Imports:
     cli,
+    checkmate,
     data.table,
     ecr (>= 2.1.0),
     eplusr (>= 0.12.0),
@@ -59,7 +60,6 @@ RoxygenNote: 7.0.2
 Collate:
     'bayesian.R'
     'epluspar.R'
-    'optim.R'
     'utils.R'
     'gaoptim.R'
     'sensitivity.R'

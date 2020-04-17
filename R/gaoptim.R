@@ -81,23 +81,19 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
             gaopt_objective(super, self, private, ..., .n = .n, .dir = .dir, .env = parent.frame()),
         # }}}
 
-        # population {{{
-        population = function () {},
-        # }}}
-
         # recombinator {{{
         recombinator = function (...,
                                  .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
-                                 .integer = setwith(mosmafs::recPCrossover, p = 0.7),
-                                 .choice = setwith(mosmafs::recPCrossover, p = 0.7))
+                                 .integer = setwith(recPCrossover, p = 0.7),
+                                 .choice = setwith(recPCrossover, p = 0.7))
             gaopt_recombinator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
         # mutator {{{
         mutator = function (...,
                             .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.1),
-                            .integer = mosmafs::mutRandomChoice,
-                            .choice = mosmafs::mutRandomChoice)
+                            .integer = mutRandomChoice,
+                            .choice = mutRandomChoice)
             gaopt_mutator(super, self, private, ..., .float = .float, .integer = .integer, .choice = .choice),
         # }}}
 
@@ -142,7 +138,6 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # PRIVATE FIELDS {{{
         m_seed = NULL,
         m_idfs = NULL,
-        m_epws = NULL,
         m_job = NULL,
         m_log = NULL,
         m_ctrl = NULL,
@@ -290,8 +285,8 @@ gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
 # gaopt_recombinator {{{
 gaopt_recombinator <- function (super, self, private, ...,
                                 .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
-                                .integer = setwith(mosmafs::recPCrossover, p = 0.7),
-                                .choice = setwith(mosmafs::recPCrossover, p = 0.7)) {
+                                .integer = setwith(recPCrossover, p = 0.7),
+                                .choice = setwith(recPCrossover, p = 0.7)) {
     rec <- list(...)
     if (length(rec)) {
         for (i in seq_along(rec)) {
@@ -931,4 +926,46 @@ stopOnMaxTime <- function(max.time = NULL) {
         message = sprintf("Time limit reached: '%s' [seconds]", max.time)
     )
 }
+# }}}
+# mutRandomChoice {{{
+#' @importFrom checkmate assert_vector assert_list assert_number
+#' @export
+mutRandomChoice <- ecr::makeMutator(function(ind, values, p = 0.1) {
+    assert_vector(ind, any.missing = FALSE)
+    assert_list(values, any.missing = FALSE)
+
+    if (!(length(values) %in% c(1, length(ind)))) {
+        stop("length of values must be equal to length of ind")
+    }
+
+    assert_number(p, lower = 0, upper = 1)
+
+    mapply(function(i, v) if (runif(1) < p) sample(v, 1) else i, ind, values)
+
+}, supported = "custom")
+# }}}
+# recPCrossover {{{
+# borrowed from: https://github.com/compstat-lmu/mosmafs/blob/mosmafs-package/R/operators.R
+#' @export
+recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
+    assert_list(inds, len = 2, any.missing = FALSE)
+
+    if (length(inds[[1]]) != length(inds[[2]])) {
+        stop("Length of components of individuals must be the same.")
+    }
+    n <- length(inds[[1]])
+
+    if (!(length(p) %in% c(n, 1))) {
+        stop("Argument p must have same length as individual or 1.")
+    }
+
+    crossovers <- runif(length(inds[[1]])) < p
+
+    tmp <- inds[[1]][crossovers]
+
+    inds[[1]][crossovers] <- inds[[2]][crossovers]
+    inds[[2]][crossovers] <- tmp
+    ecr::wrapChildren(inds[[1]], inds[[2]])
+
+}, n.parents = 2, n.children = 2)
 # }}}

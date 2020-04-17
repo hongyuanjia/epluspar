@@ -52,10 +52,10 @@ Hongyuan Jia
 \item \href{#method-selector}{\code{GAOptimJob$selector()}}
 \item \href{#method-terminator}{\code{GAOptimJob$terminator()}}
 \item \href{#method-validate}{\code{GAOptimJob$validate()}}
-\item \href{#method-status}{\code{GAOptimJob$status()}}
 \item \href{#method-run}{\code{GAOptimJob$run()}}
 \item \href{#method-pareto_front}{\code{GAOptimJob$pareto_front()}}
 \item \href{#method-pareto_set}{\code{GAOptimJob$pareto_set()}}
+\item \href{#method-population}{\code{GAOptimJob$population()}}
 \item \href{#method-plot}{\code{GAOptimJob$plot()}}
 \item \href{#method-print}{\code{GAOptimJob$print()}}
 }
@@ -73,6 +73,7 @@ Hongyuan Jia
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table">}\href{../../eplusr/html/EplusGroupJob.html#method-read_table}{\code{eplusr::EplusGroupJob$read_table()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data}{\code{eplusr::EplusGroupJob$report_data()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data_dict}{\code{eplusr::EplusGroupJob$report_data_dict()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status">}\href{../../eplusr/html/EplusGroupJob.html#method-status}{\code{eplusr::EplusGroupJob$status()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data">}\href{../../eplusr/html/EplusGroupJob.html#method-tabular_data}{\code{eplusr::EplusGroupJob$tabular_data()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models">}\href{../../eplusr/html/ParametricJob.html#method-models}{\code{eplusr::ParametricJob$models()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save">}\href{../../eplusr/html/ParametricJob.html#method-save}{\code{eplusr::ParametricJob$save()}}\out{</span>}
@@ -157,8 +158,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$recombinator(
   ...,
   .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
-  .integer = setwith(mosmafs::recPCrossover, p = 0.7),
-  .choice = setwith(mosmafs::recPCrossover, p = 0.7)
+  .integer = setwith(recPCrossover, p = 0.7),
+  .choice = setwith(recPCrossover, p = 0.7)
 )}\if{html}{\out{</div>}}
 }
 
@@ -170,8 +171,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$mutator(
   ...,
   .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.1),
-  .integer = mosmafs::mutRandomChoice,
-  .choice = mosmafs::mutRandomChoice
+  .integer = mutRandomChoice,
+  .choice = mutRandomChoice
 )}\if{html}{\out{</div>}}
 }
 
@@ -212,14 +213,6 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-status"></a>}}
-\subsection{Method \code{status()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$status()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-run"></a>}}
 \subsection{Method \code{run()}}{
 \subsection{Usage}{
@@ -247,6 +240,14 @@ if (eplusr::is_avail_eplus(8.8)) {
 \subsection{Method \code{pareto_set()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_set()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-population"></a>}}
+\subsection{Method \code{population()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$population()}\if{html}{\out{</div>}}
 }
 
 }
