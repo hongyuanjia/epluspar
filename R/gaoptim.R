@@ -118,6 +118,11 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
             gaopt_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
         # }}}
 
+        # population {{{
+        population = function ()
+            gaopt_population(super, self, private),
+        # }}}
+
         # plot {{{
         # plot results
         plot = function (pareto_front = TRUE, pareto_set = TRUE)
@@ -767,6 +772,34 @@ gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
     private$m_logger$env$time.passed <- proc.time()[3] - private$m_logger$env$time.started
 
     private$m_logger
+}
+# }}}
+# gaopt_population {{{
+gaopt_population <- function (super, self, private) {
+    res <- private$m_log$results
+
+    if (is.null(res)) {
+        message("Optimization has not been run before.")
+        return(invisible())
+    }
+
+    pop <- res$log$env$pop[res$log$env$n.gens]
+
+    combine_results <- function (result) {
+        pop <- rbindlist(result$population)
+        fit <- as.data.table(t(result$fitness))
+        set(pop, NULL, names(fit), fit)
+        set(pop, NULL, "index_ind", seq_len(nrow(pop)))
+        setcolorder(pop, "index_ind")
+    }
+
+    results <- lapply(pop, combine_results)
+
+    for (i in seq_along(results)) set(results[[i]], NULL, "index_gen", i)
+    results <- rbindlist(results)
+    setcolorder(results, "index_gen")
+
+    results
 }
 # }}}
 
