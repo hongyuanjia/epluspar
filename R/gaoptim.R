@@ -59,6 +59,7 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
 
             # init logger
             private$m_logger <- ecr::initLogger(private$m_ctrl, log.pop = TRUE)
+            private$m_logger$env$time.begin <- Sys.time()
             private$m_logger$env$time.started <- proc.time()[3]
 
             private$m_archive <- ecr::initParetoArchive(private$m_ctrl)
@@ -116,6 +117,16 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # run {{{
         run = function (mu = 20L, p_recomb = 0.7, p_mut = 0.1, dir = NULL, wait = TRUE, parallel = TRUE)
             gaopt_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
+        # }}}
+
+        # pareto_front {{{
+        pareto_front = function ()
+            gaopt_pareto_front(super, self, private),
+        # }}}
+
+        # pareto_set {{{
+        pareto_set = function ()
+            gaopt_pareto_front(super, self, private),
         # }}}
 
         # population {{{
@@ -391,6 +402,8 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
             gen = private$m_logger$env$n.gens, offspring, private$m_epws_path[[1L]],
             dir = dir, parallel)
 
+        cli::cat_line(sprintf("  * Evaluate fitness values --> Average fitness: %s", mean(fitness.offspring[1, ])))
+
         for (i in seq_along(offspring)) {
             data.table::setattr(offspring[[i]], "fitness", fitness.offspring[, i])
         }
@@ -404,6 +417,11 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
 
         population <- sel$population
         fitness <- sel$fitness
+
+        # TODO: remove it before append
+        save_gen_log(population, fitness, private$m_logger$env$n.gens + 1L, private$m_log$objective,
+            file.path(if (is.null(dir)) dirname(private$m_seed$path()) else dir, sprintf("Results-%s.csv", Sys.Date()))
+        )
 
         # do some logging
         cli::cat_line("  * Update log")
@@ -638,7 +656,10 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
     if (is.null(dir)) dir <- dirname(private$m_seed$path())
 
     # construct IDF path
-    path <- file.path(dir, sprintf("Gen%i", gen), sprintf("Gen%i_Ind%i.idf", gen, seq_along(population)))
+    path <- file.path(dir, sprintf("Gen%i", gen),
+        sprintf("Gen%i_Ind%i", gen, seq_along(population)),
+        sprintf("Gen%i_Ind%i.idf", gen, seq_along(population))
+    )
 
     if (eplusr:::is_flag(parallel)) {
         if (parallel) {
@@ -769,6 +790,7 @@ gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
     ecr::updateLogger(private$m_logger, pop, fitness, n.evals = mu)
 
     # add time passed
+    private$m_logger$env$time.end <- Sys.time()
     private$m_logger$env$time.passed <- proc.time()[3] - private$m_logger$env$time.started
 
     private$m_logger
@@ -953,7 +975,7 @@ stopOnMaxTime <- function(max.time = NULL) {
         return(log$env$time.passed >= max.time)
     }
 
-    makeTerminator(
+    ecr::makeTerminator(
         condition.fun,
         name = "TimeLimit",
         message = sprintf("Time limit reached: '%s' [seconds]", max.time)
@@ -1001,4 +1023,27 @@ recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
     ecr::wrapChildren(inds[[1]], inds[[2]])
 
 }, n.parents = 2, n.children = 2)
+# }}}
+# save_gen_log {{{
+save_gen_log <- function (population, fitness, generation, objective, path, append = TRUE) {
+    obj <- data.table(index = seq_along(objective$name), name = objective$name, dim = objective$dim)
+    obj <- obj[, by = "index", {
+        if (dim == 1L) {
+            list(name = name)
+        } else {
+            list(name = paste(name, seq_len(dim), sep = "_"))
+        }
+    }]
+
+    pop <- rbindlist(population)
+    fit <- as.data.table(t(fitness))
+    set(pop, NULL, names(fit), fit)
+    data.table::setnames(pop, names(fit), obj$name)
+    set(pop, NULL, "index_ind", seq_len(nrow(pop)))
+    setcolorder(pop, "index_ind")
+    set(pop, NULL, "gen", generation)
+    data.table::setcolorder(pop, c("gen", "index_ind"))
+
+    data.table::fwrite(pop, path, append = append)
+}
 # }}}
