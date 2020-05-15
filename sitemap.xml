@@ -7,6 +7,9 @@
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/BayesCalibJob.html</loc>
   </url>
   <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/GAOptimJob.html</loc>
+  </url>
+  <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/SensitivityJob.html</loc>
   </url>
   <url>
@@ -14,6 +17,9 @@
   </url>
   <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/epluspar-package.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/gaoptim_job.html</loc>
   </url>
   <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/sensi_job.html</loc>

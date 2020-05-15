@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -39,7 +43,6 @@
 <meta property="og:description" content="sensi_job() takes an IDF and EPW as input and returns a SensitivityJob,
 which provides a prototype of conducting sensitivity analysis of EnergyPlus
 simulations using Morris method." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -57,7 +60,7 @@ simulations using Morris method." />
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -189,16 +192,16 @@ respectively.</p></li>
 <hr>
 <a id="method-param"></a></p><h3>Method <code>param()</code></h3>
 <p>Set parameters for sensitivity analysis</p><h3>Usage</h3>
-<p><div class="r"></p><pre>SensitivityJob$param(
-...,
-.names = NULL,
-.r = 12L,
-.grid_jump = 4L,
-.scale = TRUE
+<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>param</span>(
+<span class='no'>...</span>,
+<span class='kw'>.names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>.r</span> <span class='kw'>=</span> <span class='fl'>12L</span>,
+<span class='kw'>.grid_jump</span> <span class='kw'>=</span> <span class='fl'>4L</span>,
+<span class='kw'>.scale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>...</code></dt><dd><p>Lists of paramter definitions. Please see above on the
 syntax.</p></dd>
 
@@ -253,11 +256,10 @@ being 0.1, 1.0 and 5, respectively.</p></li>
 and number of levels being 0.01, 1.0 and 5, respectively.</p></li>
 <li><p>Field <code>Conductivity</code> in all objects in class <code>Material</code>, with minimum,
 maximum and number of levels being 0.1, 0.6 and 10, respectively.</p></li>
-</ul><pre>sensi$param(
-`Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0, levels = 5)),
-Material := list(Thickness = c(0.01, 1, 5), Conductivity = c(0.1, 0.6, 10))
-)
-</pre>
+</ul><pre><span class='no'>sensi</span>$<span class='fu'>param</span>(
+<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>)),
+<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>))
+)</pre>
 
 
 <h3>Returns</h3>
@@ -275,16 +277,16 @@ Material := list(Thickness = c(0.01, 1, 5), Conductivity = c(0.1, 0.6, 10))
 <p><hr>
 <a id="method-apply_measure"></a></p><h3>Method <code>apply_measure()</code></h3>
 <p>Set parameters for sensitivity analysis using function</p><h3>Usage</h3>
-<p><div class="r"></p><pre>SensitivityJob$apply_measure(
-measure,
-...,
-.r = 12L,
-.grid_jump = 4L,
-.scale = TRUE
+<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>apply_measure</span>(
+<span class='no'>measure</span>,
+<span class='no'>...</span>,
+<span class='kw'>.r</span> <span class='kw'>=</span> <span class='fl'>12L</span>,
+<span class='kw'>.grid_jump</span> <span class='kw'>=</span> <span class='fl'>4L</span>,
+<span class='kw'>.scale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>measure</code></dt><dd><p>A function that takes an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> and other
 arguments as input and returns an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object as
 output.</p></dd>
@@ -320,22 +322,21 @@ modified <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplus
 sensitivity parameter. For example, the equivalent version of
 specifying parameters described in
 <a href='../../epluspar/html/SensitivityJob.html#method-param'><code>$param()</code></a>
-using <code>$apply_measure()</code> can be:</p><pre># set sensitivity parameters using $apply_measure()
-# (a) first define a "measure"
-measure &lt;- function (idf, efficiency, thickness, conducitivy) {
-idf$set(
-`Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
-Material := list(Thickness = thickness, Conductivity = conducivity)
+using <code>$apply_measure()</code> can be:</p><pre><span class='co'># set sensitivity parameters using $apply_measure()</span>
+<span class='co'># (a) first define a "measure"</span>
+<span class='no'>measure</span> <span class='kw'>&amp;</span><span class='no'>lt</span>;- <span class='kw'>function</span> (<span class='no'>idf</span>, <span class='no'>efficiency</span>, <span class='no'>thickness</span>, <span class='no'>conducitivy</span>) {
+<span class='no'>idf</span>$<span class='fu'>set</span>(
+<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='no'>efficiency</span>),
+<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='no'>thickness</span>, <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='no'>conducivity</span>)
 )
-idf
+<span class='no'>idf</span>
 }
-# (b) then apply that measure with parameter space definitions as
-# function arguments
-sensi$apply_measure(measure,
-efficiency = c(min = 0.1, max = 1.0, levels = 5),
-thickness = c(0.01, 1, 5), conductivity = c(0.1, 0.6, 10)
-)
-</pre>
+<span class='co'># (b) then apply that measure with parameter space definitions as</span>
+<span class='co'># function arguments</span>
+<span class='no'>sensi</span>$<span class='fu'>apply_measure</span>(<span class='no'>measure</span>,
+<span class='kw'>efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>),
+<span class='kw'>thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>)
+)</pre>
 
 
 <h3>Returns</h3>
@@ -344,7 +345,7 @@ thickness = c(0.01, 1, 5), conductivity = c(0.1, 0.6, 10)
 <p><div class="r example copy"></p><pre>\dontrun{
 # set sensitivity parameters using $apply_measure()
 # (a) first define a "measure"
-measure &lt;- function (idf, efficiency, thickness, conducitivy) {
+measure &amp;lt;- function (idf, efficiency, thickness, conducitivy) {
 idf$set(
 `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
 Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -364,7 +365,7 @@ thickness = c(0.01, 1, 5), conductivity = c(0.1, 0.6, 10)
 <p><hr>
 <a id="method-samples"></a></p><h3>Method <code>samples()</code></h3>
 <p>Get sampled parameter values</p><h3>Usage</h3>
-<p><div class="r"></p><pre>SensitivityJob$samples()</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>samples</span>()</pre><p></div></p>
 
 <h3>Details</h3>
 <p><code>$samples()</code> returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which contains the
@@ -385,10 +386,10 @@ sensi$samples()
 <p><hr>
 <a id="method-evaluate"></a></p><h3>Method <code>evaluate()</code></h3>
 <p>Evaluate sensitivity</p><h3>Usage</h3>
-<p><div class="r"></p><pre>SensitivityJob$evaluate(results)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>evaluate</span>(<span class='no'>results</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>results</code></dt><dd><p>A numeric vector. Usually the output of parametric
 simulations extracted using
 <a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>$report_data()</a> or
@@ -417,10 +418,10 @@ sensi$errors()
 
 # extract a target simulation output value for each case to evaluate the
 # sensitivity results
-eng &lt;- sen$tabular_data(table_name = "site and source energy",
+eng &amp;lt;- sen$tabular_data(table_name = "site and source energy",
 column_name = "energy per total building area",
 row_name = "total site energy")[, as.numeric(value)]
-(result &lt;- sensi$evaluate(eng))
+(result &amp;lt;- sensi$evaluate(eng))
 
 # extract sensivitity data
 attr(result, "data")
@@ -496,21 +497,14 @@ plot(result)
 <span class='co'># extract sensivitity data</span>
 <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>result</span>, <span class='st'>"data"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result' not found</span></div><div class='input'>
 <span class='co'># plot</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>result</span>)</div><div class='output co'>#&gt; <span class='error'>Error in plot(result): object 'result' not found</span></div><div class='input'># }
+<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>result</span>)</div><div class='output co'>#&gt; <span class='error'>Error in plot(result): object 'result' not found</span></div><div class='input'># }
 
 </div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#details">Details</a></li>
-      <li><a href="#super-classes">Super classes</a></li>
-      <li><a href="#methods">Methods</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>Hongyuan Jia</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -521,7 +515,7 @@ plot(result)
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

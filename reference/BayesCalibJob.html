@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -38,7 +42,6 @@
 <meta property="og:title" content="Conduct Bayesian Calibration on An EnergyPlus Model — BayesCalibJob" />
 <meta property="og:description" content="BayesCalibJob class provides a prototype of conducting Bayesian calibration
 of EnergyPlus model." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -56,7 +59,7 @@ of EnergyPlus model." />
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -221,10 +224,10 @@ energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 <hr>
 <a id="method-new"></a></p><h3>Method <code>new()</code></h3>
 <p>Create a <code>BayesCalibJob</code> object</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$new(idf, epw)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>new</span>(<span class='no'>idf</span>, <span class='no'>epw</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>idf</code></dt><dd><p>A path to an local EnergyPlus IDF file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object.</p></dd>
 
 <dt><code>epw</code></dt><dd><p>A path to an local EnergyPlus EPW file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Epw.html'>eplusr::Epw</a> object.</p></dd>
@@ -252,17 +255,17 @@ deleted include:</p><ul>
 <h3>Examples</h3>
 <p><div class="r example copy"></p><pre>\dontrun{
 if (eplusr::is_avail_eplus(8.8)) {
-idf_name &lt;- "1ZoneUncontrolled.idf"
-epw_name &lt;-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+idf_name &amp;lt;- "1ZoneUncontrolled.idf"
+epw_name &amp;lt;-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
-idf_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-epw_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+idf_path &amp;lt;- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+epw_path &amp;lt;- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 
 # create from local files
 BayesCalibJob$new(idf_path, epw_path)
 
 # create from an Idf and an Epw object
-bc &lt;- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+bc &amp;lt;- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
 }
 }
 
@@ -271,10 +274,10 @@ bc &lt;- BayesCalibJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path
 <p><hr>
 <a id="method-read_rdd"></a></p><h3>Method <code>read_rdd()</code></h3>
 <p>Read EnergyPlus Report Data Dictionary (RDD) file</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$read_rdd(update = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>read_rdd</span>(<span class='kw'>update</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>update</code></dt><dd><p>Whether to run the design-day-only simulation and parse
 <code>.rdd</code> and <code>.mdd</code> file again. Default: <code>FALSE</code>.</p></dd>
 
@@ -310,10 +313,10 @@ bc$read_rdd(update = TRUE)
 <p><hr>
 <a id="method-read_mdd"></a></p><h3>Method <code>read_mdd()</code></h3>
 <p>Read EnergyPlus Meter Data Dictionary (MDD) file</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$read_mdd(update = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>read_mdd</span>(<span class='kw'>update</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>update</code></dt><dd><p>Whether to run the design-day-only simulation and parse
 <code>.rdd</code> and <code>.mdd</code> file again. Default: <code>FALSE</code>.</p></dd>
 
@@ -350,15 +353,15 @@ bc$read_mdd(update = TRUE)
 <p><hr>
 <a id="method-input"></a></p><h3>Method <code>input()</code></h3>
 <p>Set input parameters</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$input(
-key_value = NULL,
-name = NULL,
-reporting_frequency = NULL,
-append = FALSE
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>input</span>(
+<span class='kw'>key_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>reporting_frequency</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>append</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>key_value</code></dt><dd><p>Key value name for variables. If not specified,
 <code><a href='https://rdrr.io/r/base/Arithmetic.html'>"*"</a></code> are used for all variables. <code>key_value</code> can also be an
 <code>RddFile</code>, <code>MddFile</code> or a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code>. Please see
@@ -402,13 +405,11 @@ directly returned, e.g. <code>bc$input()</code>.</p>
 <a href='../../epluspar/html/BayesCalibJob.html#method-read_rdd'><code>$read_rdd()</code></a>.
 In this case, <code>name</code> argument will be ignored, as its values are
 directly taken from variable names in input
-<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object. For example:</p><pre>bc$input(bc$read_rdd()[1:5])
-</pre></li>
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object. For example:</p><pre><span class='no'>bc</span>$<span class='fu'>input</span>(<span class='no'>bc</span>$<span class='fu'>read_rdd</span>()[<span class='fl'>1</span>:<span class='fl'>5</span>])</pre></li>
 <li><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> with valid format for adding <code>Output:Variable</code> and
 <code>Output:Meter</code> objects using <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf$load()</a>. In
 this case, <code>name</code> argument will be ignored. For example:</p></li>
-</ul><pre>bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
-</pre>
+</ul><pre><span class='no'>bc</span>$<span class='fu'>input</span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html'>rdd_to_load</a></span>(<span class='no'>bc</span>$<span class='fu'>read_rdd</span>()[<span class='fl'>1</span>:<span class='fl'>5</span>]))</pre>
 
 
 <h3>Returns</h3>
@@ -433,15 +434,15 @@ bc$input()
 <p><hr>
 <a id="method-output"></a></p><h3>Method <code>output()</code></h3>
 <p>Set output parameters</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$output(
-key_value = NULL,
-name = NULL,
-reporting_frequency = NULL,
-append = FALSE
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>output</span>(
+<span class='kw'>key_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>reporting_frequency</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>append</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>key_value</code></dt><dd><p>Key value name for variables. If not specified,
 <code><a href='https://rdrr.io/r/base/Arithmetic.html'>"*"</a></code> are used for all variables. <code>key_value</code> can also be an
 <code>RddFile</code>, <code>MddFile</code> or a <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code>. Please see
@@ -491,13 +492,11 @@ and
 respectively.  In this case, <code>name</code> argument will be ignored, as
 its values are directly taken from variable names in input
 <a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>RddFile</a> object or
-<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object. For example:</p><pre>bc$output(bc$read_mdd()[1:5])
-</pre></li>
+<a href='https://hongyuanjia.github.io/eplusr/reference/rdd.html'>MddFile</a> object. For example:</p><pre><span class='no'>bc</span>$<span class='fu'>output</span>(<span class='no'>bc</span>$<span class='fu'>read_mdd</span>()[<span class='fl'>1</span>:<span class='fl'>5</span>])</pre></li>
 <li><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> with valid format for adding <code>Output:Variable</code> and
 <code>Output:Meter</code> objects using <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>Idf$load()</a>. In this
 case, <code>name</code> argument will be ignored. For example:</p></li>
-</ul><pre>bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
-</pre>
+</ul><pre><span class='no'>bc</span>$<span class='fu'>output</span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html'>mdd_to_load</a></span>(<span class='no'>bc</span>$<span class='fu'>read_mdd</span>()[<span class='fl'>1</span>:<span class='fl'>5</span>]))</pre>
 
 
 <h3>Returns</h3>
@@ -523,10 +522,10 @@ bc$output()
 <p><hr>
 <a id="method-param"></a></p><h3>Method <code>param()</code></h3>
 <p>Set parameters for Bayesian calibration</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$param(..., .names = NULL, .num_sim = 30L)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>param</span>(<span class='no'>...</span>, <span class='kw'>.names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>.num_sim</span> <span class='kw'>=</span> <span class='fl'>30L</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>...</code></dt><dd><p>Lists of paramter definitions. Please see above on the
 syntax.</p></dd>
 
@@ -574,12 +573,11 @@ minimum and maximum being 0.1 and 0.6, respectively.</p></li>
 <li><p>Field <code>Watts per Zone Floor Area</code> in objects <code>Light1</code> and <code>Light2</code>
 in class <code>Lights</code>, with minimum and maximum being 10 and 30,
 respectively.</p></li>
-</ul><pre>bc$param(
-`Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
-Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
-.("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
-)
-</pre>
+</ul><pre><span class='no'>bc</span>$<span class='fu'>param</span>(
+<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>)),
+<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>), <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>)),
+<span class='fu'>.</span>(<span class='st'>"Light1"</span>, <span class='st'>"Light2"</span>) <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Watts_per_Zone_Floor_Area</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>30</span>))
+)</pre>
 
 <p>All models created using <code>$param()</code> will be named in the same
 pattern, i.e. <code>Case_ParameterName(ParamterValue)...</code>. Note that only
@@ -604,10 +602,10 @@ Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
 <p><hr>
 <a id="method-apply_measure"></a></p><h3>Method <code>apply_measure()</code></h3>
 <p>Set parameters for Bayesian calibration using function</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$apply_measure(measure, ..., .num_sim = 30L)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>apply_measure</span>(<span class='no'>measure</span>, <span class='no'>...</span>, <span class='kw'>.num_sim</span> <span class='kw'>=</span> <span class='fl'>30L</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>measure</code></dt><dd><p>A function that takes an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> and other
 arguments as input and returns an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object as
 output.</p></dd>
@@ -635,7 +633,7 @@ specifying parameters described in
 <a href='../../epluspar/html/SensitivityJob.html#method-param'><code>$param()</code></a>
 using <code>$apply_measure()</code> can be:</p><pre># set calibration parameters using $apply_measure()
 # (a) first define a "measure"
-measure &lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
+measure &amp;lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
 idf$set(
 `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
 Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -667,7 +665,7 @@ every model has a unique name.</p>
 <p><div class="r example copy"></p><pre>\dontrun{
 # set calibration parameters using $apply_measure()
 # (a) first define a "measure"
-measure &lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
+measure &amp;lt;- function (idf, efficiency, thickness, conducitivy, lpd) {
 idf$set(
 `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
 Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -691,7 +689,7 @@ lpd = c(10, 30)
 <p><hr>
 <a id="method-samples"></a></p><h3>Method <code>samples()</code></h3>
 <p>Get sampled parameter values</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$samples()</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>samples</span>()</pre><p></div></p>
 
 <h3>Details</h3>
 <p><code>$samples()</code> returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which contains the
@@ -723,7 +721,7 @@ bc$samples()
 <p><hr>
 <a id="method-models"></a></p><h3>Method <code>models()</code></h3>
 <p>Get parametric models</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$models()</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>models</span>()</pre><p></div></p>
 
 <h3>Details</h3>
 <p><code>$models()</code> returns a list of parametric <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> objects
@@ -755,10 +753,10 @@ bc$models()
 <p><hr>
 <a id="method-data_sim"></a></p><h3>Method <code>data_sim()</code></h3>
 <p>Collect simulation data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$data_sim(resolution = NULL, exclude_ddy = TRUE, all = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>data_sim</span>(<span class='kw'>resolution</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>exclude_ddy</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>resolution</code></dt><dd><p>A character string specifying a time unit or a
 multiple of a unit to change the time resolution of returned
 simulation data. Valid base units are <code>min</code>, <code>hour</code>, <code>day</code>,
@@ -819,10 +817,10 @@ bc$data_sim()
 <p><hr>
 <a id="method-data_field"></a></p><h3>Method <code>data_field()</code></h3>
 <p>Specify field measured data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$data_field(output, new_input = NULL, all = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>data_field</span>(<span class='no'>output</span>, <span class='kw'>new_input</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>output</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> containing measured value of output
 parameters.</p></dd>
 
@@ -893,10 +891,10 @@ measured input variable values.</p></li>
 <p><hr>
 <a id="method-data_bc"></a></p><h3>Method <code>data_bc()</code></h3>
 <p>Combine simulation data and field measured data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$data_bc(data_field = NULL, data_sim = NULL)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>data_bc</span>(<span class='kw'>data_field</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>data_sim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>data_field</code></dt><dd><p>A <code><a href='https://rdrr.io/r/base/data.frame.html'>data.frame()</a></code> specifying field measured data.
 Should have the same structure as the output from
 <a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>.
@@ -948,10 +946,10 @@ bc$data_bc()
 <p><hr>
 <a id="method-data_pred"></a></p><h3>Method <code>data_pred()</code></h3>
 <p>Extract prediction data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$data_pred(all = FALSE, merge = TRUE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>data_pred</span>(<span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>merge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>all</code></dt><dd><p>If <code>FALSE</code>, among above meta data columns, only <code>index</code>,
 <code>type</code> and <code>Date/Time</code> will be returned. Default: <code>FALSE</code>.</p></dd>
 
@@ -1009,17 +1007,17 @@ bc$data_pred()
 <p><hr>
 <a id="method-eplus_run"></a></p><h3>Method <code>eplus_run()</code></h3>
 <p>Run parametric simulations</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_run(
-dir = NULL,
-run_period = NULL,
-wait = TRUE,
-force = FALSE,
-copy_external = FALSE,
-echo = wait
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_run</span>(
+<span class='kw'>dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>run_period</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>wait</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+<span class='kw'>force</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+<span class='kw'>copy_external</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+<span class='kw'>echo</span> <span class='kw'>=</span> <span class='no'>wait</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>dir</code></dt><dd><p>The parent output directory for specified simulations.
 Outputs of each simulation are placed in a separate folder
 under the parent directory. If <code>NULL</code>, directory of seed
@@ -1087,7 +1085,7 @@ bc$run(copy_external = TRUE)
 <p><hr>
 <a id="method-eplus_kill"></a></p><h3>Method <code>eplus_kill()</code></h3>
 <p>Kill current running EnergyPlus simulations</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_kill()</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_kill</span>()</pre><p></div></p>
 
 <h3>Details</h3>
 <p><code>$eplus_kill()</code> kills all background EnergyPlus processes that are
@@ -1106,7 +1104,7 @@ bc$eplus_kill()
 <p><hr>
 <a id="method-eplus_status"></a></p><h3>Method <code>eplus_status()</code></h3>
 <p>Get the EnergyPlus simulation status</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_status()</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_status</span>()</pre><p></div></p>
 
 <h3>Details</h3>
 <p><code>$eplus_status()</code> returns a named list of values indicates the status
@@ -1146,10 +1144,10 @@ bc$eplus_status()
 <p><hr>
 <a id="method-eplus_output_dir"></a></p><h3>Method <code>eplus_output_dir()</code></h3>
 <p>Get EnergyPlus simulation output directory</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_output_dir(which = NULL)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_output_dir</span>(<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1175,10 +1173,10 @@ bc$eplus_output_dir(c(1, 4))
 <p><hr>
 <a id="method-eplus_locate_output"></a></p><h3>Method <code>eplus_locate_output()</code></h3>
 <p>Get paths of EnergyPlus output file</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_locate_output(which = NULL, suffix = ".err", strict = TRUE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_locate_output</span>(<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>suffix</span> <span class='kw'>=</span> <span class='st'>".err"</span>, <span class='kw'>strict</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1211,10 +1209,10 @@ bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
 <p><hr>
 <a id="method-eplus_errors"></a></p><h3>Method <code>eplus_errors()</code></h3>
 <p>Read EnergyPlus simulation errors</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_errors(which = NULL, info = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_errors</span>(<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>info</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1243,10 +1241,10 @@ bc$errors(info = TRUE)
 <p><hr>
 <a id="method-eplus_report_data_dict"></a></p><h3>Method <code>eplus_report_data_dict()</code></h3>
 <p>Read report data dictionary from EnergyPlus SQL outputs</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_report_data_dict(which = NULL)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_report_data_dict</span>(<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1288,27 +1286,27 @@ bc$eplus_report_data_dict(c(1, 4))
 <p><hr>
 <a id="method-eplus_report_data"></a></p><h3>Method <code>eplus_report_data()</code></h3>
 <p>Read EnergyPlus report data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_report_data(
-which = NULL,
-key_value = NULL,
-name = NULL,
-year = NULL,
-tz = "UTC",
-all = FALSE,
-wide = FALSE,
-period = NULL,
-month = NULL,
-day = NULL,
-hour = NULL,
-minute = NULL,
-interval = NULL,
-simulation_days = NULL,
-day_type = NULL,
-environment_name = NULL
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_report_data</span>(
+<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>key_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>year</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>tz</span> <span class='kw'>=</span> <span class='st'>"UTC"</span>,
+<span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+<span class='kw'>wide</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+<span class='kw'>period</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>month</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>day</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>hour</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>minute</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>interval</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>simulation_days</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>day_type</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>environment_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1467,7 +1465,7 @@ time components are also returned, including:
 bc$report_data(c(1, 4))
 
 # specify output variables using report data dictionary
-dict &lt;- bc$report_data_dict(1)
+dict &amp;lt;- bc$report_data_dict(1)
 bc$report_data(c(1, 4), dict[units == "C"])
 
 # specify output variables using 'key_value' and 'name'
@@ -1495,17 +1493,17 @@ bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_da
 <p><hr>
 <a id="method-eplus_tabular_data"></a></p><h3>Method <code>eplus_tabular_data()</code></h3>
 <p>Read EnergyPlus tabular data</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_tabular_data(
-which = NULL,
-report_name = NULL,
-report_for = NULL,
-table_name = NULL,
-column_name = NULL,
-row_name = NULL
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_tabular_data</span>(
+<span class='kw'>which</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>report_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>report_for</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>table_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>column_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>row_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>which</code></dt><dd><p>An integer vector of the indexes or a character vector
 or names of parametric simulations. If <code>NULL</code>, results of all
 parametric simulations are returned. Default: <code>NULL</code>.</p></dd>
@@ -1557,10 +1555,10 @@ row_name = "Total Site Energy"
 <p><hr>
 <a id="method-eplus_save"></a></p><h3>Method <code>eplus_save()</code></h3>
 <p>Save EnergyPlus parametric models</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$eplus_save(dir = NULL, separate = TRUE, copy_external = FALSE)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_save</span>(<span class='kw'>dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>separate</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>copy_external</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>dir</code></dt><dd><p>The parent output directory for models to be saved. If
 <code>NULL</code>, the directory of the seed model will be used. Default:
 <code>NULL</code>.</p></dd>
@@ -1603,20 +1601,20 @@ bc$save(tempdir(), separate = FALSE)
 <p><hr>
 <a id="method-stan_run"></a></p><h3>Method <code>stan_run()</code></h3>
 <p>Run Bayesian calibration using Stan</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$stan_run(
-file = NULL,
-data = NULL,
-iter = 2000L,
-chains = 4L,
-echo = TRUE,
-mc.cores = parallel::detectCores(),
-all = FALSE,
-merge = TRUE,
-...
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>stan_run</span>(
+<span class='kw'>file</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+<span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>2000L</span>,
+<span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4L</span>,
+<span class='kw'>echo</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>(),
+<span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+<span class='kw'>merge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+<span class='no'>...</span>
 )</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>file</code></dt><dd><p>The path to the Stan program to use. If <code>NULL</code>, the
 pre-compiled Stan code from Chong (2018) will be used.
 Default: <code>NULL</code>.</p></dd>
@@ -1678,10 +1676,10 @@ bc$stan_run()
 <p><hr>
 <a id="method-stan_file"></a></p><h3>Method <code>stan_file()</code></h3>
 <p>Extract Stan file for Bayesian calibration</p><h3>Usage</h3>
-<p><div class="r"></p><pre>BayesCalibJob$stan_file(path = NULL)</pre><p></div></p>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>stan_file</span>(<span class='kw'>path</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <h3>Arguments</h3>
-<p><div class="arguments"></p><dl class='dl-horizontal'>
+<p><div class="arguments"></p><dl'>
 <dt><code>path</code></dt><dd><p>A path to save the Stan code. If <code>NULL</code>, a character
 vector of the Stan code is returned.</p></dd>
 
@@ -1705,19 +1703,10 @@ bc$stan_file()
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#details">Details</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#super-classes">Super classes</a></li>
-      <li><a href="#methods">Methods</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>Hongyuan Jia, Adrian Chong</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -1728,7 +1717,7 @@ bc$stan_file()
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Create a Bayesian Calibration Job — bayes_job • epluspar</title>
+<title>Create an Optimization Job — gaoptim_job • epluspar</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,10 @@
 
 
 
-<meta property="og:title" content="Create a Bayesian Calibration Job — bayes_job" />
-<meta property="og:description" content="bayes_job() takes an IDF and EPW as input, and returns an BayesCalibJob
-object for conducting Bayesian calibration on an EnergyPlus model. For more
-details, please see BayesCalibJob." />
+<meta property="og:title" content="Create an Optimization Job — gaoptim_job" />
+<meta property="og:description" content="gaoptim_job() takes an IDF and EPW as input, and returns an GAOptimJob
+object for conducting optimization on an EnergyPlus model. For more
+details, please see GAOptimJob." />
 
 
 
@@ -113,18 +113,18 @@ details, please see BayesCalibJob." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Create a Bayesian Calibration Job</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ideas-lab-nus/epluspar/blob/master/R/bayesian.R'><code>R/bayesian.R</code></a></small>
-    <div class="hidden name"><code>bayes_job.Rd</code></div>
+    <h1>Create an Optimization Job</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ideas-lab-nus/epluspar/blob/master/R/gaoptim.R'><code>R/gaoptim.R</code></a></small>
+    <div class="hidden name"><code>gaoptim_job.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>bayes_job()</code> takes an IDF and EPW as input, and returns an <code>BayesCalibJob</code>
-object for conducting Bayesian calibration on an EnergyPlus model. For more
-details, please see BayesCalibJob.</p>
+    <p><code>gaoptim_job()</code> takes an IDF and EPW as input, and returns an <code>GAOptimJob</code>
+object for conducting optimization on an EnergyPlus model. For more
+details, please see GAOptimJob.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>bayes_job</span>(<span class='no'>idf</span>, <span class='no'>epw</span>)</pre>
+    <pre class="usage"><span class='fu'>gaoptim_job</span>(<span class='no'>idf</span>, <span class='no'>epw</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -141,7 +141,7 @@ details, please see BayesCalibJob.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An <code>BayesCalibJob</code> object.</p>
+    <p>A <code>GAOptimJob</code> object.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code>sensi_job()</code> for creating a sensitivity analysis job.</p></div>
@@ -156,11 +156,11 @@ details, please see BayesCalibJob.</p>
     <span class='no'>epw_path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)$<span class='no'>dir</span>, <span class='st'>"WeatherData"</span>, <span class='no'>epw_name</span>)
 
     <span class='co'># create from local files</span>
-    <span class='fu'>bayes_job</span>(<span class='no'>idf_path</span>, <span class='no'>epw_path</span>)
+    <span class='fu'>gaoptim_job</span>(<span class='no'>idf_path</span>, <span class='no'>epw_path</span>)
 
     <span class='co'># create from an Idf and an Epw object</span>
-    <span class='fu'>bayes_job</span>(<span class='fu'>read_idf</span>(<span class='no'>idf_path</span>), <span class='fu'>read_epw</span>(<span class='no'>epw_path</span>))
-}</div><div class='output co'>#&gt; <span class='error'>Error in read_epw(epw_path): could not find function "read_epw"</span></div><div class='input'># }
+    <span class='fu'>gaoptim_job</span>(<span class='fu'>read_idf</span>(<span class='no'>idf_path</span>), <span class='fu'>read_epw</span>(<span class='no'>epw_path</span>))
+}</div><div class='output co'>#&gt; <span class='error'>Error in read_idf(idf_path): could not find function "read_idf"</span></div><div class='input'># }
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
