@@ -1535,7 +1535,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' }
         #'
         evaluate = function (funs = list(nmbe, cvrmse))
-            bc_evaluate(super, self, private, funs = funs)
+            bc_evaluate(super, self, private, funs = funs, substitute(funs))
         # }}}
         # }}}
     ),
@@ -2104,14 +2104,14 @@ bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
 }
 # }}}
 # bc_evaluate {{{
-bc_evaluate <- function (super, self, private, funs = list(nmbe, cvrmse)) {
+bc_evaluate <- function (super, self, private, funs = list(nmbe, cvrmse), sub_funs = substitute(funs)) {
     nm_y <- names(private$m_log$data_field$output)[-(1:11)]
 
     y_pred <- bc_prediction(super, self, private, merge = TRUE, all = FALSE)[
         , .SD, .SDcols = c("index", "sample", nm_y, paste(nm_y, "[Prediction]"))]
 
     # get function names
-    nm_fun <- vapply(substitute(funs, sys.frame(1))[-1], deparse, character(1))
+    nm_fun <- vapply(sub_funs[-1], deparse, character(1))
 
     # calculate stats per sample
     y_pred[, by = "sample", {
