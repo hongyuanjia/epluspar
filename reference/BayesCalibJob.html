@@ -186,7 +186,6 @@ energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 <li><p><a href='#method-data_sim'><code>BayesCalibJob$data_sim()</code></a></p></li>
 <li><p><a href='#method-data_field'><code>BayesCalibJob$data_field()</code></a></p></li>
 <li><p><a href='#method-data_bc'><code>BayesCalibJob$data_bc()</code></a></p></li>
-<li><p><a href='#method-data_pred'><code>BayesCalibJob$data_pred()</code></a></p></li>
 <li><p><a href='#method-eplus_run'><code>BayesCalibJob$eplus_run()</code></a></p></li>
 <li><p><a href='#method-eplus_kill'><code>BayesCalibJob$eplus_kill()</code></a></p></li>
 <li><p><a href='#method-eplus_status'><code>BayesCalibJob$eplus_status()</code></a></p></li>
@@ -199,6 +198,9 @@ energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 <li><p><a href='#method-eplus_save'><code>BayesCalibJob$eplus_save()</code></a></p></li>
 <li><p><a href='#method-stan_run'><code>BayesCalibJob$stan_run()</code></a></p></li>
 <li><p><a href='#method-stan_file'><code>BayesCalibJob$stan_file()</code></a></p></li>
+<li><p><a href='#method-post_dist'><code>BayesCalibJob$post_dist()</code></a></p></li>
+<li><p><a href='#method-prediction'><code>BayesCalibJob$prediction()</code></a></p></li>
+<li><p><a href='#method-evaluate'><code>BayesCalibJob$evaluate()</code></a></p></li>
 </ul>
 <p><details ><summary>Inherited methods</summary>
 <ul>
@@ -944,67 +946,6 @@ bc$data_bc()
 </pre><p></div></p>
 
 <p><hr>
-<a id="method-data_pred"></a></p><h3>Method <code>data_pred()</code></h3>
-<p>Extract prediction data</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>data_pred</span>(<span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>merge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
-
-<h3>Arguments</h3>
-<p><div class="arguments"></p><dl'>
-<dt><code>all</code></dt><dd><p>If <code>FALSE</code>, among above meta data columns, only <code>index</code>,
-<code>type</code> and <code>Date/Time</code> will be returned. Default: <code>FALSE</code>.</p></dd>
-
-<dt><code>merge</code></dt><dd><p>If <code>TRUE</code>, <code>y_pred</code> in returned list will merge all
-<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>,
-and predicted output into one <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with
-all predicted values put in columns with a <code>\\[prediction\\]</code>
-prefix. If <code>FALSE</code>, similar like above, but combine rows of
-field measured output and predicted output together, with a
-new column <code>type</code> added giving <code>field</code> indicating field
-measured output and <code>prediction</code> indicating predicted output.
-Default: <code>TRUE</code>.</p></dd>
-
-</dl><p></div></p>
-<h3>Details</h3>
-<p><code>$data_pred()</code> calculates predicted output variable values based
-on the results of
-<a href='../../epluspar/html/BayesCalibJob.html#method-stan_run'><code>$stan_run()</code></a>
-and returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which combines the output of
-<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>
-and predicted output values.</p>
-<p>Possible returned meta data columns:</p><ul>
-<li><p><code>index</code>: Integer type. Row indices of field input data in
-<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a></p></li>
-<li><p><code>type</code>: Character type. Only exists when <code>merge</code> is <code>FALSE</code>. The
-type of output values. <code>field</code> indicates field measured output
-values while <code>prediction</code> means predicted output values.</p></li>
-<li><p><code>Data/Time</code>: Character type. The date time in EnergyPlus-format.</p></li>
-<li><p><code>environment_period_index</code>: Integer type. The indice of environment.</p></li>
-<li><p><code>environment_name</code>: Character type. A text string identifying the
-simulation environment.</p></li>
-<li><p><code>simulation_days</code>: Integer type. Day of simulation.</p></li>
-<li><p><code>datetime</code>: DateTime type. The date time of simulation result. Note
-that the year valueas are automatically calculated to meets the
-start day of week restriction for each simulation environment.</p></li>
-<li><p><code>month</code>: Integer type. The month of reported date time.</p></li>
-<li><p><code>day</code>: Integer type. The day of month of reported date time.</p></li>
-<li><p><code>hour</code>: Integer type. The hour of reported date time.</p></li>
-<li><p><code>minute</code>: Integer type. The minute of reported date time.</p></li>
-<li><p><code>day_type</code>: Character type. The type of day, e.g. <code>Monday</code>,
-<code>Tuesday</code> and etc. Note that <code>day_type</code> will always be <code>NA</code> if
-<code>resolution</code> is specified.</p></li>
-</ul>
-
-
-<h3>Returns</h3>
-<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
-<h3>Examples</h3>
-<p><div class="r example copy"></p><pre>\dontrun{
-bc$data_pred()
-}
-
-</pre><p></div></p>
-
-<p><hr>
 <a id="method-eplus_run"></a></p><h3>Method <code>eplus_run()</code></h3>
 <p>Run parametric simulations</p><h3>Usage</h3>
 <p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>eplus_run</span>(
@@ -1660,7 +1601,7 @@ Default: <code>TRUE</code>.</p></dd>
 returns a list of 2 elements:</p><ul>
 <li><p><code>fit</code>: An object of S4 class <a href='https://rdrr.io/pkg/rstan/man/stanfit-class.html'>rstan::stanfit</a>.</p></li>
 <li><p><code>y_pred</code>: The output of
-<a href='../../epluspar/html/BayesCalibJob.html#method-data_pred'><code>$data_pred()</code></a></p></li>
+<a href='../../epluspar/html/BayesCalibJob.html#method-prediction'><code>$prediction()</code></a></p></li>
 </ul>
 
 
@@ -1693,6 +1634,125 @@ file path is returned.</p>
 <h3>Examples</h3>
 <p><div class="r example copy"></p><pre>\dontrun{
 bc$stan_file()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-post_dist"></a></p><h3>Method <code>post_dist()</code></h3>
+<p>Extract posterior distributions of calibrated parameters</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>post_dist</span>()</pre><p></div></p>
+
+<h3>Details</h3>
+<p><code>$post_dist()</code> extracted calibrated parameter posterior distributions
+based on the results of
+<a href='../../epluspar/html/BayesCalibJob.html#method-stan_run'><code>$stan_run()</code></a>
+and returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with each parameter values
+filling one column. The parameter names are defined by the <code>.names</code>
+arguments in the
+<a href='../../epluspar/html/BayesCalibJob.html#method-param'><code>$param()</code></a>.</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$post_dist()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-prediction"></a></p><h3>Method <code>prediction()</code></h3>
+<p>Extract predictions of output variables</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>prediction</span>(<span class='kw'>all</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>merge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>all</code></dt><dd><p>If <code>FALSE</code>, among above meta data columns, only <code>index</code>,
+<code>type</code> and <code>Date/Time</code> will be returned. Default: <code>FALSE</code>.</p></dd>
+
+<dt><code>merge</code></dt><dd><p>If <code>TRUE</code>, <code>y_pred</code> in returned list will merge all
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>,
+and predicted output into one <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with
+all predicted values put in columns with a <code>\\[prediction\\]</code>
+prefix. If <code>FALSE</code>, similar like above, but combine rows of
+field measured output and predicted output together, with a
+new column <code>type</code> added giving <code>field</code> indicating field
+measured output and <code>prediction</code> indicating predicted output.
+Default: <code>TRUE</code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$prediction()</code> calculates predicted output variable values based
+on the results of
+<a href='../../epluspar/html/BayesCalibJob.html#method-stan_run'><code>$stan_run()</code></a>
+and returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which combines the output of
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a>
+and predicted output values.</p>
+<p>Possible returned meta data columns:</p><ul>
+<li><p><code>index</code>: Integer type. Row indices of field input data in
+<a href='../../epluspar/html/BayesCalibJob.html#method-data_field'><code>$data_field()</code></a></p></li>
+<li><p><code>sample</code>: Integer type. Sample indices of the MCMC.</p></li>
+<li><p><code>type</code>: Character type. Only exists when <code>merge</code> is <code>FALSE</code>. The
+type of output values. <code>field</code> indicates field measured output
+values while <code>prediction</code> means predicted output values.</p></li>
+<li><p><code>Data/Time</code>: Character type. The date time in EnergyPlus-format.</p></li>
+<li><p><code>environment_period_index</code>: Integer type. The indice of environment.</p></li>
+<li><p><code>environment_name</code>: Character type. A text string identifying the
+simulation environment.</p></li>
+<li><p><code>simulation_days</code>: Integer type. Day of simulation.</p></li>
+<li><p><code>datetime</code>: DateTime type. The date time of simulation result. Note
+that the year valueas are automatically calculated to meets the
+start day of week restriction for each simulation environment.</p></li>
+<li><p><code>month</code>: Integer type. The month of reported date time.</p></li>
+<li><p><code>day</code>: Integer type. The day of month of reported date time.</p></li>
+<li><p><code>hour</code>: Integer type. The hour of reported date time.</p></li>
+<li><p><code>minute</code>: Integer type. The minute of reported date time.</p></li>
+<li><p><code>day_type</code>: Character type. The type of day, e.g. <code>Monday</code>,
+<code>Tuesday</code> and etc. Note that <code>day_type</code> will always be <code>NA</code> if
+<code>resolution</code> is specified.</p></li>
+</ul>
+
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with 1 column <code>sample</code> giving
+the sample indices from MCMC, plus the same number of columns as
+given calibrated parameters.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$prediction()
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-evaluate"></a></p><h3>Method <code>evaluate()</code></h3>
+<p>Calculate statistical indicators of output variable predictions</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>BayesCalibJob</span>$<span class='fu'>evaluate</span>(<span class='kw'>funs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>nmbe</span>, <span class='no'>cvrmse</span>))</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>funs</code></dt><dd><p>A list of functions that takes the simulation results as
+the first argument and the measured results as the second
+argument.  Default: <code><a href='https://rdrr.io/r/base/list.html'>list(cvrmse, nmbe)</a></code>.</p></dd>
+
+</dl><p></div></p>
+<h3>Details</h3>
+<p><code>$evalute()</code> quantify the uncertainty of output variable predictions
+from each MCMC sample gathered from
+<a href='../../epluspar/html/BayesCalibJob.html#method-prediction'><code>$prediction()</code></a>
+by calculating the statistical indicators.</p>
+<p>The default behavior is to evaluate the principal uncertainty indices
+used in ASHRAE Guideline 14 are Normalized Mean Bias Error (NMBE) and
+Coefficient of Variation of the Root Mean Square Error (CVRMSE).</p>
+
+<h3>Returns</h3>
+<p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> with 1 column <code>sample</code> giving
+the sample indices from MCMC, plus the same number of columns as
+given evaluation functions.</p>
+<h3>Examples</h3>
+<p><div class="r example copy"></p><pre>\dontrun{
+bc$evaluate()
 }
 
 </pre><p></div></p>
