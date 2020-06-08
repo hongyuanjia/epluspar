@@ -407,7 +407,7 @@ test_that("BayesCalib Class", {
     expect_equivalent(bc$prediction(), res$y_pred)
 
     expect_is(bc$post_dist(), "data.table")
-    expect_equal(names(bc$post_dist()), c("cop1", "cap1"))
+    expect_equal(names(bc$post_dist()), c("sample", "cop1", "cap1"))
     expect_equal(nrow(bc$post_dist()), 450)
 
     expect_is(bc$evaluate(), "data.table")

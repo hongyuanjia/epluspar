@@ -2299,7 +2299,9 @@ start day of week restriction for each simulation environment.
 }
 
 \subsection{Returns}{
-A \code{\link[data.table:data.table]{data.table::data.table()}}
+A \code{\link[data.table:data.table]{data.table::data.table()}} with 1 column \code{sample} giving
+the sample indices from MCMC, plus the same number of columns as
+given calibrated parameters.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}

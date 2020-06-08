@@ -1432,7 +1432,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
         #' and returns a [data.table::data.table()] with each parameter values
         #' filling one column. The parameter names are defined by the `.names`
-        #' arguments in the 
+        #' arguments in the
         #' \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
         #'
         #' @return A [data.table::data.table()].
@@ -1494,7 +1494,9 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'        measured output and `prediction` indicating predicted output.
         #'        Default: `TRUE`.
         #'
-        #' @return A [data.table::data.table()]
+        #' @return A [data.table::data.table()] with 1 column `sample` giving
+        #' the sample indices from MCMC, plus the same number of columns as
+        #' given calibrated parameters.
         #'
         #' @examples
         #' \dontrun{
@@ -2009,6 +2011,51 @@ bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL
     copy(data_bc$stan_data)
 }
 # }}}
+# bc_post_dist {{{
+bc_post_dist <- function (super, self, private) {
+    bc_assert_can_stan(super, self, private, stop = TRUE)
+
+    if (is.null(private$m_log$stan$fit)) {
+        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
+            "because Stan data is not available. Please use `$stan_run()` to ",
+            "retrieve output of Bayesican calibration before caling `$prediction()`."
+        ))
+    }
+
+    if (isTRUE(private$m_log$stan$custom_model)) {
+        message("Customized Stan model was used during calibration, ",
+            "instead of the built-in model. ",
+            "epluspar may fail to extract calibrated parameter distributions. ",
+            "Please do check the results to see if it is correct."
+        )
+    }
+
+    if (!"tf" %in% names(private$m_log$stan$fit@par_dims)) {
+        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
+            "distributions because the `tf` parameter is not found ",
+            "in the stanfit object. This may be caused by using a customized Stan ",
+            "model. Please check the input arguments when calling `$stan_run()`."
+        ))
+    }
+
+    tf <- as.data.table(rstan::extract(private$m_log$stan$fit, pars = "tf")$tf)
+    setnames(tf, unique(private$m_log$sample$value$name_par))
+
+    tf_min <- private$m_log$stan$tc_min
+    tf_max <- private$m_log$stan$tc_max
+
+    minmax_dnorm <- function (x, min, max) x * (max - min) + min
+
+    for (i in seq_len(ncol(tf))) {
+        set(tf, NULL, i, minmax_dnorm(tf[[i]], tf_min[[i]], tf_max[[i]]))
+    }
+
+    set(tf, NULL, "sample", seq_len(nrow(tf)))
+    setcolorder(tf, "sample")
+    private$m_log$stan$tf <- copy(tf)
+    tf
+}
+# }}}
 # bc_prediction {{{
 bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
@@ -2076,49 +2123,6 @@ bc_evaluate <- function (super, self, private, funs = list(nmbe, cvrmse)) {
         )
         setattr(stats, "names", nm_fun)
     }]
-}
-# }}}
-# bc_post_dist {{{
-bc_post_dist <- function (super, self, private) {
-    bc_assert_can_stan(super, self, private, stop = TRUE)
-
-    if (is.null(private$m_log$stan$fit)) {
-        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
-            "because Stan data is not available. Please use `$stan_run()` to ",
-            "retrieve output of Bayesican calibration before caling `$prediction()`."
-        ))
-    }
-
-    if (isTRUE(private$m_log$stan$custom_model)) {
-        message("Customized Stan model was used during calibration, ",
-            "instead of the built-in model. ",
-            "epluspar may fail to extract calibrated parameter distributions. ",
-            "Please do check the results to see if it is correct."
-        )
-    }
-
-    if (!"tf" %in% names(private$m_log$stan$fit@par_dims)) {
-        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
-            "distributions because the `tf` parameter is not found ",
-            "in the stanfit object. This may be caused by using a customized Stan ",
-            "model. Please check the input arguments when calling `$stan_run()`."
-        ))
-    }
-
-    tf <- as.data.table(rstan::extract(private$m_log$stan$fit, pars = "tf")$tf)
-    setnames(tf, unique(private$m_log$sample$value$name_par))
-
-    tf_min <- private$m_log$stan$tc_min
-    tf_max <- private$m_log$stan$tc_max
-
-    minmax_dnorm <- function (x, min, max) x * (max - min) + min
-
-    for (i in seq_len(ncol(tf))) {
-        set(tf, NULL, i, minmax_dnorm(tf[[i]], tf_min[[i]], tf_max[[i]]))
-    }
-
-    private$m_log$stan$tf <- copy(tf)
-    tf
 }
 # }}}
 # bc_stan_run {{{
