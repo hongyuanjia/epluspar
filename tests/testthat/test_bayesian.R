@@ -392,7 +392,7 @@ test_that("BayesCalib Class", {
 
     expect_equal(names(res), c("fit", "y_pred"))
     expect_is(res$fit, "stanfit")
-    expect_equal(names(res$y_pred), c("index", "Date/Time",
+    expect_equal(names(res$y_pred), c("index", "sample", "Date/Time",
         "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
         "COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour)",
         "COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour)",
@@ -409,5 +409,9 @@ test_that("BayesCalib Class", {
     expect_is(bc$post_dist(), "data.table")
     expect_equal(names(bc$post_dist()), c("cop1", "cap1"))
     expect_equal(nrow(bc$post_dist()), 450)
+
+    expect_is(bc$evaluate(), "data.table")
+    expect_equal(names(bc$evaluate()), c("sample", "nmbe", "cvrmse"))
+    expect_equal(nrow(bc$evaluate()), 450)
     # }}}
 })

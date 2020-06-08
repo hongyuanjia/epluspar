@@ -781,88 +781,6 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
             bc_data_bc(super, self, private, data_field, data_sim),
         # }}}
 
-        # post_dist {{{
-        #' @description
-        #' Extract posterior distributions of calibrated parameters
-        #'
-        #' @details
-        #' `$post_dist()` extracted calibrated parameter posterior distributions
-        #' based on the results of
-        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
-        #' and returns a [data.table::data.table()] with each parameter values
-        #' filling one column. The parameter names are defined by the `.names`
-        #' arguments in the 
-        #' \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
-        #'
-        #' @return A [data.table::data.table()].
-        #'
-        #' @examples
-        #' \dontrun{
-        #' bc$post_dist()
-        #' }
-        #'
-        post_dist = function ()
-            bc_post_dist(super, self, private),
-        # }}}
-
-        # prediction {{{
-        #' @description
-        #' Extract predictions of output variables
-        #'
-        #' @details
-        #' `$prediction()` calculates predicted output variable values based
-        #' on the results of
-        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
-        #' and returns a [data.table::data.table()] which combines the output of
-        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
-        #' and predicted output values.
-        #'
-        #' Possible returned meta data columns:
-        #'
-        #' - `index`: Integer type. Row indices of field input data in
-        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
-        #' - `type`: Character type. Only exists when `merge` is `FALSE`. The
-        #'   type of output values. `field` indicates field measured output
-        #'   values while `prediction` means predicted output values.
-        #' - `Data/Time`: Character type. The date time in EnergyPlus-format.
-        #' - `environment_period_index`: Integer type. The indice of environment.
-        #' - `environment_name`: Character type. A text string identifying the
-        #'   simulation environment.
-        #' - `simulation_days`: Integer type. Day of simulation.
-        #' - `datetime`: DateTime type. The date time of simulation result. Note
-        #'   that the year valueas are automatically calculated to meets the
-        #'   start day of week restriction for each simulation environment.
-        #' - `month`: Integer type. The month of reported date time.
-        #' - `day`: Integer type. The day of month of reported date time.
-        #' - `hour`: Integer type. The hour of reported date time.
-        #' - `minute`: Integer type. The minute of reported date time.
-        #' - `day_type`: Character type. The type of day, e.g. `Monday`,
-        #'   `Tuesday` and etc. Note that `day_type` will always be `NA` if
-        #'   `resolution` is specified.
-        #'
-        #' @param all If `FALSE`, among above meta data columns, only `index`,
-        #'        `type` and `Date/Time` will be returned. Default: `FALSE`.
-        #' @param merge If `TRUE`, `y_pred` in returned list will merge all
-        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
-        #'        and predicted output into one [data.table::data.table()] with
-        #'        all predicted values put in columns with a `\\[prediction\\]`
-        #'        prefix. If `FALSE`, similar like above, but combine rows of
-        #'        field measured output and predicted output together, with a
-        #'        new column `type` added giving `field` indicating field
-        #'        measured output and `prediction` indicating predicted output.
-        #'        Default: `TRUE`.
-        #'
-        #' @return A [data.table::data.table()].
-        #'
-        #' @examples
-        #' \dontrun{
-        #' bc$prediction()
-        #' }
-        #'
-        prediction = function (all = FALSE, merge = TRUE)
-            bc_prediction(super, self, private, all = all, merge = merge),
-        # }}}
-
         # eplus_run {{{
         #' @description
         #' Run parametric simulations
@@ -1501,7 +1419,121 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' }
         #'
         stan_file = function (path = NULL)
-            bc_stan_file(super, self, private, path)
+            bc_stan_file(super, self, private, path),
+        # }}}
+
+        # post_dist {{{
+        #' @description
+        #' Extract posterior distributions of calibrated parameters
+        #'
+        #' @details
+        #' `$post_dist()` extracted calibrated parameter posterior distributions
+        #' based on the results of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+        #' and returns a [data.table::data.table()] with each parameter values
+        #' filling one column. The parameter names are defined by the `.names`
+        #' arguments in the 
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$post_dist()
+        #' }
+        #'
+        post_dist = function ()
+            bc_post_dist(super, self, private),
+        # }}}
+
+        # prediction {{{
+        #' @description
+        #' Extract predictions of output variables
+        #'
+        #' @details
+        #' `$prediction()` calculates predicted output variable values based
+        #' on the results of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+        #' and returns a [data.table::data.table()] which combines the output of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+        #' and predicted output values.
+        #'
+        #' Possible returned meta data columns:
+        #'
+        #' - `index`: Integer type. Row indices of field input data in
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+        #' - `sample`: Integer type. Sample indices of the MCMC.
+        #' - `type`: Character type. Only exists when `merge` is `FALSE`. The
+        #'   type of output values. `field` indicates field measured output
+        #'   values while `prediction` means predicted output values.
+        #' - `Data/Time`: Character type. The date time in EnergyPlus-format.
+        #' - `environment_period_index`: Integer type. The indice of environment.
+        #' - `environment_name`: Character type. A text string identifying the
+        #'   simulation environment.
+        #' - `simulation_days`: Integer type. Day of simulation.
+        #' - `datetime`: DateTime type. The date time of simulation result. Note
+        #'   that the year valueas are automatically calculated to meets the
+        #'   start day of week restriction for each simulation environment.
+        #' - `month`: Integer type. The month of reported date time.
+        #' - `day`: Integer type. The day of month of reported date time.
+        #' - `hour`: Integer type. The hour of reported date time.
+        #' - `minute`: Integer type. The minute of reported date time.
+        #' - `day_type`: Character type. The type of day, e.g. `Monday`,
+        #'   `Tuesday` and etc. Note that `day_type` will always be `NA` if
+        #'   `resolution` is specified.
+        #'
+        #' @param all If `FALSE`, among above meta data columns, only `index`,
+        #'        `type` and `Date/Time` will be returned. Default: `FALSE`.
+        #' @param merge If `TRUE`, `y_pred` in returned list will merge all
+        #'        \href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+        #'        and predicted output into one [data.table::data.table()] with
+        #'        all predicted values put in columns with a `\\[prediction\\]`
+        #'        prefix. If `FALSE`, similar like above, but combine rows of
+        #'        field measured output and predicted output together, with a
+        #'        new column `type` added giving `field` indicating field
+        #'        measured output and `prediction` indicating predicted output.
+        #'        Default: `TRUE`.
+        #'
+        #' @return A [data.table::data.table()]
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$prediction()
+        #' }
+        #'
+        prediction = function (all = FALSE, merge = TRUE)
+            bc_prediction(super, self, private, all = all, merge = merge),
+        # }}}
+
+        # evaluate {{{
+        #' @description
+        #' Calculate statistical indicators of output variable predictions
+        #'
+        #' @details
+        #' `$evalute()` quantify the uncertainty of output variable predictions
+        #' from each MCMC sample gathered from
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
+        #' by calculating the statistical indicators.
+        #'
+        #' The default behavior is to evaluate the principal uncertainty indices
+        #' used in ASHRAE Guideline 14 are Normalized Mean Bias Error (NMBE) and
+        #' Coefficient of Variation of the Root Mean Square Error (CVRMSE).
+        #'
+        #' @param funs A list of functions that takes the simulation results as
+        #'        the first argument and the measured results as the second
+        #'        argument.  Default: `list(cvrmse, nmbe)`.
+        #'
+        #' @return A [data.table::data.table()] with 1 column `sample` giving
+        #' the sample indices from MCMC, plus the same number of columns as
+        #' given evaluation functions.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$evaluate()
+        #' }
+        #'
+        evaluate = function (funs = list(nmbe, cvrmse))
+            bc_evaluate(super, self, private, funs = funs)
         # }}}
         # }}}
     ),
@@ -2022,6 +2054,28 @@ bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
     set(y_pred, NULL, "case", NULL)
 
     combine_input_output_data(output = y_pred, all = all)$output
+}
+# }}}
+# bc_evaluate {{{
+bc_evaluate <- function (super, self, private, funs = list(nmbe, cvrmse)) {
+    nm_y <- names(private$m_log$data_field$output)[-(1:11)]
+
+    y_pred <- bc_prediction(super, self, private, merge = TRUE, all = FALSE)[
+        , .SD, .SDcols = c("index", "sample", nm_y, paste(nm_y, "[Prediction]"))]
+
+    # get function names
+    nm_fun <- vapply(substitute(funs)[-1], deparse, character(1))
+
+    # calculate stats per sample
+    y_pred[, by = "sample", {
+        stats <- lapply(funs, function (fun)
+            match.fun(fun)(
+                sim = get(paste(nm_y, "[Prediction]")),
+                obs = get(nm_y)
+            )
+        )
+        setattr(stats, "names", nm_fun)
+    }]
 }
 # }}}
 # bc_post_dist {{{
@@ -3210,10 +3264,13 @@ cal_y_pred <- function (yc_pred, yc_mean, yc_sd, xf, yf, merge = TRUE) {
         variable.name = "index", value.name = "pred", variable.factor = FALSE
     )
     y_pred[, index := as.integer(gsub("V", "", index))]
+    # add sample index
+    y_pred[, sample := seq_len(.N), by = "index"]
+    setcolorder(y_pred, c("index", "sample"))
 
     if (merge) {
         # rename prediction
-        setnames(y_pred, c("index", paste(names(yf)[-(1L:11L)], "[Prediction]")))
+        setnames(y_pred, c("index", "sample", paste(names(yf)[-(1L:11L)], "[Prediction]")))
 
         # combine field input, output and prediction
         y_pred <- copy(xf)[, index := .I ][
@@ -3221,23 +3278,36 @@ cal_y_pred <- function (yc_pred, yc_mean, yc_sd, xf, yf, merge = TRUE) {
             y_pred, on = "index"]
 
         # fix column order
-        setcolorder(y_pred, c("index", setdiff(names(y_pred), c("index"))))
+        setcolorder(y_pred, c("index", "sample", setdiff(names(y_pred), c("index", "sample"))))
     } else {
         # rename prediction
-        setnames(y_pred, c("index", names(yf)[-(1L:11L)]))
+        setnames(y_pred, c("index", "sample", names(yf)[-(1L:11L)]))
 
         # add type to distinguish field and predicted
-        y_pred <- rbindlist(list(
+        y_pred <- rbindlist(use.names = TRUE, list(
             copy(xf)[, index := .I ][
                 yf[, .SD, .SDcols = -c(1L:11L)][, index := .I], on = "index"][
-                , `:=`(type = "field")],
+                , `:=`(type = "field", sample = NA_integer_)],
             copy(xf)[, index := .I ][y_pred, on = "index"][
                 , `:=`(type = "prediction")]
         ))
         # fix column order
-        setcolorder(y_pred, c("index", "type", setdiff(names(y_pred), c("index", "type"))))
+        setcolorder(y_pred, c("index", "sample", "type", setdiff(names(y_pred), c("index", "sample", "type"))))
     }
 
     y_pred
+}
+# }}}
+# stats {{{
+rmse <- function (sim, obs) {
+    sqrt(sum((sim - obs)^2, na.rm = TRUE) / (length(sim) - 1))
+}
+
+cvrmse <- function (sim, obs) {
+    rmse(sim, obs) / mean(obs, na.rm = TRUE)
+}
+
+nmbe <- function(sim, obs){
+  sum(sim - obs, na.rm = TRUE) / ((length(sim) - 1) * mean(obs, na.rm = TRUE))
 }
 # }}}

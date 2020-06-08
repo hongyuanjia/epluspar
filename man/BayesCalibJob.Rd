@@ -207,24 +207,6 @@ bc$data_bc()
 
 
 ## ------------------------------------------------
-## Method `BayesCalibJob$post_dist`
-## ------------------------------------------------
-
-\dontrun{
-bc$post_dist()
-}
-
-
-## ------------------------------------------------
-## Method `BayesCalibJob$prediction`
-## ------------------------------------------------
-
-\dontrun{
-bc$prediction()
-}
-
-
-## ------------------------------------------------
 ## Method `BayesCalibJob$eplus_run`
 ## ------------------------------------------------
 
@@ -394,6 +376,33 @@ bc$stan_run()
 bc$stan_file()
 }
 
+
+## ------------------------------------------------
+## Method `BayesCalibJob$post_dist`
+## ------------------------------------------------
+
+\dontrun{
+bc$post_dist()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$prediction`
+## ------------------------------------------------
+
+\dontrun{
+bc$prediction()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$evaluate`
+## ------------------------------------------------
+
+\dontrun{
+bc$evaluate()
+}
+
 }
 \references{
 A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
@@ -421,8 +430,6 @@ Hongyuan Jia, Adrian Chong
 \item \href{#method-data_sim}{\code{BayesCalibJob$data_sim()}}
 \item \href{#method-data_field}{\code{BayesCalibJob$data_field()}}
 \item \href{#method-data_bc}{\code{BayesCalibJob$data_bc()}}
-\item \href{#method-post_dist}{\code{BayesCalibJob$post_dist()}}
-\item \href{#method-prediction}{\code{BayesCalibJob$prediction()}}
 \item \href{#method-eplus_run}{\code{BayesCalibJob$eplus_run()}}
 \item \href{#method-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
 \item \href{#method-eplus_status}{\code{BayesCalibJob$eplus_status()}}
@@ -435,6 +442,9 @@ Hongyuan Jia, Adrian Chong
 \item \href{#method-eplus_save}{\code{BayesCalibJob$eplus_save()}}
 \item \href{#method-stan_run}{\code{BayesCalibJob$stan_run()}}
 \item \href{#method-stan_file}{\code{BayesCalibJob$stan_file()}}
+\item \href{#method-post_dist}{\code{BayesCalibJob$post_dist()}}
+\item \href{#method-prediction}{\code{BayesCalibJob$prediction()}}
+\item \href{#method-evaluate}{\code{BayesCalibJob$evaluate()}}
 }
 }
 \if{html}{
@@ -1351,113 +1361,6 @@ bc$data_bc()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-post_dist"></a>}}
-\subsection{Method \code{post_dist()}}{
-Extract posterior distributions of calibrated parameters
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$post_dist()}\if{html}{\out{</div>}}
-}
-
-\subsection{Details}{
-\verb{$post_dist()} extracted calibrated parameter posterior distributions
-based on the results of
-\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
-and returns a \code{\link[data.table:data.table]{data.table::data.table()}} with each parameter values
-filling one column. The parameter names are defined by the \code{.names}
-arguments in the
-\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
-}
-
-\subsection{Returns}{
-A \code{\link[data.table:data.table]{data.table::data.table()}}.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-bc$post_dist()
-}
-
-}
-\if{html}{\out{</div>}}
-
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prediction"></a>}}
-\subsection{Method \code{prediction()}}{
-Extract predictions of output variables
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$prediction(all = FALSE, merge = TRUE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{all}}{If \code{FALSE}, among above meta data columns, only \code{index},
-\code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
-
-\item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
-and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
-all predicted values put in columns with a \verb{\\\[prediction\\\]}
-prefix. If \code{FALSE}, similar like above, but combine rows of
-field measured output and predicted output together, with a
-new column \code{type} added giving \code{field} indicating field
-measured output and \code{prediction} indicating predicted output.
-Default: \code{TRUE}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-\verb{$prediction()} calculates predicted output variable values based
-on the results of
-\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
-and returns a \code{\link[data.table:data.table]{data.table::data.table()}} which combines the output of
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
-and predicted output values.
-
-Possible returned meta data columns:
-\itemize{
-\item \code{index}: Integer type. Row indices of field input data in
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
-\item \code{type}: Character type. Only exists when \code{merge} is \code{FALSE}. The
-type of output values. \code{field} indicates field measured output
-values while \code{prediction} means predicted output values.
-\item \code{Data/Time}: Character type. The date time in EnergyPlus-format.
-\item \code{environment_period_index}: Integer type. The indice of environment.
-\item \code{environment_name}: Character type. A text string identifying the
-simulation environment.
-\item \code{simulation_days}: Integer type. Day of simulation.
-\item \code{datetime}: DateTime type. The date time of simulation result. Note
-that the year valueas are automatically calculated to meets the
-start day of week restriction for each simulation environment.
-\item \code{month}: Integer type. The month of reported date time.
-\item \code{day}: Integer type. The day of month of reported date time.
-\item \code{hour}: Integer type. The hour of reported date time.
-\item \code{minute}: Integer type. The minute of reported date time.
-\item \code{day_type}: Character type. The type of day, e.g. \code{Monday},
-\code{Tuesday} and etc. Note that \code{day_type} will always be \code{NA} if
-\code{resolution} is specified.
-}
-}
-
-\subsection{Returns}{
-A \code{\link[data.table:data.table]{data.table::data.table()}}.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-bc$prediction()
-}
-
-}
-\if{html}{\out{</div>}}
-
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_run"></a>}}
 \subsection{Method \code{eplus_run()}}{
 Run parametric simulations
@@ -2294,6 +2197,159 @@ file path is returned.
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
 bc$stan_file()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-post_dist"></a>}}
+\subsection{Method \code{post_dist()}}{
+Extract posterior distributions of calibrated parameters
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$post_dist()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$post_dist()} extracted calibrated parameter posterior distributions
+based on the results of
+\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+and returns a \code{\link[data.table:data.table]{data.table::data.table()}} with each parameter values
+filling one column. The parameter names are defined by the \code{.names}
+arguments in the
+\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$post_dist()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-prediction"></a>}}
+\subsection{Method \code{prediction()}}{
+Extract predictions of output variables
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$prediction(all = FALSE, merge = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{all}}{If \code{FALSE}, among above meta data columns, only \code{index},
+\code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
+
+\item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
+and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
+all predicted values put in columns with a \verb{\\\[prediction\\\]}
+prefix. If \code{FALSE}, similar like above, but combine rows of
+field measured output and predicted output together, with a
+new column \code{type} added giving \code{field} indicating field
+measured output and \code{prediction} indicating predicted output.
+Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$prediction()} calculates predicted output variable values based
+on the results of
+\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+and returns a \code{\link[data.table:data.table]{data.table::data.table()}} which combines the output of
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+and predicted output values.
+
+Possible returned meta data columns:
+\itemize{
+\item \code{index}: Integer type. Row indices of field input data in
+\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+\item \code{sample}: Integer type. Sample indices of the MCMC.
+\item \code{type}: Character type. Only exists when \code{merge} is \code{FALSE}. The
+type of output values. \code{field} indicates field measured output
+values while \code{prediction} means predicted output values.
+\item \code{Data/Time}: Character type. The date time in EnergyPlus-format.
+\item \code{environment_period_index}: Integer type. The indice of environment.
+\item \code{environment_name}: Character type. A text string identifying the
+simulation environment.
+\item \code{simulation_days}: Integer type. Day of simulation.
+\item \code{datetime}: DateTime type. The date time of simulation result. Note
+that the year valueas are automatically calculated to meets the
+start day of week restriction for each simulation environment.
+\item \code{month}: Integer type. The month of reported date time.
+\item \code{day}: Integer type. The day of month of reported date time.
+\item \code{hour}: Integer type. The hour of reported date time.
+\item \code{minute}: Integer type. The minute of reported date time.
+\item \code{day_type}: Character type. The type of day, e.g. \code{Monday},
+\code{Tuesday} and etc. Note that \code{day_type} will always be \code{NA} if
+\code{resolution} is specified.
+}
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$prediction()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-evaluate"></a>}}
+\subsection{Method \code{evaluate()}}{
+Calculate statistical indicators of output variable predictions
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$evaluate(funs = list(nmbe, cvrmse))}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{funs}}{A list of functions that takes the simulation results as
+the first argument and the measured results as the second
+argument.  Default: \code{list(cvrmse, nmbe)}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$evalute()} quantify the uncertainty of output variable predictions
+from each MCMC sample gathered from
+\href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
+by calculating the statistical indicators.
+
+The default behavior is to evaluate the principal uncertainty indices
+used in ASHRAE Guideline 14 are Normalized Mean Bias Error (NMBE) and
+Coefficient of Variation of the Root Mean Square Error (CVRMSE).
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} with 1 column \code{sample} giving
+the sample indices from MCMC, plus the same number of columns as
+given evaluation functions.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$evaluate()
 }
 
 }
