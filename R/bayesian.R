@@ -2064,7 +2064,7 @@ bc_evaluate <- function (super, self, private, funs = list(nmbe, cvrmse)) {
         , .SD, .SDcols = c("index", "sample", nm_y, paste(nm_y, "[Prediction]"))]
 
     # get function names
-    nm_fun <- vapply(substitute(funs)[-1], deparse, character(1))
+    nm_fun <- vapply(substitute(funs, sys.frame(1))[-1], deparse, character(1))
 
     # calculate stats per sample
     y_pred[, by = "sample", {
