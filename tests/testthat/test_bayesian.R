@@ -385,7 +385,7 @@ test_that("BayesCalib Class", {
         )
     )
 
-    expect_error(bc$data_pred(), class = "error_bc_stan_not_ready")
+    expect_error(bc$prediction(), class = "error_bc_stan_not_ready")
 
     # run stan
     suppressWarnings(res <- bc$stan_run(iter = 300, chains = 3))
@@ -404,6 +404,10 @@ test_that("BayesCalib Class", {
     expect_silent(f <- bc$stan_file(tempfile()))
     expect_equal(bc$stan_file(), readLines(f))
 
-    expect_equivalent(bc$data_pred(), res$y_pred)
+    expect_equivalent(bc$prediction(), res$y_pred)
+
+    expect_is(bc$post_dist(), "data.table")
+    expect_equal(names(bc$post_dist()), c("cop1", "cap1"))
+    expect_equal(nrow(bc$post_dist()), 450)
     # }}}
 })

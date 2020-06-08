@@ -781,12 +781,36 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
             bc_data_bc(super, self, private, data_field, data_sim),
         # }}}
 
-        # data_pred {{{
+        # post_dist {{{
         #' @description
-        #' Extract prediction data
+        #' Extract posterior distributions of calibrated parameters
         #'
         #' @details
-        #' `$data_pred()` calculates predicted output variable values based
+        #' `$post_dist()` extracted calibrated parameter posterior distributions
+        #' based on the results of
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+        #' and returns a [data.table::data.table()] with each parameter values
+        #' filling one column. The parameter names are defined by the `.names`
+        #' arguments in the 
+        #' \href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
+        #'
+        #' @return A [data.table::data.table()].
+        #'
+        #' @examples
+        #' \dontrun{
+        #' bc$post_dist()
+        #' }
+        #'
+        post_dist = function ()
+            bc_post_dist(super, self, private),
+        # }}}
+
+        # prediction {{{
+        #' @description
+        #' Extract predictions of output variables
+        #'
+        #' @details
+        #' `$prediction()` calculates predicted output variable values based
         #' on the results of
         #' \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
         #' and returns a [data.table::data.table()] which combines the output of
@@ -832,11 +856,11 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         #' @examples
         #' \dontrun{
-        #' bc$data_pred()
+        #' bc$prediction()
         #' }
         #'
-        data_pred = function (all = FALSE, merge = TRUE)
-            bc_data_pred(super, self, private, all = all, merge = merge),
+        prediction = function (all = FALSE, merge = TRUE)
+            bc_prediction(super, self, private, all = all, merge = merge),
         # }}}
 
         # eplus_run {{{
@@ -1406,7 +1430,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         #' * `fit`: An object of S4 class [rstan::stanfit].
         #' * `y_pred`: The output of
-        #'   \href{../../epluspar/html/BayesCalibJob.html#method-data_pred}{\code{$data_pred()}}
+        #'   \href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
         #'
         #' @note
         #' Currently, when using builtin Bayesian calibration algorithm, only
@@ -1947,25 +1971,43 @@ bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL
     private$m_log$stan$data <- data_bc$stan_data
     private$m_log$stan$yc_mean <- data_bc$yc_mean
     private$m_log$stan$yc_sd <- data_bc$yc_sd
+    private$m_log$stan$tc_min <- data_bc$tc_min
+    private$m_log$stan$tc_max <- data_bc$tc_max
 
-    data_bc$stan_data
+    copy(data_bc$stan_data)
 }
 # }}}
-# bc_data_pred {{{
-bc_data_pred <- function (super, self, private, all = FALSE, merge = TRUE) {
+# bc_prediction {{{
+bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
     if (is.null(private$m_log$stan$fit)) {
         abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
             "because Stan data is not available. Please use `$stan_run()` to ",
-            "retrieve output of Bayesican calibration before caling `$data_pred()`."
+            "retrieve output of Bayesican calibration before caling `$prediction()`."
         ))
     }
 
-    samples <- rstan::extract(private$m_log$stan$fit)
+    if (private$m_log$stan$custom_model) {
+        message("Customized Stan model was used during calibration, ",
+            "instead of the built-in model. ",
+            "epluspar may fail to extract predicted output values. ",
+            "Please do check the results to see if it is correct."
+        )
+    }
+
+    if (!"y_pred" %in% names(private$m_log$stan$fit@par_dims)) {
+        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
+            "distributions because the `tf` parameter is not found ",
+            "in the stanfit object. This may be caused by using a customized Stan ",
+            "model. Please check the input arguments when calling `$stan_run()`."
+        ))
+    }
+
+    y_pred <- rstan::extract(private$m_log$stan$fit, pars = "y_pred")$y_pred
 
     # get predictive inference y_pred and convert back to original scale
-    y_pred <- cal_y_pred(samples$y_pred,
+    y_pred <- cal_y_pred(y_pred,
         yc_mean = private$m_log$stan$yc_mean[[1L]],
         yc_sd = private$m_log$stan$yc_sd[[1L]],
         xf = private$m_log$data_field$input,
@@ -1980,6 +2022,49 @@ bc_data_pred <- function (super, self, private, all = FALSE, merge = TRUE) {
     set(y_pred, NULL, "case", NULL)
 
     combine_input_output_data(output = y_pred, all = all)$output
+}
+# }}}
+# bc_post_dist {{{
+bc_post_dist <- function (super, self, private) {
+    bc_assert_can_stan(super, self, private, stop = TRUE)
+
+    if (is.null(private$m_log$stan$fit)) {
+        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
+            "because Stan data is not available. Please use `$stan_run()` to ",
+            "retrieve output of Bayesican calibration before caling `$prediction()`."
+        ))
+    }
+
+    if (isTRUE(private$m_log$stan$custom_model)) {
+        message("Customized Stan model was used during calibration, ",
+            "instead of the built-in model. ",
+            "epluspar may fail to extract calibrated parameter distributions. ",
+            "Please do check the results to see if it is correct."
+        )
+    }
+
+    if (!"tf" %in% names(private$m_log$stan$fit@par_dims)) {
+        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
+            "distributions because the `tf` parameter is not found ",
+            "in the stanfit object. This may be caused by using a customized Stan ",
+            "model. Please check the input arguments when calling `$stan_run()`."
+        ))
+    }
+
+    tf <- as.data.table(rstan::extract(private$m_log$stan$fit, pars = "tf")$tf)
+    setnames(tf, unique(private$m_log$sample$value$name_par))
+
+    tf_min <- private$m_log$stan$tc_min
+    tf_max <- private$m_log$stan$tc_max
+
+    minmax_dnorm <- function (x, min, max) x * (max - min) + min
+
+    for (i in seq_len(ncol(tf))) {
+        set(tf, NULL, i, minmax_dnorm(tf[[i]], tf_min[[i]], tf_max[[i]]))
+    }
+
+    private$m_log$stan$tf <- copy(tf)
+    tf
 }
 # }}}
 # bc_stan_run {{{
@@ -1997,6 +2082,7 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
             chains = chains, iter = iter,
             ...
         )
+        private$m_log$stan$custom_model <- TRUE
     } else {
         if (!is.numeric(data_bc$yf) || !is.numeric(data_bc$yc)) {
             abort("error_bc_multi_output", paste0(
@@ -2010,13 +2096,13 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
             chains = chains, iter = iter, show_messages = echo,
             ...
         )
+        private$m_log$stan$custom_model <- FALSE
     }
 
     # store
     private$m_log$stan$fit <- fit
-    private$m_log$stan$data$x_pred
 
-    list(fit = fit, y_pred = bc_data_pred(super, self, private, all = all, merge = merge))
+    list(fit = fit, y_pred = bc_prediction(super, self, private, all = all, merge = merge))
 }
 # }}}
 # bc_stan_file {{{
@@ -3112,7 +3198,7 @@ init_data_bc <- function (yf, xf, x_pred, yc, xc, tc) {
     }
     # }}}
 
-    list(stan_data = stan_data, yc_mean = yc_mean, yc_sd = yc_sd)
+    list(stan_data = stan_data, yc_mean = yc_mean, yc_sd = yc_sd, tc_min = tc_min, tc_max = tc_max)
 }
 # }}}
 # cal_y_pred {{{

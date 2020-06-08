@@ -207,11 +207,20 @@ bc$data_bc()
 
 
 ## ------------------------------------------------
-## Method `BayesCalibJob$data_pred`
+## Method `BayesCalibJob$post_dist`
 ## ------------------------------------------------
 
 \dontrun{
-bc$data_pred()
+bc$post_dist()
+}
+
+
+## ------------------------------------------------
+## Method `BayesCalibJob$prediction`
+## ------------------------------------------------
+
+\dontrun{
+bc$prediction()
 }
 
 
@@ -412,7 +421,8 @@ Hongyuan Jia, Adrian Chong
 \item \href{#method-data_sim}{\code{BayesCalibJob$data_sim()}}
 \item \href{#method-data_field}{\code{BayesCalibJob$data_field()}}
 \item \href{#method-data_bc}{\code{BayesCalibJob$data_bc()}}
-\item \href{#method-data_pred}{\code{BayesCalibJob$data_pred()}}
+\item \href{#method-post_dist}{\code{BayesCalibJob$post_dist()}}
+\item \href{#method-prediction}{\code{BayesCalibJob$prediction()}}
 \item \href{#method-eplus_run}{\code{BayesCalibJob$eplus_run()}}
 \item \href{#method-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
 \item \href{#method-eplus_status}{\code{BayesCalibJob$eplus_status()}}
@@ -1341,11 +1351,44 @@ bc$data_bc()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-data_pred"></a>}}
-\subsection{Method \code{data_pred()}}{
-Extract prediction data
+\if{html}{\out{<a id="method-post_dist"></a>}}
+\subsection{Method \code{post_dist()}}{
+Extract posterior distributions of calibrated parameters
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$data_pred(all = FALSE, merge = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$post_dist()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$post_dist()} extracted calibrated parameter posterior distributions
+based on the results of
+\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+and returns a \code{\link[data.table:data.table]{data.table::data.table()}} with each parameter values
+filling one column. The parameter names are defined by the \code{.names}
+arguments in the
+\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}}.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+bc$post_dist()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-prediction"></a>}}
+\subsection{Method \code{prediction()}}{
+Extract predictions of output variables
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BayesCalibJob$prediction(all = FALSE, merge = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1367,7 +1410,7 @@ Default: \code{TRUE}.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-\verb{$data_pred()} calculates predicted output variable values based
+\verb{$prediction()} calculates predicted output variable values based
 on the results of
 \href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
 and returns a \code{\link[data.table:data.table]{data.table::data.table()}} which combines the output of
@@ -1405,7 +1448,7 @@ A \code{\link[data.table:data.table]{data.table::data.table()}}.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-bc$data_pred()
+bc$prediction()
 }
 
 }
@@ -2205,7 +2248,7 @@ returns a list of 2 elements:
 \itemize{
 \item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
 \item \code{y_pred}: The output of
-\href{../../epluspar/html/BayesCalibJob.html#method-data_pred}{\code{$data_pred()}}
+\href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
 }
 }
 
