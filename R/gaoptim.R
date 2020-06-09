@@ -110,8 +110,8 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         # }}}
 
         # validate {{{
-        validate = function (param = NULL, verbose = TRUE)
-            gaopt_validate(super, self, private, param = param, verbose = verbose),
+        validate = function (param = NULL, ddy_only = TRUE, verbose = TRUE)
+            gaopt_validate(super, self, private, param = param, ddy_only = ddy_only, verbose = verbose),
         # }}}
 
         # run {{{
@@ -580,7 +580,7 @@ gaopt_gen_fitness_obj <- function (super, self, private, idf, param) {
 }
 # }}}
 # gaopt_validate {{{
-gaopt_validate <- function (super, self, private, param = NULL, verbose = TRUE) {
+gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE, verbose = TRUE) {
     if (verbose) message("Checking if parameter(s) has been set ...")
     assert_ready_parameter(super, self, private)
 
@@ -596,11 +596,25 @@ gaopt_validate <- function (super, self, private, param = NULL, verbose = TRUE) 
 
     if (verbose) message("Validating objective function(s)...")
     # check if model has DDY
-    if (!"SizingPeriod:DesignDay" %in% idf$class_name()) {
-        if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
-        idf$run(private$m_epws_path[[1]], echo = FALSE)
+    if (isTRUE(ddy_only)) {
+        if ("SizingPeriod:DesignDay" %in% idf$class_name()) {
+            idf$run(NULL, echo = FALSE)
+        } else {
+            if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
+            idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
+            idf$run(private$m_epws_path[[1]], echo = FALSE)
+        }
     } else {
-        idf$run(NULL, echo = FALSE)
+        idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
+        idf$run(private$m_epws_path[[1]], echo = FALSE)
+    }
+
+    if (!isTRUE(idf$last_job()$status()$successful)) {
+        stop("Validation failed. Test simulation did not complete successfully. ",
+            "The error messages are:\n",
+            paste(paste0("  > ", capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
+            call. = FALSE
+        )
     }
 
     objective <- private$m_log$objective
