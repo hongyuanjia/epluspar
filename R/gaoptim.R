@@ -910,8 +910,8 @@ print.FloatRange <- function (x, ...) {
 # choice_space {{{
 #' @export
 choice_space <- function (choices, init = choices[1]) {
-    assert(is.character(choices), !anyNA(choices))
-    assert(eplusr:::is_string(init), init %in% choices)
+    assert(is.character(choices) || is.numeric(choices), !anyNA(choices))
+    assert(eplusr:::is_string(init) || eplusr:::is_number(init), init %in% choices)
     structure(list(x = choices, init = init), class = c("ChoiceSpace", "ParamSpace"))
 }
 #' @export
