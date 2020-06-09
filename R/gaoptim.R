@@ -119,25 +119,19 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
             gaopt_run(super, self, private, mu, p_recomb, p_mut, dir, wait, parallel),
         # }}}
 
-        # pareto_front {{{
-        pareto_front = function ()
-            gaopt_pareto_front(super, self, private),
+        # best_set {{{
+        best_set = function (unique = TRUE)
+            gaopt_best_set(super, self, private, unique = unique),
         # }}}
 
         # pareto_set {{{
-        pareto_set = function ()
-            gaopt_pareto_front(super, self, private),
+        pareto_set = function (unique = TRUE)
+            gaopt_pareto_set(super, self, private, unique = unique),
         # }}}
 
         # population {{{
         population = function ()
             gaopt_population(super, self, private),
-        # }}}
-
-        # plot {{{
-        # plot results
-        plot = function (pareto_front = TRUE, pareto_set = TRUE)
-            gaopt_plot(super, self, private, pareto_front, pareto_set),
         # }}}
 
         # print {{{
@@ -819,23 +813,69 @@ gaopt_population <- function (super, self, private) {
         return(invisible())
     }
 
-    pop <- res$log$env$pop[res$log$env$n.gens]
+    pop <- res$log$env$pop[1:res$log$env$n.gens]
 
-    combine_results <- function (result) {
-        pop <- rbindlist(result$population)
-        fit <- as.data.table(t(result$fitness))
-        set(pop, NULL, names(fit), fit)
-        set(pop, NULL, "index_ind", seq_len(nrow(pop)))
-        setcolorder(pop, "index_ind")
+    extract_population(pop, private$m_log$objective)
+}
+# }}}
+# gaopt_pareto_set {{{
+gaopt_pareto_set <- function (super, self, private, unique = TRUE) {
+    res <- private$m_log$results
+
+    if (is.null(res)) {
+        message("Optimization has not been run before.")
+        return(invisible())
     }
 
-    results <- lapply(pop, combine_results)
+    if (private$m_ctrl$task$n.objectives < 2L) {
+        message("'$pareto_set()' only works for multi-objective optimization problem.")
+        return(invisible())
+    }
 
-    for (i in seq_along(results)) set(results[[i]], NULL, "index_gen", i)
-    results <- rbindlist(results)
-    setcolorder(results, "index_gen")
+    if (unique) {
+        pset <- extract_population(list(list(population = res$pareto.set)),
+            private$m_log$objective
+        )
 
-    results
+        set(pset, NULL, "index_gen", NULL)
+        setnames(pset, "index_ind", "index")
+    } else {
+        pop <- gaopt_population(super, self, private)
+        pset <- get_nondominated(pop, private$m_log$objective)
+        pset[, index := .I]
+        setcolorder(pset, "index")
+    }
+
+    pset
+}
+# }}}
+# gaopt_best_set {{{
+gaopt_best_set <- function (super, self, private, unique = TRUE) {
+    res <- private$m_log$results
+
+    if (is.null(res)) {
+        message("Optimization has not been run before.")
+        return(invisible())
+    }
+
+    if (private$m_ctrl$task$n.objectives != 1L) {
+        message("'$best_set()' only works for single-objective optimization problem.")
+        return(invisible())
+    }
+
+    pset <- extract_population(list(list(population = res$best.x)),
+        private$m_log$objective
+    )
+
+    set(pset, NULL, c("index_gen", "index_ind"), NULL)
+    if (unique) return(pset)
+
+    population <- gaopt_population(super, self, private)
+    pset <- population[pset, on = names(pset)]
+    pset[, index := .I]
+    setcolorder(pset, c("index", "index_gen", "index_ind"))
+
+    pset[]
 }
 # }}}
 
@@ -1059,5 +1099,45 @@ save_gen_log <- function (population, fitness, generation, objective, path, appe
     data.table::setcolorder(pop, c("gen", "index_ind"))
 
     data.table::fwrite(pop, path, append = append)
+}
+# }}}
+# extract_population {{{
+extract_population <- function (population, objective, pareto = FALSE) {
+    combine_results <- function (result) {
+        pop <- rbindlist(result$population)
+        if ("fitness" %in% names(result)) {
+            fit <- as.data.table(t(result$fitness))
+        } else {
+            fit <- as.data.table(t(sapply(result$population, attr, "fitness", simplify = "array")))
+        }
+        set(pop, NULL, names(fit), fit)
+        set(pop, NULL, "index_ind", seq_len(nrow(pop)))
+        setcolorder(pop, names(fit))
+    }
+
+    results <- lapply(population, combine_results)
+
+    for (i in seq_along(results)) set(results[[i]], NULL, "index_gen", i)
+    results <- rbindlist(results)
+
+    # get objective names
+    nm <- unlist(mapply(name = objective$name, dim = objective$dim, SIMPLIFY = FALSE,
+        FUN = function (name, dim) {
+            if (dim == 1L) return(name)
+            paste(name, seq_len(dim))
+        }
+    ))
+
+    setnames(results, names(results)[seq_along(nm)], nm)
+    setcolorder(results, c("index_gen", "index_ind"))
+    setcolorder(results, setdiff(names(results), nm))
+    results
+}
+# }}}
+# get_nondominated {{{
+get_nondominated <- function (population, objective) {
+    d <- sum(objective$dim)
+    objs <- t(as.matrix(population[, .SD, .SDcols = (ncol(population) - d + 1) : ncol(population)]))
+    population[ecr::nondominated(objs)]
 }
 # }}}
