@@ -47,8 +47,18 @@ get_priv_env <- function (x) {
 }
 # }}}
 
+# ecr {{{
+doTerminate <- get("doTerminate", envir = asNamespace("ecr"))
+makeECRResult <- get("makeECRResult", envir = asNamespace("ecr"))
+makeFitnessMatrix <- function (fitness, control) {
+    setattr(fitness, "class", c("ecr_fitness_matrix", class(fitness)))
+    setattr(fitness, "minimize", control$task$minimize)
+    fitness
+}
+# }}}
+
 # init var{{{
-`.` <- `..` <- `.GRP` <- `.I` <- `.N` <- `.SD` <- `.BY` <- `.EACHI` <- J <- N <- V1 <- V2 <- NULL
+`.` <- `..` <- `.GRP` <- `.I` <- `.N` <- `.SD` <- `.BY` <- `.EACHI` <- J <- N <- NULL
 
 utils::globalVariables(c(
      ".BY", "i.value_id", "param_index", "param_name", "type", "value_id",

@@ -47,7 +47,7 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         #' }
         #'
         initialize = function (idf, epw) {
-            eplusr:::with_silent(super$initialize(idf, epw))
+            eplusr::with_silent(super$initialize(idf, epw))
 
             # init controller
             private$m_ctrl <- ecr::initECRControl(identity, 1L)
@@ -421,7 +421,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
         ecr::updateLogger(private$m_logger, population, fitness, n.evals = mu)
 
         cli::cat_line("  * Check whether terminator conditions are met")
-        stop.object <- ecr:::doTerminate(private$m_logger, private$m_log$term)
+        stop.object <- doTerminate(private$m_logger, private$m_log$term)
 
         if (length(stop.object) > 0L) {
             cli::cat_rule("Terminated")
@@ -430,7 +430,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
         }
     }
 
-    private$m_log$results <- ecr:::makeECRResult(private$m_ctrl, private$m_logger, population, fitness, stop.object)
+    private$m_log$results <- makeECRResult(private$m_ctrl, private$m_logger, population, fitness, stop.object)
 
     private$m_log$results
 
@@ -668,7 +668,7 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
         sprintf("Gen%i_Ind%i.idf", gen, seq_along(population))
     )
 
-    if (eplusr:::is_flag(parallel)) {
+    if (checkmate::test_flag(parallel)) {
         if (parallel) {
             future::plan(future::multiprocess)
         } else {
@@ -683,7 +683,7 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
         MoreArgs = list(super = super, self = self, private = private, weather = weather),
         SIMPLIFY = FALSE
     )
-    ecr:::makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
+    makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
 }
 # }}}
 # gaopt_gen_offspring {{{
@@ -794,7 +794,7 @@ gaopt_register_operator <- function (super, self, private, slot, fun, ...) {
 # }}}
 # gaopt_update_logger {{{
 gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
-    ecr::updateLogger(private$m_logger, pop, fitness, n.evals = mu)
+    ecr::updateLogger(private$m_logger, pop, fitness, n.evals = n.evals)
 
     # add time passed
     private$m_logger$env$time.end <- Sys.time()
@@ -912,6 +912,11 @@ print.FloatSpace <- function (x, ...) {
 format.FloatRange <- function (x, ...) {
     sprintf("[%s, %s]", x[[1]], x[[2]])
 }
+
+#' Print float parameter
+#'
+#' @param x A `FloatRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 print.FloatRange <- function (x, ...) {
     cat(format.FloatRange(x), "\n", sep = "")
@@ -939,6 +944,11 @@ format.ChoiceSpace <- function (x, ...) {
     val <- if (length(x$x) > 3L) c(x$x[1:3], "...") else x$x
     sprintf("%s | Init: '%s'", paste0(val, collapse = ", "), x$init)
 }
+
+#' Print choice parameter
+#'
+#' @param x A `ChoiceRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 print.ChoiceSpace <- function (x, ...) {
     cat(format.ChoiceSpace(x), "\n", sep = "")
@@ -978,6 +988,11 @@ format.IntegerSpace <- format.ChoiceSpace
 print.IntegerSpace <- print.ChoiceSpace
 #' @export
 format.IntegerRange <- format.ChoiceRange
+
+#' Print integer parameter
+#'
+#' @param x An `IntegerRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 printf.IntegerRange <- print.ChoiceRange
 # }}}
@@ -1039,6 +1054,15 @@ flatten_list <- function (lst, recursive = FALSE, use.names = FALSE) {
 }
 # }}}
 # setwith {{{
+#' Partial apply a operator, filling in some arguments.
+#'
+#' @description
+#' `setwith()` allows you to modify an operator by pre-filling
+#' some of the arguments.
+#'
+#' @param fun An `ecr_operator` object
+#' @param ... Named arguments to `fun` that should be partially applied.
+#' @return An `ecr_operator_setwith` object
 #' @export
 setwith <- function (fun, ...) {
     checkmate::assert_class(fun, "ecr_operator")
@@ -1046,12 +1070,12 @@ setwith <- function (fun, ...) {
 }
 # }}}
 # stopOnMaxTime {{{
-#' Stopping on Maximum Time of evaluations
+#' Stopping on Maximum Time of Evaluations
 #'
 #' @description
 #' Stop the EA after a given cutoff time.
 #'
-#' @param max.time [\code{integer(1)}] Time limit in seconds. Default: `NULL`.
+#' @param max.time Time limit in seconds. Default: `NULL`.
 #' @return An `ecr_terminator` object
 #' @export
 stopOnMaxTime <- function(max.time = NULL) {
@@ -1074,12 +1098,13 @@ stopOnMaxTime <- function(max.time = NULL) {
 }
 # }}}
 # mutRandomChoice {{{
-#' @title Random Choice Mutator
+#' Random Choice Mutator
 #'
 #' @description
 #' "Random Choice" mutation operator for discrete parameters: with probability
 #'  `p` chooses one of the available categories at random (this *may* be
 #'  the original value!)
+#'
 #' @param ind `[character]` individual to mutate.
 #' @param values `[list of character]` set of possible values for `ind` entries
 #' to take. May be a list of length 1, in which case it is recycled.

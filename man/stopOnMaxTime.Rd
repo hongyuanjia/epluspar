@@ -2,12 +2,12 @@
 % Please edit documentation in R/gaoptim.R
 \name{stopOnMaxTime}
 \alias{stopOnMaxTime}
-\title{Stopping on Maximum Time of evaluations}
+\title{Stopping on Maximum Time of Evaluations}
 \usage{
 stopOnMaxTime(max.time = NULL)
 }
 \arguments{
-\item{max.time}{\link{\code{integer(1)}} Time limit in seconds. Default: \code{NULL}.}
+\item{max.time}{Time limit in seconds. Default: \code{NULL}.}
 }
 \value{
 An \code{ecr_terminator} object

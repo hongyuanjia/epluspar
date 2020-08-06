@@ -98,7 +98,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
             # do not allow NULL for epw
             if (is.null(epw)) abort("'epw' must be specified.")
 
-            eplusr:::with_silent(super$initialize(idf, epw))
+            eplusr::with_silent(super$initialize(idf, epw))
 
             # remove all output variables and meters
             private$m_seed <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
@@ -1610,7 +1610,7 @@ bc_remove_output_class <- function (super, self, private, all = TRUE, clone = FA
     }
 
     if (length(out_cls)) {
-        eplusr:::with_silent(idf$del(idf$object_id(out_cls, simplify = TRUE), .force = TRUE))
+        eplusr::with_silent(idf$del(idf$object_id(out_cls, simplify = TRUE), .force = TRUE))
     }
 
     idf
@@ -1630,11 +1630,11 @@ bc_run_ddy <- function (super, self, private) {
     # one single design day should be sufficient to get rdd and mdd
     # remove others to speed up
     if ((num <- idf$object_num("SizingPeriod:DesignDay")) > 1L) {
-        eplusr:::with_silent(idf$del(idf$object_id("SizingPeriod:DesignDay", simplify = TRUE)[2L:num]))
+        eplusr::with_silent(idf$del(idf$object_id("SizingPeriod:DesignDay", simplify = TRUE)[2L:num]))
     }
 
-    eplusr:::with_silent(idf$save(tempfile(fileext = ".idf")))
-    job <- eplusr:::with_silent(idf$run(NULL, dir = tempdir(), echo = FALSE))
+    eplusr::with_silent(idf$save(tempfile(fileext = ".idf")))
+    job <- eplusr::with_silent(idf$run(NULL, dir = tempdir(), echo = FALSE))
 
     if (is.na(job$status()$successful) || !job$status()$successful) {
         abort("Failed to run design-day-only simulation.", "bc_ddy_run")
@@ -2215,7 +2215,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     if (is.null(key_value) && is.null(name) && is.null(reporting_frequency)) {
         if (is.null(append)) {
             if (NROW(private[[m_name]])) {
-                eplusr:::with_silent(private$m_seed$del(private[[m_name]]$id, .force = TRUE))
+                eplusr::with_silent(private$m_seed$del(private[[m_name]]$id, .force = TRUE))
             }
             private[[m_name]] <- NULL
         }
@@ -3023,7 +3023,7 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
         }
         set(dt_spe, NULL, "key_value_upper", NULL)
         if (nrow(dt_spe)) {
-            set(dt_spe, NULL, "case", as.integer(stringi::stri_extract_first_regex(dt_spe$case, "\\d+")))
+            set(dt_spe, NULL, "case", as.integer(gsub("Case(\\d+).*", "\\1", dt_spe$case)))
         }
     } else {
         dt_spe <- data.table()
