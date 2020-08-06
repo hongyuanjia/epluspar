@@ -36,7 +36,7 @@ lpad <- function(x, char = " ", width = NULL) {
 str_trunc <- function (x, width = cli::console_width()) {
     w <- nchar(x, "width")
     tr <- w > (0.95 * width)
-    x[tr] <- paste0(substring(x[tr], 1L, to = w - 5L), "...")
+    x[tr] <- paste0(substring(x[tr], 1L, w - 5L), "...")
     x
 }
 # }}}
@@ -45,4 +45,13 @@ str_trunc <- function (x, width = cli::console_width()) {
 get_priv_env <- function (x) {
     .subset2(.subset2(x, ".__enclos_env__"), "private")
 }
+# }}}
+
+# init var{{{
+`.` <- `..` <- `.GRP` <- `.I` <- `.N` <- `.SD` <- `.BY` <- `.EACHI` <- J <- N <- V1 <- V2 <- NULL
+
+utils::globalVariables(c(
+     ".BY", "i.value_id", "param_index", "param_name", "type", "value_id",
+     "value_num"
+))
 # }}}

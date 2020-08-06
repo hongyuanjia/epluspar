@@ -53,10 +53,9 @@ Hongyuan Jia
 \item \href{#method-terminator}{\code{GAOptimJob$terminator()}}
 \item \href{#method-validate}{\code{GAOptimJob$validate()}}
 \item \href{#method-run}{\code{GAOptimJob$run()}}
-\item \href{#method-pareto_front}{\code{GAOptimJob$pareto_front()}}
+\item \href{#method-best_set}{\code{GAOptimJob$best_set()}}
 \item \href{#method-pareto_set}{\code{GAOptimJob$pareto_set()}}
 \item \href{#method-population}{\code{GAOptimJob$population()}}
-\item \href{#method-plot}{\code{GAOptimJob$plot()}}
 \item \href{#method-print}{\code{GAOptimJob$print()}}
 }
 }
@@ -85,6 +84,7 @@ Hongyuan Jia
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 Create a \code{GAOptimJob} object
 \subsection{Usage}{
@@ -129,6 +129,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-param"></a>}}
+\if{latex}{\out{\hypertarget{method-param}{}}}
 \subsection{Method \code{param()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$param(..., .names = NULL)}\if{html}{\out{</div>}}
@@ -137,6 +138,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-apply_measure"></a>}}
+\if{latex}{\out{\hypertarget{method-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$apply_measure(measure, ..., .names = NULL)}\if{html}{\out{</div>}}
@@ -145,6 +147,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-objective"></a>}}
+\if{latex}{\out{\hypertarget{method-objective}{}}}
 \subsection{Method \code{objective()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$objective(..., .n = NULL, .dir = "min")}\if{html}{\out{</div>}}
@@ -153,6 +156,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-recombinator"></a>}}
+\if{latex}{\out{\hypertarget{method-recombinator}{}}}
 \subsection{Method \code{recombinator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$recombinator(
@@ -166,6 +170,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-mutator"></a>}}
+\if{latex}{\out{\hypertarget{method-mutator}{}}}
 \subsection{Method \code{mutator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$mutator(
@@ -179,6 +184,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-selector"></a>}}
+\if{latex}{\out{\hypertarget{method-selector}{}}}
 \subsection{Method \code{selector()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$selector(
@@ -191,6 +197,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-terminator"></a>}}
+\if{latex}{\out{\hypertarget{method-terminator}{}}}
 \subsection{Method \code{terminator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$terminator(
@@ -206,14 +213,16 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-validate}{}}}
 \subsection{Method \code{validate()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$validate(param = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$validate(param = NULL, ddy_only = TRUE, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-run"></a>}}
+\if{latex}{\out{\hypertarget{method-run}{}}}
 \subsection{Method \code{run()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$run(
@@ -228,23 +237,26 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-pareto_front"></a>}}
-\subsection{Method \code{pareto_front()}}{
+\if{html}{\out{<a id="method-best_set"></a>}}
+\if{latex}{\out{\hypertarget{method-best_set}{}}}
+\subsection{Method \code{best_set()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_front()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$best_set(unique = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-pareto_set"></a>}}
+\if{latex}{\out{\hypertarget{method-pareto_set}{}}}
 \subsection{Method \code{pareto_set()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_set()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_set(unique = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-population"></a>}}
+\if{latex}{\out{\hypertarget{method-population}{}}}
 \subsection{Method \code{population()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$population()}\if{html}{\out{</div>}}
@@ -252,15 +264,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\subsection{Method \code{plot()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$plot(pareto_front = TRUE, pareto_set = TRUE)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$print()}\if{html}{\out{</div>}}

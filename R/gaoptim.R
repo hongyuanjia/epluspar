@@ -605,7 +605,7 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
     if (!isTRUE(idf$last_job()$status()$successful)) {
         stop("Validation failed. Test simulation did not complete successfully. ",
             "The error messages are:\n",
-            paste(paste0("  > ", capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
+            paste(paste0("  > ", utils::capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
             call. = FALSE
         )
     }
@@ -880,7 +880,17 @@ gaopt_best_set <- function (super, self, private, unique = TRUE) {
 
 # HELPERS
 # float_space {{{
+#' Specify optimizatino parameter of float type
+#'
+#' @param min Minimum value
+#' @param max Maximum value
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `FloatSpace` object
 #' @export
+#'
+#' @examples
+#' float_space(1.0, 5.0)
 float_space <- function (min, max, init = mean(c(min, max))) {
     checkmate::assert_number(min)
     checkmate::assert_number(max)
@@ -909,7 +919,16 @@ print.FloatRange <- function (x, ...) {
 }
 # }}}
 # choice_space {{{
+#' Specify optimizatino parameter of character type
+#'
+#' @param choices A character vector of choices
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `ChoiceSpace` object
 #' @export
+#'
+#' @examples
+#' choice_space(c("Roughness", "Smooth"))
 choice_space <- function (choices, init = choices[1]) {
     checkmate::assert_character(choices, any.missing = FALSE)
     checkmate::assert_choice(init, choices)
@@ -937,7 +956,16 @@ print.ChoiceRange <- function (x, ...) {
 }
 # }}}
 # integer_space {{{
+#' Specify optimizatino parameter of integer type
+#'
+#' @param integers An integer vector.
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `IntegerSpace` object.
 #' @export
+#'
+#' @examples
+#' integer_space(1:5)
 integer_space <- function (integers, init = integers[1]) {
     integers <- checkmate::assert_integerish(integers, any.missing = FALSE, coerce = TRUE)
     init <- checkmate::assert_integerish(init, any.missing = FALSE, coerce = TRUE, len = 1L)
@@ -1018,6 +1046,13 @@ setwith <- function (fun, ...) {
 }
 # }}}
 # stopOnMaxTime {{{
+#' Stopping on Maximum Time of evaluations
+#'
+#' @description
+#' Stop the EA after a given cutoff time.
+#'
+#' @param max.time [\code{integer(1)}] Time limit in seconds. Default: `NULL`.
+#' @return An `ecr_terminator` object
 #' @export
 stopOnMaxTime <- function(max.time = NULL) {
     if (!is.null(max.time)) {
@@ -1039,6 +1074,17 @@ stopOnMaxTime <- function(max.time = NULL) {
 }
 # }}}
 # mutRandomChoice {{{
+#' @title Random Choice Mutator
+#'
+#' @description
+#' "Random Choice" mutation operator for discrete parameters: with probability
+#'  `p` chooses one of the available categories at random (this *may* be
+#'  the original value!)
+#' @param ind `[character]` individual to mutate.
+#' @param values `[list of character]` set of possible values for `ind` entries
+#' to take. May be a list of length 1, in which case it is recycled.
+#' @param p `[numeric(1)]` per-entry probability to perform mutation.
+#' @return `[character]`
 #' @importFrom checkmate assert_vector assert_list assert_number
 #' @export
 mutRandomChoice <- ecr::makeMutator(function(ind, values, p = 0.1) {
@@ -1051,12 +1097,22 @@ mutRandomChoice <- ecr::makeMutator(function(ind, values, p = 0.1) {
 
     assert_number(p, lower = 0, upper = 1)
 
-    mapply(function(i, v) if (runif(1) < p) sample(v, 1) else i, ind, values)
+    mapply(function(i, v) if (stats::runif(1) < p) sample(v, 1) else i, ind, values)
 
 }, supported = "custom")
 # }}}
 # recPCrossover {{{
 # borrowed from: https://github.com/compstat-lmu/mosmafs/blob/mosmafs-package/R/operators.R
+#' General Uniform Crossover
+#'
+#' @description
+#' Crossover recombination operator that crosses over each position iid with
+#' prob. `p` and can also be used for non-binary operators.
+#'
+#' @param inds `[list of any]` list of two individuals to perform uniform crossover on
+#' @param p `[numeric(1)]` per-entry probability to perform crossover.
+#' @param ...  further arguments passed on to the method.
+#' @return `[list of any]` The mutated individuals.
 #' @export
 recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
     assert_list(inds, len = 2, any.missing = FALSE)
@@ -1070,7 +1126,7 @@ recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
         stop("Argument p must have same length as individual or 1.")
     }
 
-    crossovers <- runif(length(inds[[1]])) < p
+    crossovers <- stats::runif(length(inds[[1]])) < p
 
     tmp <- inds[[1]][crossovers]
 
