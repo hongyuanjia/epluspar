@@ -20,8 +20,8 @@ test_that("BayesCalib Class", {
 
     # $input() {{{
     expect_null(bc$input(append = NULL))
-    expect_error(bc$input(name = "a"), class = "error_bc_invalid_input")
-    expect_error(bc$input(bc$read_mdd()), class = "error_bc_invalid_input")
+    expect_error(bc$input(name = "a"), class = "epluspar_error_bc_invalid_input")
+    expect_error(bc$input(bc$read_mdd()), class = "epluspar_error_bc_invalid_input")
 
     # using rdd or mdd
     expect_equal(bc$input(bc$read_rdd()[1L]),
@@ -36,14 +36,14 @@ test_that("BayesCalib Class", {
 
     # can stop if input one has already been set as output
     expect_null(bc$input(append = NULL))
-    expect_silent(bc$output(bc$read_rdd()[1L]))
-    expect_error(bc$input(bc$read_rdd()[1L]), class = "error_bc_invalid_input")
+    expect_is(bc$output(bc$read_rdd()[1L]), "data.table")
+    expect_error(bc$input(bc$read_rdd()[1L]), class = "epluspar_error_bc_invalid_input")
     expect_null(bc$output(append = NULL))
 
     # can stop if input reporting frequency is not the same as existing one
-    expect_silent(bc$input(bc$read_rdd()[1L]))
+    expect_is(bc$input(bc$read_rdd()[1L]), "data.table")
     expect_error(bc$input(bc$read_rdd()[1L], append = TRUE, reporting_frequency = "hourly"),
-        class = "error_bc_invalid_input"
+        class = "epluspar_error_bc_invalid_input"
     )
 
     # can customize reporting frequency
@@ -66,35 +66,35 @@ test_that("BayesCalib Class", {
     expect_null(bc$input(append = NULL))
 
     # input can not be inserted if there is one with key value being "*"
-    expect_silent(bc$input(bc$read_rdd()[1]))
+    expect_is(bc$input(bc$read_rdd()[1]), "data.table")
     expect_error(bc$input(bc$read_rdd()[1][, key_value := "Environment"], append = TRUE),
-        class = "error_bc_invalid_input"
+        class = "epluspar_error_bc_invalid_input"
     )
 
     # input with key value being "*" can not be inserted if there is one with
     # specific key value
-    expect_silent(bc$input(bc$read_rdd()[1][, key_value := "Environment"]))
-    expect_error(bc$input(bc$read_rdd()[1], append = TRUE), class = "error_bc_invalid_input")
+    expect_is(bc$input(bc$read_rdd()[1][, key_value := "Environment"]), "data.table")
+    expect_error(bc$input(bc$read_rdd()[1], append = TRUE), class = "epluspar_error_bc_invalid_input")
 
     # can stop if incorrect column supplied
-    expect_error(bc$input(data.frame()), class = "error_bc_invalid_input")
+    expect_error(bc$input(data.frame()), class = "epluspar_error_bc_invalid_input")
 
     # can stop if invalid class name supplied
-    expect_error(bc$input(data.table(class = "a", index = 1, value = "a")), class = "error_bc_invalid_input")
+    expect_error(bc$input(data.table(class = "a", index = 1, value = "a")), class = "epluspar_error_bc_invalid_input")
 
     # can stop if invalid index supplied
-    expect_error(bc$input(data.table(class = "Output:Variable", index = 1.1, value = "a")), class = "error_bc_invalid_input")
-    expect_error(bc$input(data.table(class = "Output:Variable", index = NA, value = "a")), class = "error_bc_invalid_input")
+    expect_error(bc$input(data.table(class = "Output:Variable", index = 1.1, value = "a")), class = "epluspar_error_bc_invalid_input")
+    expect_error(bc$input(data.table(class = "Output:Variable", index = NA, value = "a")), class = "epluspar_error_bc_invalid_input")
 
     # can stop if duplications
-    expect_error(bc$input(data.table(id = c(1L, 1L), class = "Output:Variable", index = c(1L, 1L), value = "a")), class = "error_bc_invalid_input")
+    expect_error(bc$input(data.table(id = c(1L, 1L), class = "Output:Variable", index = c(1L, 1L), value = "a")), class = "epluspar_error_bc_invalid_input")
 
     # can stop if invalid field number provided
-    expect_error(bc$input(data.table(id = 1L, class = "Output:Variable", index = 1:5, value = "a")), class = "error_bc_invalid_input")
-    expect_error(bc$input(data.table(id = 1L, class = "Output:Meter", index = 1:3, value = "a")), class = "error_bc_invalid_input")
+    expect_error(bc$input(data.table(id = 1L, class = "Output:Variable", index = 1:5, value = "a")), class = "epluspar_error_bc_invalid_input")
+    expect_error(bc$input(data.table(id = 1L, class = "Output:Meter", index = 1:3, value = "a")), class = "epluspar_error_bc_invalid_input")
 
     # can stop if Output:Meter is provided
-    expect_error(bc$input(rbindlist(list(rdd_to_load(bc$read_rdd()[1:2]), mdd_to_load(bc$read_mdd()[1:2])))), class = "error_bc_invalid_input")
+    expect_error(bc$input(rbindlist(list(rdd_to_load(bc$read_rdd()[1:2]), mdd_to_load(bc$read_mdd()[1:2])))), class = "epluspar_error_bc_invalid_input")
 
     expect_equal(bc$input(eplusr::rdd_to_load(bc$read_rdd()[1L], reporting_frequency = "hourly")),
         data.table(index = 1L, class = "Output:Variable", key_value = "*",
@@ -113,23 +113,23 @@ test_that("BayesCalib Class", {
     )
 
     # can take directly variable names
-    expect_silent(bc$input(
+    expect_is(class = "data.table", bc$input(
         c("Environment", "environment"),
         c("site outdoor air wetbulb temperature", "site outdoor air humidity ratio")
     ))
-    expect_silent(bc$input(
+    expect_is(class = "data.table", bc$input(
         c("Environment"),
         c("site outdoor air wetbulb temperature", "site outdoor air humidity ratio")
     ))
-    expect_silent(bc$input(
+    expect_is(class = "data.table", bc$input(
         name = c("site outdoor air wetbulb temperature", "site outdoor air humidity ratio")
     ))
     # }}}
 
     # $output() {{{
     # can stop if input one has already been set as output
-    expect_silent(bc$input(bc$read_rdd()[1L]))
-    expect_error(bc$output(bc$read_rdd()[1L]), class = "error_bc_invalid_output")
+    expect_is(bc$input(bc$read_rdd()[1L]), "data.table")
+    expect_error(bc$output(bc$read_rdd()[1L]), class = "epluspar_error_bc_invalid_output")
     # can stop if input reporting frequency is not the same
     expect_error(bc$output(mdd_to_load(bc$read_mdd()[1L]), reporting_frequency = "hourly"))
     # }}}
@@ -139,7 +139,7 @@ test_that("BayesCalib Class", {
     expect_null(bc$input(append = NULL))
     expect_null(bc$output(append = NULL))
     expect_message(bc$models())
-    expect_error(bc$param(), class = "error_bc_empty_param_input")
+    expect_error(bc$param())
     expect_message(
         bc$param(
             ZoneInfiltration_DesignFlowRate := list(flow_per_exterior_surface_area = c(0.0003, 0.001)),
@@ -149,10 +149,8 @@ test_that("BayesCalib Class", {
             `CoolSys1 Chiller 2` = list(reference_cop = c(1, 5)),
             VAV_1_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
             VAV_2_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
-            list(
-              VAV_3_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
-              VAV_5_Fan = list(fan_total_efficiency = c(0.1, 0.9))
-            ),
+            VAV_3_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
+            VAV_5_Fan = list(fan_total_efficiency = c(0.1, 0.9)),
             # num of simulations
             .num_sim = 2L
         ),
@@ -171,24 +169,23 @@ test_that("BayesCalib Class", {
     expect_null(m)
 
     # can create parametric models
-    expect_silent(bc$input(bc$read_rdd()[1L:2L]))
-    expect_silent(bc$output(bc$read_mdd()[1L:2L]))
-    expect_silent(m <- bc$models())
-    expect_is(m, "list")
+    expect_is(bc$input(bc$read_rdd()[1L:2L]), "data.table")
+    expect_is(bc$output(bc$read_mdd()[1L:2L]), "data.table")
+    expect_is(m <- bc$models(), "list")
     expect_true(all(sapply(m, eplusr::is_idf)))
     # }}}
 
     # $data_sim() {{{
     # can stop if invalid key value
-    expect_silent(bc$input(bc$read_rdd()[1L:2L][, key_value := "a"]))
+    expect_is(bc$input(bc$read_rdd()[1L:2L][, key_value := "a"]), "data.table")
     bc$eplus_run(tempdir(), echo = FALSE)
-    expect_error(bc$data_sim(), class = "error_bc_input_invalid_key_value")
+    expect_error(bc$data_sim(), class = "epluspar_error_bc_input_invalid_key_value")
 
-    expect_silent(bc$input(bc$read_rdd()[c(10, 4, 1)]))
+    expect_is(bc$input(bc$read_rdd()[c(10, 4, 1)]), "data.table")
     bc$eplus_run(tempdir(), run_period = list("bc", 1, 1, 1, 3), echo = FALSE)
 
     # can extract sim data
-    expect_silent(dt <- bc$data_sim())
+    expect_is(dt <- bc$data_sim(), "list")
     expect_equal(names(dt), c("input", "output"))
     expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
@@ -203,11 +200,11 @@ test_that("BayesCalib Class", {
     expect_equal(nrow(dt$output), 864)
 
     # can stop if input resolution is smaller than reporting frequency
-    expect_error(bc$data_sim(resolution = "1 min"), class = "error_bc_invalid_resolution")
+    expect_error(bc$data_sim(resolution = "1 min"), class = "epluspar_error_bc_invalid_resolution")
     # can stop if input resolution is not divisible by reporting frequency
-    expect_error(bc$data_sim(resolution = "13 min"), class = "error_bc_invalid_resolution")
+    expect_error(bc$data_sim(resolution = "13 min"), class = "epluspar_error_bc_invalid_resolution")
     # can change data resolution
-    expect_silent(dt <- bc$data_sim(resolution = "1 day"))
+    expect_is(dt <- bc$data_sim(resolution = "1 day"), "list")
     expect_equal(nrow(dt$input), 6)
     expect_equal(nrow(dt$output), 6)
     expect_equal(names(dt$input), c("case", "Date/Time",
@@ -220,7 +217,7 @@ test_that("BayesCalib Class", {
         "Electricity:Facility [J](1 Day)"
     ))
 
-    expect_silent(dt <- bc$data_sim(resolution = "1 month"))
+    expect_is(dt <- bc$data_sim(resolution = "1 month"), "list")
     expect_equal(nrow(dt$input), 2)
     expect_equal(nrow(dt$output), 2)
     expect_equal(names(dt$input), c("case", "Date/Time",
@@ -233,11 +230,11 @@ test_that("BayesCalib Class", {
         "Electricity:Facility [J](1 Month)"
     ))
 
-    expect_silent(dt <- bc$data_sim(exclude_ddy = FALSE))
+    expect_is(dt <- bc$data_sim(exclude_ddy = FALSE), "list")
     expect_equal(nrow(dt$input), 1440)
     expect_equal(nrow(dt$output), 1440)
 
-    expect_silent(dt <- bc$data_sim(all = TRUE))
+    expect_is(dt <- bc$data_sim(all = TRUE), "list")
     expect_equal(names(dt$input), c("case", "environment_period_index", "environment_name",
         "simulation_days", "datetime", "month", "day", "hour", "minute",
         "day_type", "Date/Time",
@@ -254,11 +251,11 @@ test_that("BayesCalib Class", {
     # }}}
 
     # $data_field() {{{
-    expect_error(bc$data_field(""), class = "error_bc_invalid_data_field_output")
-    expect_error(bc$data_field(data.frame()), class = "error_bc_invalid_data_field_output")
-    expect_error(bc$data_field(data.frame(a = 1:10, b = 11:20)), class = "error_bc_invalid_data_field_output")
+    expect_error(bc$data_field(""), class = "epluspar_error_bc_invalid_data_field_output")
+    expect_error(bc$data_field(data.frame()), class = "epluspar_error_bc_invalid_data_field_output")
+    expect_error(bc$data_field(data.frame(a = 1:10, b = 11:20)), class = "epluspar_error_bc_invalid_data_field_output")
 
-    expect_silent(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432)))
+    expect_is(dt <- bc$data_field(data.frame(a = 1:432, b = 1:432)), "list")
     expect_equal(names(dt), c("input", "output", "new_input"))
     expect_equal(names(dt$input), c("case", "Date/Time",
         "Environment:Site Horizontal Infrared Radiation Rate per Area [W/m2](TimeStep)",
@@ -275,12 +272,12 @@ test_that("BayesCalib Class", {
     # }}}
 
     # $data_bc() {{{
-    expect_silent(dt_sim <- bc$data_sim())
-    expect_silent(dt_field <- bc$data_field(data.frame(a = 1:432, b = 1:432)))
-    expect_silent(bc$data_bc())
-    expect_silent(bc$data_bc(data_sim = dt_sim))
-    expect_silent(bc$data_bc(data_field = dt_field))
-    expect_silent(bc$data_bc(data_field = dt_field, data_sim = dt_sim))
+    expect_is(dt_sim <- bc$data_sim(), "list")
+    expect_is(dt_field <- bc$data_field(data.frame(a = 1:432, b = 1:432)), "list")
+    expect_is(bc$data_bc(), "list")
+    expect_is(bc$data_bc(data_sim = dt_sim), "list")
+    expect_is(bc$data_bc(data_field = dt_field), "list")
+    expect_is(bc$data_bc(data_field = dt_field, data_sim = dt_sim), "list")
     # }}}
 
     # a whole game {{{
@@ -324,7 +321,7 @@ test_that("BayesCalib Class", {
     )
 
     # set simulation data
-    expect_silent(dt_sim <- bc$data_sim("6 hour"))
+    expect_is(dt_sim <- bc$data_sim("6 hour"), "list")
     expect_equal(names(dt_sim), c("input", "output"))
     expect_equal(names(dt_sim$input), c("case", "Date/Time",
         "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
@@ -362,7 +359,7 @@ test_that("BayesCalib Class", {
     ]
 
     # set field data
-    expect_silent(dt_fld <- bc$data_field(fan_power))
+    expect_is(dt_fld <- bc$data_field(fan_power), "list")
     expect_equal(names(dt_fld), c("input", "output", "new_input"))
     expect_equal(names(dt_fld$input), c("case", "Date/Time",
         "COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)",
@@ -377,7 +374,7 @@ test_that("BayesCalib Class", {
     expect_equal(nrow(dt_fld$new_input), 12)
 
     # check stan input
-    expect_silent(stan_data <- bc$data_bc())
+    expect_is(stan_data <- bc$data_bc(), "list")
     expect_equal(sapply(stan_data, function (x) class(x)[1]),
         c("n" = "integer", "n_pred" = "integer", "m" = "integer", "p" = "integer", "q" = "integer",
           "yf" = "numeric", "yc" = "numeric",
@@ -385,7 +382,7 @@ test_that("BayesCalib Class", {
         )
     )
 
-    expect_error(bc$prediction(), class = "error_bc_stan_not_ready")
+    expect_error(bc$prediction(), class = "epluspar_error_bc_stan_not_ready")
 
     # run stan
     suppressWarnings(res <- bc$stan_run(iter = 300, chains = 3))
@@ -401,7 +398,7 @@ test_that("BayesCalib Class", {
     ))
 
     expect_is(bc$stan_file(), "character")
-    expect_silent(f <- bc$stan_file(tempfile()))
+    expect_is(f <- bc$stan_file(tempfile()), "character")
     expect_equal(bc$stan_file(), readLines(f))
 
     expect_equivalent(bc$prediction(), res$y_pred)

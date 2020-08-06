@@ -195,14 +195,13 @@ gaoptim_job <- function (idf, epw) {
 # }}}
 
 # gaopt_apply_measure {{{
-# TODO: How to solve mixed-encoding problems?
 gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NULL) {
     # measure name
     measure_name <- deparse(substitute(measure, parent.frame()))
 
-    assert(is.function(measure), msg = "`measure` should be a function.")
+    checkmate::assert_function(measure)
     if (length(formals(measure)) < 2L) {
-        abort("error_measure_no_arg", "`measure` function must have at least two argument.")
+        abort("'measure' function must have at least two argument.", "ga_measure_no_arg")
     }
 
     # match fun arg
@@ -213,7 +212,7 @@ gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NU
 
     # stop if parameter contains reserved names
     if (any(names(l) %in% c(".float", ".integer", ".choice"))) {
-        abort("error_invalid_param", "Parameters cannot contain any internal reserved names ('.float', '.integer', and '.choice')")
+        abort("Parameters cannot contain any internal reserved names ('.float', '.integer', and '.choice')", "ga_invalid_param")
     }
 
     # get value
@@ -221,10 +220,10 @@ gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NU
         l[[nm]] <- eval(mc[-1L][[nm]])
 
         if (!inherits(l[[nm]], "ParamSpace")) {
-            abort("error_invalid_param", sprintf(
+            abort(sprintf(
                 "Each parameter should be a 'ParamSpace' object. Invalid input found: '%s' ('%s').",
                 nm, class(l[[nm]])[1L]
-            ))
+            ), "ga_invalid_param")
         }
     }
 
@@ -245,7 +244,7 @@ gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
     l <- eval(substitute(alist(...)))
 
     # stop if empty input
-    if (!length(l)) abort("error_empty_input", "Please give objective(s) to set.")
+    if (!length(l)) abort("Please give objective(s) to set.", "ga_empty_input")
 
     .dir <- match.arg(.dir, c("min", "max"))
     if (.dir == "min") {
@@ -278,9 +277,9 @@ gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
         args <- formals(l[[i]])
 
         if (!"idf" %in% names(args)) {
-            abort("error_objective_idf_arg", paste0(
+            abort(paste0(
                 "Objective function '", obj[[i]], "' must have an parameter named 'idf'."
-            ))
+            ), "ga_objective_idf_arg")
         }
     }
 
@@ -488,10 +487,10 @@ gaopt_init_population <- function (super, self, private, mu = 20L) {
     parameter <- private$m_log$parameter
 
     if (is.null(parameter)) {
-        abort("error_no_parameter", "No parameter has been set.")
+        abort("No parameter has been set.", "ga_no_parameter")
     }
 
-    assert(eplusr:::is_count(mu))
+    checkmate::assert_count(mu, positive = TRUE)
 
     # get parameter types
     type_par <- vapply(parameter, function (x) class(x)[1L], character(1))
@@ -556,17 +555,17 @@ gaopt_gen_fitness_obj <- function (super, self, private, idf, param) {
         }
 
         if (is.na(obj[[i]])) {
-            abort("error_optim_wrong_obj_val", sprintf(
+            abort(sprintf(
                 "Objective function '%s' returns value(s) of NA.",
                 objective$name[i]
-            ))
+            ), "ga_wrong_obj_val")
         }
 
         if (length(obj[[i]]) != objective$dim[i]) {
-            abort("error_optim_wrong_obj_dim", sprintf(
+            abort(sprintf(
                 "Objective function '%s' returns value(s) of wrong dimention '%i' (should be '%i').",
                 objective$name[i], length(obj[[i]]), objective$dim[i]
-            ))
+            ), "ga_wrong_obj_dim")
         }
     }
 
@@ -623,17 +622,17 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
         }
 
         if (!length(obj[[i]])) {
-            abort("error_invalid_objective", sprintf(
+            abort(sprintf(
                 "Objective function '%s' should return at least a length-one vector instead of a 0-length one.",
                 objective$name[[i]]
-            ))
+            ), "ga_invalid_objective")
         }
 
         if (!is.numeric(obj[[i]])) {
-            abort("error_invalid_objective", sprintf(
+            abort(sprintf(
                 "Objective function '%s' should return a numeric vector instead of a '%s' object.",
                 objective$name[[i]], class(obj[[i]])[[1]]
-            ))
+            ), "ga_invalid_objective")
         }
 
         if (verbose) message(sprintf("  [%i] '%s' --> OK", i, objective$name[[i]]))
@@ -883,8 +882,10 @@ gaopt_best_set <- function (super, self, private, unique = TRUE) {
 # float_space {{{
 #' @export
 float_space <- function (min, max, init = mean(c(min, max))) {
-    assert(is_number(min), is_number(max), is_number(init))
-    assert(min <= max, min <= init, init <= max)
+    checkmate::assert_number(min)
+    checkmate::assert_number(max)
+    if (min > max) abort("'min' should be no larger than 'max'.")
+    checkmate::assert_number(init, lower = min, upper = max)
     structure(list(min = min, max = max, init = init), class = c("FloatSpace", "ParamSpace"))
 }
 #' @export
@@ -910,8 +911,8 @@ print.FloatRange <- function (x, ...) {
 # choice_space {{{
 #' @export
 choice_space <- function (choices, init = choices[1]) {
-    assert(is.character(choices) || is.numeric(choices), !anyNA(choices))
-    assert(eplusr:::is_string(init) || eplusr:::is_number(init), init %in% choices)
+    checkmate::assert_character(choices, any.missing = FALSE)
+    checkmate::assert_choice(init, choices)
     structure(list(x = choices, init = init), class = c("ChoiceSpace", "ParamSpace"))
 }
 #' @export
@@ -938,8 +939,9 @@ print.ChoiceRange <- function (x, ...) {
 # integer_space {{{
 #' @export
 integer_space <- function (integers, init = integers[1]) {
-    assert(eplusr:::are_integer(integers))
-    assert(eplusr:::is_integer(init), init %in% integers)
+    integers <- checkmate::assert_integerish(integers, any.missing = FALSE, coerce = TRUE)
+    init <- checkmate::assert_integerish(init, any.missing = FALSE, coerce = TRUE, len = 1L)
+    checkmate::assert_choice(init, integers)
     structure(list(x = integers, init = init), class = c("IntegerSpace", "ParamSpace"))
 }
 #' @export
@@ -979,8 +981,8 @@ assert_ready_optim <- function (super, self, private) {
 # assert_ready_parameter {{{
 assert_ready_parameter <- function (super, self, private) {
     if (is.null(private$m_log$parameter)) {
-        abort("error_no_parameter",
-            "No parameter has been set. Please run '$apply_measure()' first."
+        abort("No parameter has been set. Please run '$apply_measure()' first.",
+            "ga_no_parameter"
         )
     }
 
@@ -990,8 +992,8 @@ assert_ready_parameter <- function (super, self, private) {
 # assert_ready_objective {{{
 assert_ready_objective <- function (super, self, private) {
     if (is.null(private$m_log$objective)) {
-        abort("error_no_objective",
-            "No objecive has been set. Please run '$objective()' first."
+        abort("No objecive has been set. Please run '$objective()' first.",
+            "ga_no_objective"
         )
     }
 
@@ -1011,7 +1013,7 @@ flatten_list <- function (lst, recursive = FALSE, use.names = FALSE) {
 # setwith {{{
 #' @export
 setwith <- function (fun, ...) {
-    assert(inherits(fun, "ecr_operator"))
+    checkmate::assert_class(fun, "ecr_operator")
     structure(list(fun = fun, args = list(...)),  class = "ecr_operator_setwith")
 }
 # }}}
@@ -1019,13 +1021,13 @@ setwith <- function (fun, ...) {
 #' @export
 stopOnMaxTime <- function(max.time = NULL) {
     if (!is.null(max.time)) {
-        assert(eplusr:::in_range(max.time, eplusr:::ranger(1L, TRUE)))
+        checkmate::assert_count(max.time, positive = TRUE)
     } else {
         max.time <- Inf
     }
     force(max.time)
 
-    condition.fun = function(log) {
+    condition.fun <- function(log) {
         return(log$env$time.passed >= max.time)
     }
 

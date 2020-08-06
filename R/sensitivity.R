@@ -269,19 +269,40 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' }
         #'
         evaluate = function (results)
-            sen_evaluate(self, private, results)
+            sen_evaluate(self, private, results),
+        # }}}
+
+        # print {{{
+        #' @description
+        #' Print `SensitivityJob` object
+        #'
+        #' @details
+        #' `$print()` shows the core information of this `SensitivityJob`,
+        #' including the path of IDFs and EPWs and also the simulation job
+        #' status.
+        #'
+        #' `$print()` is quite useful to get the simulation status, especially
+        #' when `wait` is `FALSE` in `$run()`. The job status will be updated
+        #' and printed whenever `$print()` is called.
+        #'
+        #' @return The `SensitivityJob` object itself, invisibly.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' sen$print()
+        #' }
+        #'
+        print = function ()
+            sen_print(self, private)
         # }}}
         # }}}
     ),
 
     private = list(
         # PRIVATE FIELDS {{{
-        m_seed = NULL,
-        m_idfs = NULL,
-        m_epws = NULL,
-        m_morris = NULL,
-        m_job = NULL,
-        m_log = NULL
+        m_param = NULL,
+        m_sample = NULL,
+        m_morris = NULL
         # }}}
     )
 )
@@ -324,99 +345,78 @@ sensi_job <- function (idf, epw) {
 # sen_param {{{
 sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump = 4L,
                        .scale = TRUE, .env = parent.frame()) {
-    assert(is_count(.r))
-    assert(is_count(.grid_jump))
+    checkmate::assert_count(.r, positive = TRUE)
+    checkmate::assert_count(.grid_jump, positive = TRUE)
 
-    l <- tryCatch(eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .null = FALSE, .env = .env),
-        error_empty_input = function (e) {
-            abort("error_sa_empty_param_input", "Please give parameters to set.")
-        }
+    # clean measure created using $apply_measure() if any
+    private$m_log$measure_wrapper <- NULL
+    private$m_log$measure_name <- NULL
+
+    l <- expand_param_specs(private$m_seed, ..., .env = .env, .names = .names, .specs_len = 3L)
+
+    # use sensitivity::morris to generate input
+    mo <- sensitivity::morris(model = NULL, factors = l$param$param_name, r = .r,
+        design = list(type = "oat", levels = l$param$levels, grid.jump = .grid_jump),
+        binf = l$param$min, bsup = l$param$max, scale = .scale
     )
 
-    # match Idf data
-    # TODO: `match_set_idf_data` should be generalized to be a helper for all
-    # `Idf$set()`'s friends, including `$add()`, `$load()`, `$update()`, and
-    # etc.
-    obj_val <- eplusr:::match_set_idf_data(
-        ._get_private(private$m_seed)$idd_env(),
-        ._get_private(private$m_seed)$idf_env(),
-        l
-    )
+    # get parameter sample value
+    samples <- data.table::as.data.table(mo$X)
+    samples[, case := .I]
+    data.table::setcolorder(samples, "case")
 
-    # handle whole-class case
-    cls <- l$dot[class == TRUE, rleid]
-    # get rid of R CMD check NOTE
-    dep <- V1 <- NULL
-    # handle .() case
-    flat <- l$dot[dep == 2L & class == FALSE, rleid]
-    multi <- l$object[J(flat), on = "rleid", .N > 1L, by = "rleid"][V1 == TRUE, rleid]
-    l$value <- data.table::rbindlist(list(
-        obj_val$value[J(c(cls, multi)), on = "input_rleid", .SD[1L], by = c("class_id", "field_index")],
-        obj_val$value[!J(c(cls, multi)), on = "input_rleid"]
-    ), use.names = TRUE)
+    idfs <- create_par_models(private$m_seed, l$param, samples, l$value, NULL)
 
-    # validate input
-    par <- validate_par_space(l, private$m_seed, "sa")
+    private$m_param <- l$param
+    private$m_sample <- samples
+    private$m_morris <- mo
+    private$m_idfs <- idfs
 
-    # sample
-    sam <- morris_samples(par, obj_val$value, .names, .r, .grid_jump, .scale)
-
-    private$m_morris <- sam$morris
-    private$m_log$sample <- sam[names(sam) != "morris"]
-
-    create_par_models(self, private, type = "sa")
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(idfs))
 
     self
 }
 # }}}
 # sen_apply_measure {{{
 sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE) {
-    # measure name
-    mea_nm <- deparse(substitute(measure, parent.frame()))
+    l <- match_param_measure(measure, ..., .specs_len = 3L, .env = parent.frame())
 
-    assert(is.function(measure), msg = "`measure` should be a function.")
-    if (length(formals(measure)) < 2L) {
-        abort("error_measure_no_arg", "`measure` function must have at least two argument.")
-    }
+    # use sensitivity::morris to generate input
+    mo <- sensitivity::morris(model = NULL, factors = l$param$param_name, r = .r,
+        design = list(type = "oat", levels = l$param$levels, grid.jump = .grid_jump),
+        binf = l$param$min, bsup = l$param$max, scale = .scale
+    )
 
-    # match fun arg
-    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
-    l <- vector("list", length(mc[-1L]))
-    names(l) <- names(mc[-1L])
-    # get value
-    for (nm in names(l)) l[[nm]] <- eval(mc[-1L][[nm]])
+    # get parameter sample value
+    samples <- data.table::as.data.table(mo$X)
+    samples[, case := .I]
+    data.table::setcolorder(samples, "case")
 
-    # check input format
-    par <- validate_par_space(l, type = "sa")
+    idfs <- create_par_models(private$m_seed, l$param, samples, measure = l$measure)
 
-    sam <- morris_samples(par, NULL, par$dot$dot_nm, .r, .grid_jump, .scale)
+    private$m_param <- l$param
+    private$m_sample <- samples
+    private$m_morris <- mo
+    private$m_idfs <- idfs
 
-    # store morris object
-    private$m_morris <- sam$morris
+    private$m_log$measure <- measure
+    private$m_log$measure_name <- l$name
 
-    # store
-    private$m_log$sample <- sam[names(sam) != "morris"]
-
-    measure_wrapper <- function (idf, ...) {
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should take an `Idf` object as input, not `", class(idf)[[1]], "`."))
-        idf <- idf$clone(deep = TRUE)
-        idf <- measure(idf, ...)
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should return an `Idf` object, not `", class(idf)[[1]], "`."))
-        idf
-    }
-
-    private$m_log$measure_wrapper <- measure_wrapper
-    private$m_log$measure_name <- mea_nm
-
-    create_par_models(self, private, type = "sa")
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(idfs))
 
     self
 }
 # }}}
 # sen_samples {{{
 sen_samples <- function (self, private) {
-    sen_assert_has_sampled(self, private, stop = FALSE)
-    private$m_log$sample$sample
+    sen_assert_has_sampled(self, private)
+    private$m_sample
 }
 # }}}
 # sen_evaluate {{{
@@ -424,13 +424,14 @@ sen_evaluate <- function (self, private, results) {
     sen_assert_can_evaluate(self, private)
 
     if (!is.data.frame(results)) {
-        assert(is.numeric(results), no_na(results))
+        checkmate::assert_number(results)
     } else {
         type <- vapply(results, typeof, character(1L))
 
         if (any(!type %in% c("integer", "double"))) {
-            abort("error_sa_invalid_results", paste0("Non-numeric columns found in results: ",
-                paste0(sQuote(names(results)[!type %in% c("integer", "double")]), collapse = ", "))
+            abort(paste0("Non-numeric columns found in results: ",
+                paste0(sQuote(names(results)[!type %in% c("integer", "double")]), collapse = ", ")),
+                "error_sa_invalid_results"
             )
         }
     }
@@ -442,18 +443,45 @@ sen_evaluate <- function (self, private, results) {
     private$m_morris
 }
 # }}}
+# sen_print {{{
+#' @importFrom cli cat_line
+sen_print <- function (self, private) {
+    eplusr:::print_job_header(title = "EnergPlus Sensitivity Analysis Job",
+        path_idf = private$m_seed$path(),
+        path_epw = private$m_epws_path,
+        eplus_ver = private$m_seed$version(),
+        name_idf = "Seed", name_epw = "Weather"
+    )
+
+    if (is.null(private$m_idfs)) {
+        cli::cat_line("<< No parameter has been set yet >>",
+            col = "white", background_col = "blue")
+        return(invisible())
+    }
+
+    cli::cat_line(c(
+        sprintf("Applied Measure: '%s'", private$m_log$measure_name),
+        sprintf("Parameters [%i]", nrow(private$m_param)),
+        private$m_param[, sprintf("[%s]: '%s' [%s, %s] (lvl: %i)",
+            param_index, param_name, min, max, levels)],
+        paste0("Parametric Models [", length(private$m_idfs), "]: ")
+    ))
+
+    eplusr:::epgroup_print_status(self, private, epw = FALSE)
+}
+# }}}
 
 # sen_assert_has_sampled {{{
 sen_assert_has_sampled <- function (self, private, stop = FALSE) {
     if (is.null(private$m_morris)) {
         if (stop) {
-            abort("error_sa_not_ready", paste0("No sensitivity samples are generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+            abort(paste0("No sensitivity samples are generated. ",
+                "Please use '$param()' or '$apply_measure()' to set parameters and ",
                 "perform Morris sampling."
-            ))
+            ), "sa_not_ready")
         } else {
             message("No sensitivity samples are generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "Please use '$param()' or '$apply_measure()' to set parameters and ",
                 "perform Morris sampling."
             )
             return(FALSE)
@@ -465,7 +493,7 @@ sen_assert_has_sampled <- function (self, private, stop = FALSE) {
 # sen_assert_can_evaluate {{{
 sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
     if (stop) {
-        fun <- function (...) abort("error_sa_not_ready", paste0(...))
+        fun <- function (...) abort(paste0(...), "sa_not_ready")
     } else {
         fun <- message
     }
@@ -483,113 +511,7 @@ sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
     TRUE
 }
 # }}}
-# case_names {{{
-case_names <- function (sample, minlength = 5L) {
-    case_names <- do.call(paste,
-        c(
-            mapply(function (name, value) paste0(name, "(", prettyNum(value), ")"),
-                # only use first 5 character to keep it short
-                name = abbreviate(names(sample), minlength, use.classes = FALSE),
-                value = sample, SIMPLIFY = FALSE
-            ),
-            sep = "_"
-        )
-    )
-    paste0(seq_along(case_names), "_", substring(case_names, 1L, 94L))
-}
-# }}}
-# par_names {{{
-par_names <- function (par, names = NULL, type = c("sa", "bc")) {
-    if (is.null(names)) {
-        type <- match.arg(type)
-        nm <- if (type == "sa") "theta" else "t"
-        paste0(nm, seq_len(nrow(par$num$meta)))
-    } else {
-        assert(length(names) == nrow(par$num$meta), msg = paste0(
-            "`.name` should have the same length as number of input parameters, which is ",
-            nrow(par$num$meta), "."
-        ))
-        as.character(names)
-    }
-}
-# }}}
-# morris_samples {{{
-morris_samples <- function (par, value = NULL, names = NULL, r, grid_jump, scale) {
-    fctr <- par_names(par, names)
 
-    # use sensitivity::morris to generate input
-    mo <- sensitivity::morris(model = NULL, factors = fctr, r = r,
-        design = list(type = "oat", levels = par$num$meta$levels, grid.jump = grid_jump),
-        binf = par$num$meta$min, bsup = par$num$meta$max, scale = scale
-    )
-
-    # get parameter value
-    val <- data.table::as.data.table(mo$X)
-
-    # get case name
-    nms <- case_names(val)
-
-    # number the case
-    val[, case := .I]
-    data.table::setcolorder(val, "case")
-
-    # melt
-    val_m <- data.table::melt.data.table(val, id.vars = "case",
-        variable.name = "name_par", value.name = "value",
-        variable.factor = FALSE
-    )[, `:=`(value = as.list(value))]
-
-    # add parameter index
-    val_m[data.table(index_par = seq_along(fctr), name_par = fctr),
-        on = "name_par", index_par := i.index_par
-    ]
-
-    # combine
-    if (!is.null(value)) {
-        # format val for `Idf$update()`
-        val_m <- match_sample_data(par, val_m, value)
-    }
-
-    list(names = nms, morris = mo, sample = val, value = val_m)
-}
-# }}}
-# match_sample_data {{{
-match_sample_data <- function (par, sample, value) {
-    sample <- par$num$data[, list(value_rleid, name = object_name, class = class_name,
-        index = field_index, field = field_name, is_sch_value, class_id
-    )][sample, on = c("value_rleid" = "index_par")]
-    # change value column to list
-    set(sample, NULL, "value", as.list(sample$value))
-    setnames(sample, "value_rleid", "index_par")
-
-    # if schedule value detected, change it to character
-    sample[J(TRUE), on = "is_sch_value", value := lapply(value, as.character)][
-        , is_sch_value := NULL]
-
-    # this is necessary to get the right order of val
-    data.table::setorder(sample, "case")
-    data.table::setcolorder(sample, c("case", "index_par", "name_par", "class",
-        "name", "index", "field", "value"
-    ))
-
-    # handle grouped parameters
-    grp <- par$dot[, list(grouped = class || vapply(dot_nm, length, 1L) > 1L), by = c("rleid")][
-        grouped == TRUE
-    ]
-
-    # get parameter index
-    target <- value[, list(id = object_id, input_rleid, input_object_rleid, field_index)]
-    target[J(grp$rleid), on = "input_rleid", input_object_rleid := 1L]
-    set(target, NULL, "index_par", rleidv(target, c("input_rleid", "input_object_rleid", "field_index")))
-    set(target, NULL, c("input_rleid", "input_object_rleid", "field_index"), NULL)
-
-    # merge
-    sample <- target[sample, on = c("index_par"), allow.cartesian = TRUE, nomatch = 0L]
-    data.table::setcolorder(sample, c("case", "index_par", "name_par", "class",
-        "id", "name", "index", "field", "value"
-    ))
-}
-# }}}
 # morris_data {{{
 morris_data <- function (morris) {
     stopifnot(inherits(morris, "morris"))
@@ -698,39 +620,185 @@ validate_par_space <- function (l, idf = NULL, type = c("sa", "bc")) {
     list(dot = input$dot, num = list(data = num, meta = num_info), chr = list(data = chr, meta = chr_info))
 }
 # }}}
-# create_par_models {{{
-create_par_models <- function (self, private, verbose = FALSE, stop = FALSE, type = c("sa", "bc")) {
-    type <- match.arg(type)
+# expand_param_specs {{{
+expand_param_specs <- function (idf, ..., .env = parent.frame(), .names = NULL, .specs_len = 2L) {
+    l <- eplusr::expand_idf_dots_value(
+        get_priv_env(idf)$idd_env(), get_priv_env(idf)$idf_env(), ...,
+        .type = "object", .complete = FALSE, .unique = TRUE, .empty = FALSE,
+        .default = FALSE, .scalar = FALSE, .pair = FALSE, .env = .env)
 
-    if (type == "sa") {
-        if (!sen_assert_has_sampled(self, private)) return(invisible())
-    } else if (type == "bc"){
-        if (!bc_assert_can_model(self, private)) return(invisible())
+    # check type
+    eplusr:::add_field_property(get_priv_env(idf)$idd_env(), l$value, "type")
+    # handle schedule:compact fields
+    if (nrow(invld <- l$value[type != "real" & class_name != "Schedule:Compact"])) {
+        abort(paste0("Currently only numeric fields are supported. Non-numeric fields found:\n",
+            paste0(invld[, sprintf("#%s: '%s' in class '%s'", lpad(seq_len(.N), "0"), field_name, class_name)], collapse = "\n")
+        ))
+    }
+    set(l$value, NULL, "type", NULL)
+
+    # check data range
+    param <- unique(l$value, by = c("rleid", "class_id", "field_id"))
+    # if no duplicates, param and l$value is the same
+    if (nrow(param) == nrow(l$value)) param <- copy(param)
+    set(param, NULL, "param_index", seq_len(nrow(param)))
+    checkmate::qassertr(param$value_num, sprintf("N%i", .specs_len), .var.name = "Parameter Range Specs")
+
+    if (.specs_len == 2L) {
+        param[, by = "param_index", c("min", "max") := bc_param_specs(value_num[[1L]], .BY$param_index)]
+        # clean
+        set(param, NULL, setdiff(names(param), c("param_index", "min", "max")), NULL)
+    } else if (.specs_len == 3L) {
+        param[, by = "param_index", c("min", "max", "levels") :=
+            sen_param_specs(value_num[[1L]], .BY$param_index)]
+        # clean
+        set(param, NULL, setdiff(names(param), c("param_index", "min", "max", "levels")), NULL)
     }
 
-    # check if parameter is created using $apply_measure() or not
-    if (is.null(private$m_log$measure_name)) {
-        dt <- split(private$m_log$sample$value, by = "case", keep.by = FALSE)
-        private$m_idfs <- lapply(dt, function (upd) {
-            idf <- private$m_seed$clone()
-            idf$update(upd)
+    # add value id mapping
+    param[
+        l$value[, by = c("rleid", "class_id", "field_id"),
+            list(param_index = .GRP, value_id = list(value_id))],
+        on = "param_index", value_id := i.value_id
+    ]
+
+    # clean
+    set(l$value, NULL, c("value_chr", "value_num"), NULL)
+
+    # create parameter names
+    if (is.null(.names)) {
+        nm <- if (.specs_len == 2L) "t" else "theta"
+        set(param, NULL, "param_name", paste0(nm, seq_len(nrow(param))))
+    } else {
+        checkmate::assert_character(.names, any.missing = FALSE, unique = TRUE,
+            len = nrow(param), .var.name = ".names")
+        set(param, NULL, "param_name", .names)
+    }
+
+    list(object = l$object, value = l$value, param = param)
+}
+# }}}
+# sen_param_specs {{{
+sen_param_specs <- function (value_num, index) {
+    if (!is.null(nm <- names(value_num))) {
+        nm_valid <- nm[nm != ""]
+
+        if (any(invld <- !nm_valid %in% c("min", "max", "levels"))) {
+            abort(paste0("Parameter Range Specs should only contain ",
+                "'min', 'max' and 'levels'. Invalid element found: ",
+                paste0("{", index, ":'", nm_valid[invld], "'}", collapse = ", ")
+            ))
+        }
+        if (anyDuplicated(nm_valid)) {
+            abort(paste0("Parameter Range Specs should contain only one ",
+                "'min', 'max' and 'levels'. Duplicated element found: ",
+                paste0("{", index, ":'", nm_valid[duplicated(nm_valid)], "'}", collapse = ", ")
+            ))
+        }
+        m <- match(c("min", "max", "levels"), nm)
+        m[is.na(m)] <- setdiff(seq_along(value_num), m)
+        value_num[m]
+    }
+    if (value_num[[1L]] >= value_num[[2L]]) {
+        abort(paste0("For numeric field, minimum value should be less than ",
+            "maximum value. Invalid input found for ",
+            sprintf("{%i: %s(min), %s(max)}", index, value_num[[1L]], value_num[[2L]])
+        ), "param_num_format")
+    }
+    if (!checkmate::test_count(value_num[[3]], positive = TRUE)) {
+        abort(paste0("For numeric field, number of total levels should be positive integer. ",
+            "Invalid input found for ",
+            sprintf("{%i: %s(levels)}", index, value_num[[3L]])
+        ), "param_num_format")
+    }
+    value_num[[3L]] <- as.integer(value_num[[3L]])
+    list(min = value_num[[1L]], max = value_num[[2L]], levels = value_num[[3L]])
+}
+# }}}
+# match_param_measure {{{
+match_param_measure <- function (measure, ..., .specs_len = 2L, .env = parent.frame()) {
+    checkmate::assert_function(measure)
+    # measure name
+    mea_nm <- deparse(substitute(measure, .env))
+
+    if (length(formals(measure)) < 2L) {
+        abort("'measure' function must have at least two argument.", "bc_measure_no_arg")
+    }
+
+    # match fun arg
+    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
+    l <- vector("list", length(mc[-1L]))
+    names(l) <- names(mc[-1L])
+    # get value
+    for (nm in names(l)) l[[nm]] <- eval(mc[-1L][[nm]])
+
+    checkmate::qassertr(l, sprintf("N%i", .specs_len), .var.name = "Parameter Range Specs")
+    param <- data.table(param_index = seq_along(l), param_name = names(l), value_num = l)
+
+    if (.specs_len == 2L) {
+        param[, by = "param_index", c("min", "max") :=
+            bc_param_specs(value_num[[1L]], .BY$param_index)]
+    } else if (.specs_len == 3L) {
+        param[, by = "param_index", c("min", "max", "levels") :=
+            sen_param_specs(value_num[[1L]], .BY$param_index)]
+    }
+
+    if (is.name(substitute(measure, .env))) {
+        mea_nm <- deparse(substitute(measure, .env))
+    } else {
+        mea_nm <- "Function"
+    }
+
+    list(name = mea_nm, measure = measure, param = param)
+}
+# }}}
+# create_par_models {{{
+create_par_models <- function (idf, param, samples, matched = NULL, measure = NULL, name = TRUE) {
+    if (is.null(measure)) {
+        # create param models
+        m <- melt.data.table(samples, id.vars = "case", variable.name = "param_name", variable.factor = FALSE)
+        val <- param[m, on = "param_name"][, by = c("case", "param_index"), {
+            len <- vapply(value_id, length, integer(1L))
+            list(value_id = unlist(value_id, FALSE, FALSE), value = rep(value, len))
+        }]
+        val <- matched[val, on = "value_id"][, list(
+            case, id = object_id, class = class_name, index = field_index, value = as.character(value)
+        )]
+
+        idfs <- lapply(split(val, by = "case", keep.by = FALSE), function (d) {
+            idf <- idf$clone()
+            eplusr::with_silent(idf$update(d))
             idf
         })
     } else {
-        private$m_idfs <- do.call("mapply", c(
-            FUN = list(quote(private$m_log$measure_wrapper)),
-            private$m_log$sample$sample[, -"case"],
-            MoreArgs = quote(list(idf = private$m_seed)),
+        measure_wrapper <- function (idf, ...) {
+            if (!eplusr::is_idf(idf)) {
+                abort(paste0("Measure should take an 'Idf' object as input, not '", class(idf)[[1]], "'."))
+            }
+            idf <- idf$clone(deep = TRUE)
+            idf <- measure(idf, ...)
+            if (!eplusr::is_idf(idf)) {
+                abort(paste0("Measure should return an 'Idf' object, not '", class(idf)[[1]], "'."))
+            }
+            idf
+        }
+
+        idfs <- do.call("mapply", c(
+            FUN = list(quote(measure_wrapper)),
+            samples[, -"case"],
+            MoreArgs = quote(list(idf = idf)),
             SIMPLIFY = FALSE, USE.NAMES = FALSE
         ))
     }
 
-    # assign name
-    setattr(private$m_idfs, "names", private$m_log$sample$names)
+    # get new idf names
+    if (name) setattr(idfs, "names", case_names(samples[, -"case"]))
 
-    # log unique ids
-    private$m_log$uuid <- vapply(private$m_idfs, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
-
-    private$m_idfs
+    idfs
+}
+# }}}
+# case_names {{{
+case_names <- function (sample) {
+    paste0("Case", lpad(seq_len(nrow(sample)), "0"))
 }
 # }}}
