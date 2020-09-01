@@ -108,6 +108,15 @@ attr(result, "data")
 plot(result)
 }
 
+
+## ------------------------------------------------
+## Method `SensitivityJob$print`
+## ------------------------------------------------
+
+\dontrun{
+sen$print()
+}
+
 }
 \author{
 Hongyuan Jia
@@ -122,6 +131,7 @@ Hongyuan Jia
 \item \href{#method-apply_measure}{\code{SensitivityJob$apply_measure()}}
 \item \href{#method-samples}{\code{SensitivityJob$samples()}}
 \item \href{#method-evaluate}{\code{SensitivityJob$evaluate()}}
+\item \href{#method-print}{\code{SensitivityJob$print()}}
 }
 }
 \if{html}{
@@ -141,7 +151,6 @@ Hongyuan Jia
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data">}\href{../../eplusr/html/EplusGroupJob.html#method-tabular_data}{\code{eplusr::EplusGroupJob$tabular_data()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="initialize">}\href{../../eplusr/html/ParametricJob.html#method-initialize}{\code{eplusr::ParametricJob$initialize()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models">}\href{../../eplusr/html/ParametricJob.html#method-models}{\code{eplusr::ParametricJob$models()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print">}\href{../../eplusr/html/ParametricJob.html#method-print}{\code{eplusr::ParametricJob$print()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run">}\href{../../eplusr/html/ParametricJob.html#method-run}{\code{eplusr::ParametricJob$run()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save">}\href{../../eplusr/html/ParametricJob.html#method-save}{\code{eplusr::ParametricJob$save()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed">}\href{../../eplusr/html/ParametricJob.html#method-seed}{\code{eplusr::ParametricJob$seed()}}\out{</span>}
@@ -152,6 +161,7 @@ Hongyuan Jia
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-param"></a>}}
+\if{latex}{\out{\hypertarget{method-param}{}}}
 \subsection{Method \code{param()}}{
 Set parameters for sensitivity analysis
 \subsection{Usage}{
@@ -252,6 +262,7 @@ sensi$param(
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-apply_measure"></a>}}
+\if{latex}{\out{\hypertarget{method-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
 Set parameters for sensitivity analysis using function
 \subsection{Usage}{
@@ -354,6 +365,7 @@ sensi$apply_measure(measure,
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-samples"></a>}}
+\if{latex}{\out{\hypertarget{method-samples}{}}}
 \subsection{Method \code{samples()}}{
 Get sampled parameter values
 \subsection{Usage}{
@@ -385,6 +397,7 @@ sensi$samples()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-evaluate"></a>}}
+\if{latex}{\out{\hypertarget{method-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
 Evaluate sensitivity
 \subsection{Usage}{
@@ -436,6 +449,40 @@ attr(result, "data")
 
 # plot
 plot(result)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
+\subsection{Method \code{print()}}{
+Print \code{SensitivityJob} object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SensitivityJob$print()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$print()} shows the core information of this \code{SensitivityJob},
+including the path of IDFs and EPWs and also the simulation job
+status.
+
+\verb{$print()} is quite useful to get the simulation status, especially
+when \code{wait} is \code{FALSE} in \verb{$run()}. The job status will be updated
+and printed whenever \verb{$print()} is called.
+}
+
+\subsection{Returns}{
+The \code{SensitivityJob} object itself, invisibly.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+sen$print()
 }
 
 }

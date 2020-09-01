@@ -47,7 +47,7 @@ GAOptimJob <- R6::R6Class(classname = "GAOptimJob",
         #' }
         #'
         initialize = function (idf, epw) {
-            eplusr:::with_silent(super$initialize(idf, epw))
+            eplusr::with_silent(super$initialize(idf, epw))
 
             # init controller
             private$m_ctrl <- ecr::initECRControl(identity, 1L)
@@ -195,14 +195,13 @@ gaoptim_job <- function (idf, epw) {
 # }}}
 
 # gaopt_apply_measure {{{
-# TODO: How to solve mixed-encoding problems?
 gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NULL) {
     # measure name
     measure_name <- deparse(substitute(measure, parent.frame()))
 
-    assert(is.function(measure), msg = "`measure` should be a function.")
+    checkmate::assert_function(measure)
     if (length(formals(measure)) < 2L) {
-        abort("error_measure_no_arg", "`measure` function must have at least two argument.")
+        abort("'measure' function must have at least two argument.", "ga_measure_no_arg")
     }
 
     # match fun arg
@@ -213,7 +212,7 @@ gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NU
 
     # stop if parameter contains reserved names
     if (any(names(l) %in% c(".float", ".integer", ".choice"))) {
-        abort("error_invalid_param", "Parameters cannot contain any internal reserved names ('.float', '.integer', and '.choice')")
+        abort("Parameters cannot contain any internal reserved names ('.float', '.integer', and '.choice')", "ga_invalid_param")
     }
 
     # get value
@@ -221,10 +220,10 @@ gaopt_apply_measure <- function (super, self, private, measure, ..., .names = NU
         l[[nm]] <- eval(mc[-1L][[nm]])
 
         if (!inherits(l[[nm]], "ParamSpace")) {
-            abort("error_invalid_param", sprintf(
+            abort(sprintf(
                 "Each parameter should be a 'ParamSpace' object. Invalid input found: '%s' ('%s').",
                 nm, class(l[[nm]])[1L]
-            ))
+            ), "ga_invalid_param")
         }
     }
 
@@ -245,7 +244,7 @@ gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
     l <- eval(substitute(alist(...)))
 
     # stop if empty input
-    if (!length(l)) abort("error_empty_input", "Please give objective(s) to set.")
+    if (!length(l)) abort("Please give objective(s) to set.", "ga_empty_input")
 
     .dir <- match.arg(.dir, c("min", "max"))
     if (.dir == "min") {
@@ -278,9 +277,9 @@ gaopt_objective <- function (super, self, private, ..., .n = NULL, .dir = "min",
         args <- formals(l[[i]])
 
         if (!"idf" %in% names(args)) {
-            abort("error_objective_idf_arg", paste0(
+            abort(paste0(
                 "Objective function '", obj[[i]], "' must have an parameter named 'idf'."
-            ))
+            ), "ga_objective_idf_arg")
         }
     }
 
@@ -422,7 +421,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
         ecr::updateLogger(private$m_logger, population, fitness, n.evals = mu)
 
         cli::cat_line("  * Check whether terminator conditions are met")
-        stop.object <- ecr:::doTerminate(private$m_logger, private$m_log$term)
+        stop.object <- doTerminate(private$m_logger, private$m_log$term)
 
         if (length(stop.object) > 0L) {
             cli::cat_rule("Terminated")
@@ -431,7 +430,7 @@ gaopt_run <- function (super, self, private, mu = 20L, p_recomb = 0.7, p_mut = 0
         }
     }
 
-    private$m_log$results <- ecr:::makeECRResult(private$m_ctrl, private$m_logger, population, fitness, stop.object)
+    private$m_log$results <- makeECRResult(private$m_ctrl, private$m_logger, population, fitness, stop.object)
 
     private$m_log$results
 
@@ -488,10 +487,10 @@ gaopt_init_population <- function (super, self, private, mu = 20L) {
     parameter <- private$m_log$parameter
 
     if (is.null(parameter)) {
-        abort("error_no_parameter", "No parameter has been set.")
+        abort("No parameter has been set.", "ga_no_parameter")
     }
 
-    assert(eplusr:::is_count(mu))
+    checkmate::assert_count(mu, positive = TRUE)
 
     # get parameter types
     type_par <- vapply(parameter, function (x) class(x)[1L], character(1))
@@ -556,17 +555,17 @@ gaopt_gen_fitness_obj <- function (super, self, private, idf, param) {
         }
 
         if (is.na(obj[[i]])) {
-            abort("error_optim_wrong_obj_val", sprintf(
+            abort(sprintf(
                 "Objective function '%s' returns value(s) of NA.",
                 objective$name[i]
-            ))
+            ), "ga_wrong_obj_val")
         }
 
         if (length(obj[[i]]) != objective$dim[i]) {
-            abort("error_optim_wrong_obj_dim", sprintf(
+            abort(sprintf(
                 "Objective function '%s' returns value(s) of wrong dimention '%i' (should be '%i').",
                 objective$name[i], length(obj[[i]]), objective$dim[i]
-            ))
+            ), "ga_wrong_obj_dim")
         }
     }
 
@@ -606,7 +605,7 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
     if (!isTRUE(idf$last_job()$status()$successful)) {
         stop("Validation failed. Test simulation did not complete successfully. ",
             "The error messages are:\n",
-            paste(paste0("  > ", capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
+            paste(paste0("  > ", utils::capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
             call. = FALSE
         )
     }
@@ -623,17 +622,17 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
         }
 
         if (!length(obj[[i]])) {
-            abort("error_invalid_objective", sprintf(
+            abort(sprintf(
                 "Objective function '%s' should return at least a length-one vector instead of a 0-length one.",
                 objective$name[[i]]
-            ))
+            ), "ga_invalid_objective")
         }
 
         if (!is.numeric(obj[[i]])) {
-            abort("error_invalid_objective", sprintf(
+            abort(sprintf(
                 "Objective function '%s' should return a numeric vector instead of a '%s' object.",
                 objective$name[[i]], class(obj[[i]])[[1]]
-            ))
+            ), "ga_invalid_objective")
         }
 
         if (verbose) message(sprintf("  [%i] '%s' --> OK", i, objective$name[[i]]))
@@ -669,7 +668,7 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
         sprintf("Gen%i_Ind%i.idf", gen, seq_along(population))
     )
 
-    if (eplusr:::is_flag(parallel)) {
+    if (checkmate::test_flag(parallel)) {
         if (parallel) {
             future::plan(future::multiprocess)
         } else {
@@ -684,7 +683,7 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
         MoreArgs = list(super = super, self = self, private = private, weather = weather),
         SIMPLIFY = FALSE
     )
-    ecr:::makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
+    makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
 }
 # }}}
 # gaopt_gen_offspring {{{
@@ -795,7 +794,7 @@ gaopt_register_operator <- function (super, self, private, slot, fun, ...) {
 # }}}
 # gaopt_update_logger {{{
 gaopt_update_logger <- function (super, self, private, pop, fitness, n.evals) {
-    ecr::updateLogger(private$m_logger, pop, fitness, n.evals = mu)
+    ecr::updateLogger(private$m_logger, pop, fitness, n.evals = n.evals)
 
     # add time passed
     private$m_logger$env$time.end <- Sys.time()
@@ -881,10 +880,22 @@ gaopt_best_set <- function (super, self, private, unique = TRUE) {
 
 # HELPERS
 # float_space {{{
+#' Specify optimizatino parameter of float type
+#'
+#' @param min Minimum value
+#' @param max Maximum value
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `FloatSpace` object
 #' @export
+#'
+#' @examples
+#' float_space(1.0, 5.0)
 float_space <- function (min, max, init = mean(c(min, max))) {
-    assert(is_number(min), is_number(max), is_number(init))
-    assert(min <= max, min <= init, init <= max)
+    checkmate::assert_number(min)
+    checkmate::assert_number(max)
+    if (min > max) abort("'min' should be no larger than 'max'.")
+    checkmate::assert_number(init, lower = min, upper = max)
     structure(list(min = min, max = max, init = init), class = c("FloatSpace", "ParamSpace"))
 }
 #' @export
@@ -901,6 +912,11 @@ print.FloatSpace <- function (x, ...) {
 format.FloatRange <- function (x, ...) {
     sprintf("[%s, %s]", x[[1]], x[[2]])
 }
+
+#' Print float parameter
+#'
+#' @param x A `FloatRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 print.FloatRange <- function (x, ...) {
     cat(format.FloatRange(x), "\n", sep = "")
@@ -908,10 +924,19 @@ print.FloatRange <- function (x, ...) {
 }
 # }}}
 # choice_space {{{
+#' Specify optimizatino parameter of character type
+#'
+#' @param choices A character vector of choices
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `ChoiceSpace` object
 #' @export
+#'
+#' @examples
+#' choice_space(c("Roughness", "Smooth"))
 choice_space <- function (choices, init = choices[1]) {
-    assert(is.character(choices) || is.numeric(choices), !anyNA(choices))
-    assert(eplusr:::is_string(init) || eplusr:::is_number(init), init %in% choices)
+    checkmate::assert_character(choices, any.missing = FALSE)
+    checkmate::assert_choice(init, choices)
     structure(list(x = choices, init = init), class = c("ChoiceSpace", "ParamSpace"))
 }
 #' @export
@@ -919,6 +944,11 @@ format.ChoiceSpace <- function (x, ...) {
     val <- if (length(x$x) > 3L) c(x$x[1:3], "...") else x$x
     sprintf("%s | Init: '%s'", paste0(val, collapse = ", "), x$init)
 }
+
+#' Print choice parameter
+#'
+#' @param x A `ChoiceRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 print.ChoiceSpace <- function (x, ...) {
     cat(format.ChoiceSpace(x), "\n", sep = "")
@@ -936,10 +966,20 @@ print.ChoiceRange <- function (x, ...) {
 }
 # }}}
 # integer_space {{{
+#' Specify optimizatino parameter of integer type
+#'
+#' @param integers An integer vector.
+#' @param init Initial value. Currently not used.
+#'
+#' @return A `IntegerSpace` object.
 #' @export
+#'
+#' @examples
+#' integer_space(1:5)
 integer_space <- function (integers, init = integers[1]) {
-    assert(eplusr:::are_integer(integers))
-    assert(eplusr:::is_integer(init), init %in% integers)
+    integers <- checkmate::assert_integerish(integers, any.missing = FALSE, coerce = TRUE)
+    init <- checkmate::assert_integerish(init, any.missing = FALSE, coerce = TRUE, len = 1L)
+    checkmate::assert_choice(init, integers)
     structure(list(x = integers, init = init), class = c("IntegerSpace", "ParamSpace"))
 }
 #' @export
@@ -948,6 +988,11 @@ format.IntegerSpace <- format.ChoiceSpace
 print.IntegerSpace <- print.ChoiceSpace
 #' @export
 format.IntegerRange <- format.ChoiceRange
+
+#' Print integer parameter
+#'
+#' @param x An `IntegerRange` object
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 printf.IntegerRange <- print.ChoiceRange
 # }}}
@@ -979,8 +1024,8 @@ assert_ready_optim <- function (super, self, private) {
 # assert_ready_parameter {{{
 assert_ready_parameter <- function (super, self, private) {
     if (is.null(private$m_log$parameter)) {
-        abort("error_no_parameter",
-            "No parameter has been set. Please run '$apply_measure()' first."
+        abort("No parameter has been set. Please run '$apply_measure()' first.",
+            "ga_no_parameter"
         )
     }
 
@@ -990,8 +1035,8 @@ assert_ready_parameter <- function (super, self, private) {
 # assert_ready_objective {{{
 assert_ready_objective <- function (super, self, private) {
     if (is.null(private$m_log$objective)) {
-        abort("error_no_objective",
-            "No objecive has been set. Please run '$objective()' first."
+        abort("No objecive has been set. Please run '$objective()' first.",
+            "ga_no_objective"
         )
     }
 
@@ -1009,23 +1054,39 @@ flatten_list <- function (lst, recursive = FALSE, use.names = FALSE) {
 }
 # }}}
 # setwith {{{
+#' Partial apply a operator, filling in some arguments.
+#'
+#' @description
+#' `setwith()` allows you to modify an operator by pre-filling
+#' some of the arguments.
+#'
+#' @param fun An `ecr_operator` object
+#' @param ... Named arguments to `fun` that should be partially applied.
+#' @return An `ecr_operator_setwith` object
 #' @export
 setwith <- function (fun, ...) {
-    assert(inherits(fun, "ecr_operator"))
+    checkmate::assert_class(fun, "ecr_operator")
     structure(list(fun = fun, args = list(...)),  class = "ecr_operator_setwith")
 }
 # }}}
 # stopOnMaxTime {{{
+#' Stopping on Maximum Time of Evaluations
+#'
+#' @description
+#' Stop the EA after a given cutoff time.
+#'
+#' @param max.time Time limit in seconds. Default: `NULL`.
+#' @return An `ecr_terminator` object
 #' @export
 stopOnMaxTime <- function(max.time = NULL) {
     if (!is.null(max.time)) {
-        assert(eplusr:::in_range(max.time, eplusr:::ranger(1L, TRUE)))
+        checkmate::assert_count(max.time, positive = TRUE)
     } else {
         max.time <- Inf
     }
     force(max.time)
 
-    condition.fun = function(log) {
+    condition.fun <- function(log) {
         return(log$env$time.passed >= max.time)
     }
 
@@ -1037,6 +1098,18 @@ stopOnMaxTime <- function(max.time = NULL) {
 }
 # }}}
 # mutRandomChoice {{{
+#' Random Choice Mutator
+#'
+#' @description
+#' "Random Choice" mutation operator for discrete parameters: with probability
+#'  `p` chooses one of the available categories at random (this *may* be
+#'  the original value!)
+#'
+#' @param ind `[character]` individual to mutate.
+#' @param values `[list of character]` set of possible values for `ind` entries
+#' to take. May be a list of length 1, in which case it is recycled.
+#' @param p `[numeric(1)]` per-entry probability to perform mutation.
+#' @return `[character]`
 #' @importFrom checkmate assert_vector assert_list assert_number
 #' @export
 mutRandomChoice <- ecr::makeMutator(function(ind, values, p = 0.1) {
@@ -1049,12 +1122,22 @@ mutRandomChoice <- ecr::makeMutator(function(ind, values, p = 0.1) {
 
     assert_number(p, lower = 0, upper = 1)
 
-    mapply(function(i, v) if (runif(1) < p) sample(v, 1) else i, ind, values)
+    mapply(function(i, v) if (stats::runif(1) < p) sample(v, 1) else i, ind, values)
 
 }, supported = "custom")
 # }}}
 # recPCrossover {{{
 # borrowed from: https://github.com/compstat-lmu/mosmafs/blob/mosmafs-package/R/operators.R
+#' General Uniform Crossover
+#'
+#' @description
+#' Crossover recombination operator that crosses over each position iid with
+#' prob. `p` and can also be used for non-binary operators.
+#'
+#' @param inds `[list of any]` list of two individuals to perform uniform crossover on
+#' @param p `[numeric(1)]` per-entry probability to perform crossover.
+#' @param ...  further arguments passed on to the method.
+#' @return `[list of any]` The mutated individuals.
 #' @export
 recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
     assert_list(inds, len = 2, any.missing = FALSE)
@@ -1068,7 +1151,7 @@ recPCrossover <- ecr::makeRecombinator(function(inds, p = 0.1, ...) {
         stop("Argument p must have same length as individual or 1.")
     }
 
-    crossovers <- runif(length(inds[[1]])) < p
+    crossovers <- stats::runif(length(inds[[1]])) < p
 
     tmp <- inds[[1]][crossovers]
 

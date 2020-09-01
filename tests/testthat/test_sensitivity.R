@@ -1,4 +1,4 @@
-context("Sensitivity Implementation")
+context("Sensitivity")
 
 # Sensitivity {{{
 test_that("Sensitivity", {
@@ -8,10 +8,10 @@ test_that("Sensitivity", {
     example <- copy_example()
     sen <- SensitivityJob$new(example$idf, example$epw)
 
-    expect_error(sen$param(GP01 = list(Thickness = c(0, 1))), class = "error_param_num_format")
-    expect_error(sen$param(GP01 = list(Thickness = c(2, 2, 1))), class = "error_param_num_format")
-    expect_error(sen$param(GP01 = list(Thickness = c(1, 2, 0))), class = "error_param_num_format")
-    expect_error(sen$param(GP01 = list(Thickness = c(1, 2, 1.1))), class = "error_param_num_format")
+    expect_error(sen$param(GP01 = list(Thickness = c(0, 1))))
+    expect_error(sen$param(GP01 = list(Thickness = c(2, 2, 1))))
+    expect_error(sen$param(GP01 = list(Thickness = c(1, 2, 0))))
+    expect_error(sen$param(GP01 = list(Thickness = c(1, 2, 1.1))))
     expect_error(
         sen$param(
             GP01 = list(Roughness = c("VeryRough", "Rough", "MediumRough", "Smooth"))
@@ -38,8 +38,7 @@ test_that("Sensitivity", {
             .r = 1, .grid_jump = 1
         )
     )
-    # can stop if original field is not a schedule value
-    expect_error(sen$param(ActSchd = list(Field_3 = c(30, 120, 5)), .r = 1, .grid_jump = 1))
-
+    expect_is(sen$samples(), "data.table")
+    expect_equal(nrow(sen$samples()), 3)
 })
 # }}}

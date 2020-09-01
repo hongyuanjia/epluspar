@@ -96,9 +96,9 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #'
         initialize = function (idf, epw) {
             # do not allow NULL for epw
-            assert(!is.null(epw))
+            if (is.null(epw)) abort("'epw' must be specified.")
 
-            eplusr:::with_silent(super$initialize(idf, epw))
+            eplusr::with_silent(super$initialize(idf, epw))
 
             # remove all output variables and meters
             private$m_seed <- bc_remove_output_class(super, self, private, all = FALSE, clone = TRUE)
@@ -518,7 +518,7 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' }
         #'
         apply_measure = function (measure, ..., .num_sim = 30L)
-            bc_apply_measure(super, self, private, ..., .num_sum = .num_sum),
+            bc_apply_measure(super, self, private, measure, ..., .num_sim = .num_sim),
         # }}}
 
         # samples {{{
@@ -829,18 +829,18 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
         #' bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
         #'
         #' # run in the background
-        #' bc$run(wait = TRUE)
+        #' bc$eplus_run(wait = TRUE)
         #' # see job status
         #' bc$status()
         #'
         #' # force to kill background job before running the new one
-        #' bc$run(force = TRUE)
+        #' bc$eplus_run(force = TRUE)
         #'
         #' # do not show anything in the console
-        #' bc$run(echo = FALSE)
+        #' bc$eplus_run(echo = FALSE)
         #'
         #' # copy external files used in the model to simulation output directory
-        #' bc$run(copy_external = TRUE)
+        #' bc$eplus_run(copy_external = TRUE)
         #' }
         #'
         eplus_run = function (dir = NULL, run_period = NULL, wait = TRUE, force = FALSE,
@@ -1542,13 +1542,10 @@ BayesCalibJob <- R6::R6Class(classname = "BayesCalibJob",
 
     private = list(
         # PRIVATE FIELDS {{{
-        m_seed = NULL,
-        m_idfs = NULL,
-        m_epws = NULL,
+        m_param = NULL,
+        m_sample = NULL,
         m_input = NULL,
-        m_output = NULL,
-        m_job = NULL,
-        m_log = NULL
+        m_output = NULL
         # }}}
     )
 )
@@ -1613,7 +1610,7 @@ bc_remove_output_class <- function (super, self, private, all = TRUE, clone = FA
     }
 
     if (length(out_cls)) {
-        eplusr:::with_silent(idf$del(idf$object_id(out_cls, simplify = TRUE), .force = TRUE))
+        eplusr::with_silent(idf$del(idf$object_id(out_cls, simplify = TRUE), .force = TRUE))
     }
 
     idf
@@ -1622,9 +1619,9 @@ bc_remove_output_class <- function (super, self, private, all = TRUE, clone = FA
 # bc_run_ddy {{{
 bc_run_ddy <- function (super, self, private) {
     if (!private$m_seed$is_valid_class("SizingPeriod:DesignDay")) {
-        abort("error_no_ddy", paste0("In order to run design-day-only simulation, ",
-            "at least one `SizingPeriod:DesignDay` should exist."
-        ))
+        abort(paste0("In order to run design-day-only simulation, ",
+            "at least one 'SizingPeriod:DesignDay' object should exist."
+        ), "bc_no_ddy")
     }
 
     # clone the original and remove all output related classes
@@ -1633,14 +1630,14 @@ bc_run_ddy <- function (super, self, private) {
     # one single design day should be sufficient to get rdd and mdd
     # remove others to speed up
     if ((num <- idf$object_num("SizingPeriod:DesignDay")) > 1L) {
-        eplusr:::with_silent(idf$del(idf$object_id("SizingPeriod:DesignDay", simplify = TRUE)[2L:num]))
+        eplusr::with_silent(idf$del(idf$object_id("SizingPeriod:DesignDay", simplify = TRUE)[2L:num]))
     }
 
-    eplusr:::with_silent(idf$save(tempfile(fileext = ".idf")))
-    job <- eplusr:::with_silent(idf$run(NULL, dir = tempdir(), echo = FALSE))
+    eplusr::with_silent(idf$save(tempfile(fileext = ".idf")))
+    job <- eplusr::with_silent(idf$run(NULL, dir = tempdir(), echo = FALSE))
 
     if (is.na(job$status()$successful) || !job$status()$successful) {
-        abort("error_ddy_run", "Failed to run design-day-only simulation.")
+        abort("Failed to run design-day-only simulation.", "bc_ddy_run")
     }
 
     private$m_log$run_ddy <- TRUE
@@ -1720,98 +1717,101 @@ bc_output <- function (super, self, private, key_value = NULL, name = NULL,
 # }}}
 # bc_param {{{
 bc_param <- function (super, self, private, ..., .names = NULL, .num_sim = 30L, .env = parent.frame()) {
-    assert(is_count(.num_sim))
+    checkmate::assert_count(.num_sim)
+
     # clean measure created using $apply_measure() if any
     private$m_log$measure_wrapper <- NULL
+    private$m_log$measure_name <- NULL
 
-    l <- tryCatch(eplusr:::sep_value_dots(..., .empty = FALSE, .scalar = FALSE, .null = FALSE, .env = .env),
-        error_empty_input = function (e) {
-            abort("error_bc_empty_param_input", "Please give parameters to set.")
-        }
-    )
+    l <- expand_param_specs(private$m_seed, ..., .env = .env, .names = .names, .specs_len = 2L)
 
-    obj_val <- eplusr:::match_set_idf_data(
-        ._get_private(private$m_seed)$idd_env(),
-        ._get_private(private$m_seed)$idf_env(),
-        l
-    )
+    samples <- lhs_samples(l$param, .num_sim)
 
-    # handle whole-class case
-    # class equals to TRUE or dot_nm length larger than 1 should be treated as a whole
-    l$value <- data.table::rbindlist(list(
-        obj_val$value[J(l$dot[class == TRUE | vapply(dot_nm, length, 1L) > 1L, rleid]), on = "input_rleid", .SD[1L], by = c("class_id", "field_index")],
-        obj_val$value[!J(l$dot[class == TRUE | vapply(dot_nm, length, 1L) > 1L, rleid]), on = "input_rleid"]
-    ), use.names = TRUE)
-
-    # validate input
-    par <- validate_par_space(l, private$m_seed, "bc")
-
-    # get sample value
-    sam <- lhs_samples(par, obj_val$value, .names, .num_sim)
-    private$m_log$sample <- sam
+    private$m_param <- l$param
+    private$m_sample <- samples
+    private$m_log$matched <- l$value
 
     # only create models when input and output have been created
     if (is.null(private$m_input) || is.null(private$m_output)) {
         message("No parametric models have been created because input variables ",
             "or output variables are not set. Please set input and output variables ",
-            "using `$input()` and `$output()` respectively. In this case, models ",
-            "will be created when calling `$models()` or `$run()`."
+            "using '$input()' and '$output()' respectively. In this case, models ",
+            "will be created when calling '$models()' or '$eplus_run()'."
         )
         return(self)
     }
 
-    create_par_models(self, private, type = "bc")
+    idfs <- create_par_models(private$m_seed, l$param, samples, l$value)
+
+    private$m_idfs <- idfs
+
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(idfs))
 
     self
 }
 # }}}
-# bc_apply_measure {{{
-bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L) {
-    # measure name
-    mea_nm <- deparse(substitute(measure, parent.frame()))
+# bc_param_specs {{{
+bc_param_specs <- function (value_num, index) {
+    if (!is.null(nm <- names(value_num))) {
+        nm_valid <- nm[nm != ""]
 
-    assert(is.function(measure), msg = "`measure` should be a function.")
-    if (length(formals(measure)) < 2L) {
-        abort("error_measure_no_arg", "`measure` function must have at least two argument.")
+        if (any(invld <- !nm_valid %in% c("min", "max"))) {
+            abort(paste0("Parameter Range Specs should only contain ",
+                "'min' and 'max'. Invalid element found: ",
+                paste0("{", index, ":'", nm_valid[invld], "'}", collapse = ", ")
+            ))
+        }
+        if (anyDuplicated(nm_valid)) {
+            abort(paste0("Parameter Range Specs should contain only one ",
+                "'min' and 'max'. Duplicated element found: ",
+                paste0("{", index, ":'", nm_valid[duplicated(nm_valid)], "'}", collapse = ", ")
+            ))
+        }
+        m <- match(c("min", "max"), nm)
+        m[is.na(m)] <- setdiff(seq_along(value_num), m)
+        value_num[m]
     }
+    if (value_num[[1L]] >= value_num[[2L]]) {
+        abort(paste0("For numeric field, minimum value should be less than ",
+            "maximum value. Invalid input found for ",
+            sprintf("{%i: %s(min), %s(max)}", index, value_num[[1L]], value_num[[2L]])
+        ), "param_num_format")
+    }
+    list(min = value_num[[1L]], max = value_num[[2L]])
+}
+# }}}
+# bc_apply_measure {{{
+bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L, .env = parent.frame()) {
+    l <- match_param_measure(measure, ..., .specs_len = 2L, .env = .env)
 
-    # match fun arg
-    mc <- match.call(measure, quote(measure(private$m_seed, ...)))[-1L]
-    l <- vector("list", length(mc[-1L]))
-    names(l) <- names(mc[-1L])
-    # get value
-    for (nm in names(l)) l[[nm]] <- eval(mc[-1L][[nm]])
-
-    # check input format
-    par <- validate_par_space(l, type = "bc")
-
-    sam <- lhs_samples(par, NULL, par$dot$dot_nm, .num_sim)
+    samples <- lhs_samples(l$param, .num_sim)
 
     # store
-    private$m_log$sample <- sam
-
-    measure_wrapper <- function (idf, ...) {
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should take an `Idf` object as input, not `", class(idf)[[1]], "`."))
-        idf <- idf$clone(deep = TRUE)
-        idf <- measure(idf, ...)
-        assert(eplusr::is_idf(idf), msg = paste0("Measure should return an `Idf` object, not `", class(idf)[[1]], "`."))
-        idf
-    }
-
-    private$m_log$measure_wrapper <- measure_wrapper
-    private$m_log$measure_name <- mea_nm
+    private$m_sample <- samples
+    private$m_log$matched <- NULL
+    private$m_log$measure <- l$measure
+    private$m_log$measure_name <- l$name
 
     # only create models when input and output have been created
     if (is.null(private$m_input) || is.null(private$m_output)) {
         message("Input variables or output variables are not set. Please set ",
-            "input and output variables using `$input()` and `$output()` ",
+            "input and output variables using '$input()' and '$output()' ",
             "respectively. In this case, models will be created when calling ",
-            "`$models()` or `$run()`."
+            "'$models()' or '$eplus_run()'."
         )
         return(self)
     }
 
-    create_par_models(self, private, type = "bc")
+    idfs <- create_par_models(private$m_seed, l$param, samples, measure = l$measure)
+    private$m_idfs <- idfs
+
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(idfs))
 
     self
 }
@@ -1819,14 +1819,24 @@ bc_apply_measure <- function (super, self, private, measure, ..., .num_sim = 30L
 # bc_samples {{{
 bc_samples <- function (super, self, private) {
     bc_assert_has_sampled(super, self, private, stop = FALSE)
-    private$m_log$sample$sample
+    private$m_sample
 }
 # }}}
 # bc_models {{{
-bc_models <- function (super, self, private) {
+bc_models <- function (super, self, private, stop = FALSE) {
     if (!is.null(private$m_idfs)) return(private$m_idfs)
 
-    create_par_models(self, private, verbose = TRUE, type = "bc")
+    if (!bc_assert_can_model(super, self, private, stop)) return()
+
+    idfs <- create_par_models(private$m_seed, private$m_param, private$m_sample, private$m_log$matched, private$m_log$measure)
+    private$m_idfs <- idfs
+
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(idfs))
+
+    private$m_idfs
 }
 # }}}
 # bc_eplus_run {{{
@@ -1850,11 +1860,11 @@ bc_eplus_run <- function (super, self, private, dir = NULL, run_period = NULL,
             simctrl <- idf$object_unique("SimulationControl")
             use_rp <- simctrl$value(5L, simplify = TRUE)
             if (!is.na(use_rp) && tolower(use_rp) == "no") {
-                message("Reset `Run Simulation for Weather File Run Periods` ",
-                    "in `SimulationControl` from `No` to `Yes` to make sure ",
+                message("Reset 'Run Simulation for Weather File Run Periods' ",
+                    "in 'SimulationControl' from 'No' to 'Yes' to make sure ",
                     "input run period can take effect."
                 )
-                simctrl$set(`Run Simulation for Weather File Run Periods` = "Yes")
+                simctrl$set("Run Simulation for Weather File Run Periods" = "Yes")
             }
         }
         idf
@@ -1862,25 +1872,36 @@ bc_eplus_run <- function (super, self, private, dir = NULL, run_period = NULL,
 
     # remove all objects in output classes
     if (!is.null(run_period)) {
-        assert(is.list(run_period))
+        checkmate::assert_list(run_period)
 
         # if no parameter models have been set
         if (is.null(private$m_idfs)) {
             overwrite_runperiod(private$m_seed, run_period)
             # should update logged seed UUID
-            private$m_log$seed_uuid <- ._get_private(private$m_seed)$m_log$uuid
+            private$log_seed_uuid()
             # create models
-            private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
+            bc_models(super, self, private, TRUE)
         } else {
             # create models
-            private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
+            bc_models(super, self, private, TRUE)
             lapply(private$m_idfs, overwrite_runperiod, run_period = run_period)
-            # should update logged parametric model UUIDs
-            private$m_log$uuid <- vapply(private$m_idfs, function (idf) ._get_private(idf)$m_log$uuid, character(1L))
         }
     } else {
-        private$m_idfs <- create_par_models(self, private, stop = TRUE, type = "bc")
+        bc_models(super, self, private, TRUE)
     }
+
+    # make sure input and output take effect in parametric models
+    for (idf in private$m_idfs) {
+        idf$Output_Variable <- NULL
+        idf$Output_Variable <- private$m_seed$Output_Variable
+
+        idf$Output_Meter <- NULL
+        idf$Output_Meter <- private$m_seed$Output_Meter
+    }
+    # log
+    private$log_new_uuid()
+    private$log_idf_uuid()
+    private$m_log$unsaved <- rep(TRUE, length(private$m_idfs))
 
     super$run(dir, wait = wait, force = force, copy_external = copy_external, echo = echo)
 }
@@ -1997,7 +2018,7 @@ bc_data_bc <- function (super, self, private, data_field = NULL, data_sim = NULL
     # newly measured input for prediction
     x_pred <- data_field$new_input[, .SD, .SDcols = -c(1L:11L)]
     # calibration parameters
-    tc <- private$m_log$sample$sample[rep(case, each = nrow(xf)), .SD, .SDcols = -1L]
+    tc <- private$m_sample[rep(case, each = nrow(xf)), .SD, .SDcols = -1L]
     # }}}
 
     data_bc <- init_data_bc(yf, xf, x_pred, yc, xc, tc)
@@ -2016,10 +2037,10 @@ bc_post_dist <- function (super, self, private) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
     if (is.null(private$m_log$stan$fit)) {
-        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
-            "because Stan data is not available. Please use `$stan_run()` to ",
-            "retrieve output of Bayesican calibration before caling `$prediction()`."
-        ))
+        abort(paste0("Unable to calculate predictions ",
+            "because Stan data is not available. Please use '$stan_run()' to ",
+            "retrieve output of Bayesican calibration before caling '$prediction()'."
+        ), "bc_stan_not_ready")
     }
 
     if (isTRUE(private$m_log$stan$custom_model)) {
@@ -2031,15 +2052,15 @@ bc_post_dist <- function (super, self, private) {
     }
 
     if (!"tf" %in% names(private$m_log$stan$fit@par_dims)) {
-        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
-            "distributions because the `tf` parameter is not found ",
+        abort(paste0("Failed to get calibrated parameter ",
+            "distributions because the 'tf' parameter is not found ",
             "in the stanfit object. This may be caused by using a customized Stan ",
-            "model. Please check the input arguments when calling `$stan_run()`."
-        ))
+            "model. Please check the input arguments when calling '$stan_run()'."
+        ), "bc_tf_not_in_stan")
     }
 
     tf <- as.data.table(rstan::extract(private$m_log$stan$fit, pars = "tf")$tf)
-    setnames(tf, unique(private$m_log$sample$value$name_par))
+    setnames(tf, unique(private$m_param$param_name))
 
     tf_min <- private$m_log$stan$tc_min
     tf_max <- private$m_log$stan$tc_max
@@ -2061,10 +2082,10 @@ bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
     bc_assert_can_stan(super, self, private, stop = TRUE)
 
     if (is.null(private$m_log$stan$fit)) {
-        abort("error_bc_stan_not_ready", paste0("Unable to calculate predictions ",
-            "because Stan data is not available. Please use `$stan_run()` to ",
-            "retrieve output of Bayesican calibration before caling `$prediction()`."
-        ))
+        abort(paste0("Unable to calculate predictions ",
+            "because Stan data is not available. Please use '$stan_run()' to ",
+            "retrieve output of Bayesican calibration before caling '$prediction()'."
+        ), "bc_stan_not_ready")
     }
 
     if (private$m_log$stan$custom_model) {
@@ -2076,11 +2097,11 @@ bc_prediction <- function (super, self, private, all = FALSE, merge = TRUE) {
     }
 
     if (!"y_pred" %in% names(private$m_log$stan$fit@par_dims)) {
-        abort("error_tf_not_in_stan", paste0("Failed to get calibrated parameter ",
-            "distributions because the `tf` parameter is not found ",
+        abort(paste0("Failed to get calibrated parameter ",
+            "distributions because the 'tf' parameter is not found ",
             "in the stanfit object. This may be caused by using a customized Stan ",
-            "model. Please check the input arguments when calling `$stan_run()`."
-        ))
+            "model. Please check the input arguments when calling '$stan_run()'."
+        ), "tf_not_in_stan")
     }
 
     y_pred <- rstan::extract(private$m_log$stan$fit, pars = "y_pred")$y_pred
@@ -2143,11 +2164,11 @@ bc_stan_run <- function (super, self, private, file = NULL, data = NULL, iter = 
         private$m_log$stan$custom_model <- TRUE
     } else {
         if (!is.numeric(data_bc$yf) || !is.numeric(data_bc$yc)) {
-            abort("error_bc_multi_output", paste0(
+            abort(paste0(
                 "When using builtin Bayesian calibration algorithm, ",
                 "only one output variable is supported. ",
                 "Invalid output variable number found: ", length(data_bc$yf)
-            ))
+            ), "bc_multi_output")
         }
 
         fit <- rstan::sampling(stanmodels$bc_with_pred, data = data_bc,
@@ -2189,12 +2210,12 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
                                    append = FALSE) {
     type <- match.arg(type)
     m_name <- paste("m", type, sep = "_")
-    err_type <- paste0("error_bc_invalid_", type)
+    err_type <- paste0("bc_invalid_", type)
 
     if (is.null(key_value) && is.null(name) && is.null(reporting_frequency)) {
         if (is.null(append)) {
             if (NROW(private[[m_name]])) {
-                eplusr:::with_silent(private$m_seed$del(private[[m_name]]$id, .force = TRUE))
+                eplusr::with_silent(private$m_seed$del(private[[m_name]]$id, .force = TRUE))
             }
             private[[m_name]] <- NULL
         }
@@ -2202,14 +2223,14 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     }
 
     # make sure seed UUID is updated
-    on.exit(private$m_log$seed_uuid <- ._get_private(private$m_seed)$m_log$uuid, add = TRUE)
+    on.exit(private$log_seed_uuid(), add = TRUE)
 
     if (is.null(append)) append <- FALSE
 
     # check NA
-    if (anyNA(key_value)) abort(err_type, "`key_value` cannot contain any NA.")
-    if (anyNA(name)) abort(err_type, "`name` cannot contain any NA.")
-    if (anyNA(reporting_frequency)) abort(err_type, "`reporting_frequency` cannot contain any NA.")
+    if (anyNA(key_value)) abort("'key_value' cannot contain any NA.", err_type)
+    if (anyNA(name)) abort("'name' cannot contain any NA.", err_type)
+    if (anyNA(reporting_frequency)) abort("'reporting_frequency' cannot contain any NA.", err_type)
 
     # get RDD and MDD
     if (!private$m_log$run_ddy) bc_run_ddy(super, self, private)
@@ -2220,9 +2241,9 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     # RddFile or MddFile
     } else if (inherits(key_value, c("RddFile", "MddFile"))) {
         if (type == "input" && inherits(key_value, "MddFile")) {
-            abort(err_type, paste0("`$input()` only support RddFile. MddFile ",
-                "can only be used in `$output()`."
-            ))
+            abort(paste0("'$input()' only support RddFile. MddFile ",
+                "can only be used in '$output()'."
+            ), err_type)
         }
         bc_match_input_output_dict(super, self, private, type, append, reporting_frequency, key_value)
         return(private[[m_name]])
@@ -2238,13 +2259,13 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
             dict <- "RddFile or MddFile"
         }
 
-        abort(err_type, paste0("`key_value` should be NULL, ",
+        abort(paste0("'key_value' should be NULL, ",
             "a character vector, a data.frame or an ", dict, " object."
-        ))
+        ), err_type)
     }
 
     if (is.null(name)) {
-        abort(err_type, paste0("Please give variable names via `name`."))
+        abort(paste0("Please give variable names via 'name'."), err_type)
     }
 
     if (type == "input") {
@@ -2257,7 +2278,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
     set(dt, NULL, "key_value", key_value)
 
     if (anyNA(dt$variable)) {
-        abort(err_type, paste0("Invalid variable name found: ", paste0("`", name[is.na(dt$variable)], "`", collapse = ", ")))
+        abort(paste0("Invalid variable name found: ", paste0("'", name[is.na(dt$variable)], "'", collapse = ", ")), err_type)
     }
 
     # check reporting frequency
@@ -2267,9 +2288,9 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
 
     # input cannot contain any duplications
     if (nrow(invld <- dt[duplicated(dt, by = c("variable_lower", "key_value"))])) {
-        invld[report_type == "Meter", nm := paste0("`", variable, "`", collapse = ", ")]
-        invld[report_type != "Meter", nm := paste0("`", key_value, ":", variable, "`", collapse = ", ")]
-        abort(err_type, paste0("Duplications found in ", type, " variables: ", invld$nm))
+        invld[report_type == "Meter", nm := paste0("'", variable, "'", collapse = ", ")]
+        invld[report_type != "Meter", nm := paste0("'", key_value, ":", variable, "'", collapse = ", ")]
+        abort(paste0("Duplications found in ", type, " variables: ", invld$nm), err_type)
     }
 
     # clone the original in case there are errors
@@ -2308,8 +2329,8 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
         bc_combine_input_output(super, self, private, type, append, dt)
     } else {
         tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
-            error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
-            error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
+            epluspar_error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
+            epluspar_error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
         )
     }
 
@@ -2318,7 +2339,7 @@ bc_match_input_output <- function (super, self, private, type = c("input", "outp
 # }}}
 # bc_match_input_output_dict {{{
 bc_match_input_output_dict <- function (super, self, private, type, append, reporting_frequency, dict) {
-    err_type <- paste0("error_bc_invalid_", type)
+    err_type <- paste0("bc_invalid_", type)
     other_type <- switch(type, input = "output", output = "input")
 
     if (!nrow(dict)) return()
@@ -2333,7 +2354,7 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
 
     # input only support RDD
     if (type == "input" && !inherits(dict, "RddFile")) {
-        abort(err_type, ("Input variables can only be output variables, not output meters."))
+        abort(("Input variables can only be output variables, not output meters."), err_type)
     }
 
     # keep the original untouched
@@ -2354,10 +2375,10 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
     # Below should be the same for dt
     dict[full, on = "variable_lower", variable_match := i.variable]
     if (anyNA(dict$variable_match)) {
-        abort(err_type, paste0("Invaid variable name found ",
-            "in input `key_value`: ",
-            paste0("`", dict[is.na(variable_match), variable], "`", collapse = "\n"), "."
-        ))
+        abort(paste0("Invaid variable name found ",
+            "in input 'key_value': ",
+            paste0("'", dict[is.na(variable_match), variable], "'", collapse = "\n"), "."
+        ), err_type)
     } else {
         dict[, `:=`(variable = variable_match, variable_match = NULL)]
     }
@@ -2392,8 +2413,8 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
         bc_combine_input_output(super, self, private, type, append, dt)
     } else {
         tryCatch(bc_combine_input_output(super, self, private, type, append, dt),
-            error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
-            error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
+            epluspar_error_bc_invalid_input = function (e) {private$m_seed <- ori_idf; stop(e)},
+            epluspar_error_bc_invalid_output = function (e) {private$m_seed <- ori_idf; stop(e)}
         )
     }
 
@@ -2402,18 +2423,18 @@ bc_match_input_output_dict <- function (super, self, private, type, append, repo
 # }}}
 # bc_match_input_output_dt {{{
 bc_match_input_output_dt <- function (super, self, private, type, append, reporting_frequency, dt) {
-    err_type <- paste0("error_bc_invalid_", type)
+    err_type <- paste0("bc_invalid_", type)
     other_type <- switch(type, input = "output", output = "input")
     cls <- switch(type, input = "Output:Variable", output = c("Output:Variable", "Output:Meter"))
     cols <- c("class", "index", "value")
 
     if (!all(cols %in% names(dt))) {
-        abort(err_type, paste0("When `key_value` is a data.frame, ",
-            "it should contains at least 3 columns named `class`, `index` ",
-            "and `value`. Column `",
-            paste0("`", cols[cols %in% names(dt)], "`", collapse = ", "), " ",
+        abort(paste0("When 'key_value' is a data.frame, ",
+            "it should contains at least 3 columns named 'class', 'index' ",
+            "and 'value'. Column ",
+            paste0("'", cols[cols %in% names(dt)], "'", collapse = ", "), " ",
             "is/are missing in the input."
-        ))
+        ), err_type)
     }
 
     # here will copy the input
@@ -2422,16 +2443,16 @@ bc_match_input_output_dt <- function (super, self, private, type, append, report
     ]
 
     if (any(invld <- !dt$class %in% cls)) {
-        abort(err_type, paste0("When `key_value` is a data.frame, ",
-            "the `class` column should always be ", paste0(cls, collapse = " and "),
+        abort(paste0("When 'key_value' is a data.frame, ",
+            "the 'class' column should always be ", paste0(cls, collapse = " and "),
             ". Invalid class name found: ",
-            paste0("`", dt[invld, unique(class)], "`", collapse = ", "), "."
-        ))
+            paste0("'", dt[invld, unique(class)], "'", collapse = ", "), "."
+        ), err_type)
     }
     if (!is.integer(dt$index) || anyNA(dt$index)) {
-        abort(err_type, paste0("When `key_value` is a data.frame, ",
-            "the `index` column should be of integer type without any NA."
-        ))
+        abort(paste0("When 'key_value' is a data.frame, ",
+            "the 'index' column should be of integer type without any NA."
+        ), err_type)
     }
 
     # index original input in order to keep the order
@@ -2442,14 +2463,14 @@ bc_match_input_output_dt <- function (super, self, private, type, append, report
     if ("id" %in% names(dt)) cols <- c("id", cols)
     if (anyDuplicated(dt, by = cols)) {
         if ("id" %in% names(dt)) {
-            cols <- "`id`, `class` and `index`"
+            cols <- "'id', 'class' and 'index'"
         } else {
-            cols <- "`class` and `index`"
+            cols <- "'class' and 'index'"
         }
-        abort(err_type,
-            paste0("When `key_value` is a data.frame, ", cols,
+        abort(paste0("When 'key_value' is a data.frame, ", cols,
                 " column combined should not contain any duplication."
-            )
+            ),
+            err_type
         )
     }
 
@@ -2466,18 +2487,18 @@ bc_match_input_output_dt <- function (super, self, private, type, append, report
     var[index == 2L, field := "variable"]
     var[index == 3L, field := "reporting_frequency"]
     if (var[index > 4L, .N]) {
-        abort(err_type, paste0("Invalid field number for class Output:Variable: ",
+        abort(paste0("Invalid field number for class Output:Variable: ",
             paste0(var[index > 4L, unique(index)], collapse = "\n"), "."
-        ))
+        ), err_type)
     }
     var <- var[index <= 3L]
 
     mtr[index == 1L, field := "variable"]
     mtr[index == 2L, field := "reporting_frequency"]
     if (mtr[index > 2L, .N]) {
-        abort(err_type, paste0("Invalid field number for class Output:Meter: ",
+        abort(paste0("Invalid field number for class Output:Meter: ",
             paste0(mtr[index > 4L, unique(index)], collapse = "\n"), "."
-        ))
+        ), err_type)
     }
 
     if (nrow(var)) {
@@ -2508,7 +2529,7 @@ bc_match_input_output_dt <- function (super, self, private, type, append, report
 # bc_clean_existing_input_output {{{
 bc_clean_existing_input_output <- function (super, self, private, type, append, dt) {
     m_name <- paste("m", type, sep = "_")
-    err_type <- paste0("error_bc_invalid_", type)
+    err_type <- paste0("bc_invalid_", type)
 
     # delete the old
     if (!append) {
@@ -2532,15 +2553,15 @@ bc_clean_existing_input_output <- function (super, self, private, type, append, 
             # check if input variables have been already set
             if (NROW(private[[m_name]])) {
                 if (nrow(invld <- invld[index < 0L])) {
-                    abort(err_type, paste0("Variables specified ",
+                    abort(paste0("Variables specified ",
                             "have already been set as ", type, ". Invalid input found: ",
-                        paste0("`", output_var_name(private[[m_name]][-invld$index]), "`", collapse = ", ")
-                    ))
+                        paste0("'", output_var_name(private[[m_name]][-invld$index]), "'", collapse = ", ")
+                    ), err_type)
                 }
             }
 
             # check if input variables have duplications
-            abort(err_type, paste0("Duplications found in ", type, " variables: ", output_var_name(invld)))
+            abort(paste0("Duplications found in ", type, " variables: ", output_var_name(invld)), err_type)
         }
 
         # any key value being * should not overwrite others with specific names
@@ -2548,21 +2569,21 @@ bc_clean_existing_input_output <- function (super, self, private, type, append, 
             key_all <- all[J(unique(key_all$variable)), on = "variable"]
             # input can not be inserted if there is one with key value being "*"
             if (nrow(invld <- dt[key_all[key_value != "*" & index > 0L, index]])) {
-                abort(paste0("error_bc_invalid_", type), paste0("Cannot insert ",
+                abort(paste0("Cannot insert ",
                     "new variable when there is an existing one with key value ",
-                    "being `*`. Invalid input found: ",
-                    paste0("`", invld$key_value, ":", invld$variable, "`", collapse = ", ")
-                ))
+                    "being '*'. Invalid input found: ",
+                    paste0("'", invld$key_value, ":", invld$variable, "'", collapse = ", ")
+                ), paste0("bc_invalid_", type))
             }
 
             # input with key value being "*" can not be inserted if there is one
             # with specific key value
             if (NROW(invld <- private[[m_name]][key_all[key_value != "*" & index < 0L, -index]])) {
-                abort(paste0("error_bc_invalid_", type), paste0("Cannot insert ",
-                    "new variable with key value being `*` when there is an ",
+                abort(paste0("Cannot insert ",
+                    "new variable with key value being '*' when there is an ",
                     "existing one with specific key value. Invalid input found: ",
-                    paste0("`*:", invld$variable_name, "`", collapse = ", ")
-                ))
+                    paste0("'*:", invld$variable_name, "'", collapse = ", ")
+                ), paste0("bc_invalid_", type))
             }
         }
     }
@@ -2585,11 +2606,11 @@ bc_combine_input_output <- function (super, self, private, type, append, dt) {
         if (any(idx)) {
             invld <- dt[idx[1:nrow(dt)]]
             private$m_seed$del(invld$id)
-            abort(paste0("error_bc_invalid_", type),
-                paste0("Variables specified have already been set as ",
+            abort(paste0("Variables specified have already been set as ",
                     if (type == "input") "output" else "input", ": ",
-                    paste0("`", output_var_name(invld), "`", collapse = ", ")
-                )
+                    paste0("'", output_var_name(invld), "'", collapse = ", ")
+                ),
+                paste0("bc_invalid_", type)
             )
         }
 
@@ -2600,20 +2621,20 @@ bc_combine_input_output <- function (super, self, private, type, append, dt) {
             if (nrow(invld <- invld[id > 0L])) {
                 private$m_seed$del(invld$id)
                 if (nrow(invld_star <- invld[key_value == "*"])) {
-                    abort(paste0("error_bc_invalid_", type), paste0("Cannot insert ",
-                        "new ", type, " variable with key value being `*` when ",
+                    abort(paste0("Cannot insert ",
+                        "new ", type, " variable with key value being '*' when ",
                         "there is an existing one in ",
                         if (type == "input") "output" else "input",
                         " variables with same variable. Invalid input found: ",
-                        paste0("`", invld_star$key_value, ":", invld_star$variable_name, "`", collapse = ", ")
-                    ))
+                        paste0("'", invld_star$key_value, ":", invld_star$variable_name, "'", collapse = ", ")
+                    ), paste0("bc_invalid_", type))
                 } else {
-                    abort(paste0("error_bc_invalid_", type), paste0("Cannot insert ",
+                    abort(paste0("Cannot insert ",
                         "new ", type, " variable when there is an existing one in ",
                         if (type == "input") "output" else "input",
-                        " variables with key value being `*`. Invalid input found: ",
-                        paste0("`", invld$key_value, ":", invld$variable_name, "`", collapse = ", ")
-                    ))
+                        " variables with key value being '*'. Invalid input found: ",
+                        paste0("'", invld$key_value, ":", invld$variable_name, "'", collapse = ", ")
+                    ), paste0("bc_invalid_", type))
                 }
             }
         }
@@ -2662,21 +2683,21 @@ bc_report_freq <- function (super, self, private) {
 check_same_report_freq <- function (type, freq, old, append) {
     # check reporting frequency
     if (append && !is.null(old[[type]]) && !all(tolower(old[[type]]) == tolower(freq))) {
-        abort(paste0("error_bc_invalid_", type), paste0(
+        abort(paste0(
             "Object specified does not have the same reporting ",
-            "frequency as existing ", type, " (`", old[[type]], "`). ",
+            "frequency as existing ", type, " ('", old[[type]], "'). ",
             "Invalid input reporting frequency: ",
-            paste0("`", freq[freq != old[[type]]], "`")
-        ))
+            paste0("'", freq[freq != old[[type]]], "'")
+        ), paste0("bc_invalid_", type))
     }
     other <- names(old)[names(old) != type]
     if (!is.null(old[[other]]) && !all(tolower(old[[other]]) == tolower(freq))) {
-        abort(paste0("error_bc_invalid_", type), paste0(
+        abort(paste0(
             "Object specified does not have the same reporting ",
-            "frequency as existing ", other, " (`", old[[other]], "`). ",
+            "frequency as existing ", other, " ('", old[[other]], "'). ",
             "Invalid input reporting frequency: ",
-            paste0("`", freq[freq != old[[other]]], "`")
-        ))
+            paste0("'", freq[freq != old[[other]]], "'")
+        ), paste0("bc_invalid_", type))
     }
     eplusr:::validate_report_freq(freq)
 }
@@ -2685,15 +2706,15 @@ check_same_report_freq <- function (type, freq, old, append) {
 # param
 # bc_assert_has_sampled {{{
 bc_assert_has_sampled <- function (super, self, private, stop = TRUE) {
-    if (is.null(private$m_log$sample)) {
+    if (is.null(private$m_sample)) {
         if (stop) {
-            abort("error_bc_not_ready", paste0("No LHS samples have been generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+            abort(paste0("No LHS samples have been generated. ",
+                "Please use '$param()' or '$apply_measure()' to set parameters and ",
                 "perform LHS sampling."
-            ))
+            ), "bc_not_ready")
         } else {
             message("No LHS samples have been generated. ",
-                "Please use `$param()` or `$apply_measure()` to set parameters and ",
+                "Please use '$param()' or '$apply_measure()' to set parameters and ",
                 "perform LHS sampling."
             )
         }
@@ -2702,55 +2723,33 @@ bc_assert_has_sampled <- function (super, self, private, stop = TRUE) {
 }
 # }}}
 # lhs_samples {{{
-lhs_samples <- function (par, value, names = NULL, num) {
-    fctr <- par_names(par, names, type = "bc")
-
+lhs_samples <- function (param, num) {
     # use lhs::randomLHS to generate input
-    val <- as.data.table(lhs::randomLHS(num, nrow(par$num$meta)))
-    setnames(val, fctr)
+    samples <- as.data.table(lhs::randomLHS(num, nrow(param)))
+    setnames(samples, param$param_name)
 
     # number the case
-    val[, case := .I]
-    data.table::setcolorder(val, "case")
+    samples[, case := .I]
+    setcolorder(samples, "case")
 
-    # melt
-    val_m <- data.table::melt.data.table(val, id.vars = "case",
-        variable.name = "name_par", value.name = "value",
-        variable.factor = FALSE
-    )
-
-    # add parameter index
-    val_m[data.table(index_par = seq_along(fctr), name_par = fctr),
-        on = "name_par", index_par := i.index_par
-    ]
+    m <- melt.data.table(samples, id.vars = "case", variable.name = "param_name", variable.factor = FALSE)
 
     # calculate value
-    val_m[par$num$meta, on = c("index_par" = "value_rleid"),
-        `:=`(value = i.min + (i.max - i.min) * value)
-    ]
+    m[param, on = "param_name", `:=`(value = i.min + (i.max - i.min) * value)]
 
     # recreate the sample
-    val <- dcast.data.table(val_m, case ~ name_par, value.var = "value")
-    setcolorder(val, c("case", fctr))
+    samples <- dcast.data.table(m, case ~ param_name, value.var = "value")
+    setcolorder(samples, c("case", param$param_name))
 
-    # get case name
-    nms <- case_names(val[, -"case"])
-
-    # combine
-    if (!is.null(value)) {
-        # format val for `Idf$update()`
-        val_m <- match_sample_data(par, val_m, value)
-    }
-
-    list(names = nms, sample = val, value = val_m)
+    samples
 }
 # }}}
 
 # data
 # bc_assert_can_model {{{
-bc_assert_can_model <- function (self, private, stop = FALSE) {
+bc_assert_can_model <- function (super, self, private, stop = FALSE) {
     if (stop) {
-        fun <- function (...) abort("error_bc_not_ready", paste0(...))
+        fun <- function (...) abort(paste0(...), "bc_not_ready")
     } else {
         fun <- message
     }
@@ -2758,22 +2757,22 @@ bc_assert_can_model <- function (self, private, stop = FALSE) {
     # check if input and output variables are added after parameters
     if (is.null(private$m_input)) {
         fun("Unable to create parametric models ",
-            "because input variables are not set. Please use `$input()` to set ",
+            "because input variables are not set. Please use '$input()' to set ",
             "input variables.")
         return(FALSE)
     }
 
     if (is.null(private$m_output)) {
         fun("Unable to create parametric models ",
-            "because output variables are not set. Please use `$output()` to set ",
+            "because output variables are not set. Please use '$output()' to set ",
             "output variables.")
         return(FALSE)
     }
 
-    if (is.null(private$m_log$sample)) {
+    if (is.null(private$m_sample)) {
         fun("Unable to create parametric models ",
             "because no LHS samples have been generated. ",
-            "Please use `$param()` or `$apply_measure()` to set parameters and ",
+            "Please use '$param()' or '$apply_measure()' to set parameters and ",
             "perform LHS sampling."
         )
         return(FALSE)
@@ -2785,7 +2784,7 @@ bc_assert_can_model <- function (self, private, stop = FALSE) {
 # bc_assert_can_collect {{{
 bc_assert_can_collect <- function (super, self, private, stop = FALSE) {
     if (stop) {
-        fun <- function (...) abort("error_bc_not_ready", paste0(...))
+        fun <- function (...) abort(paste0(...), "bc_not_ready")
     } else {
         fun <- message
     }
@@ -2806,7 +2805,7 @@ bc_assert_can_collect <- function (super, self, private, stop = FALSE) {
 # bc_assert_can_stan {{{
 bc_assert_can_stan <- function (super, self, private, stop = FALSE) {
     if (stop) {
-        fun <- function (...) abort("error_bc_not_ready", paste0(...))
+        fun <- function (...) abort(paste0(...), "bc_not_ready")
     } else {
         fun <- message
     }
@@ -2814,15 +2813,15 @@ bc_assert_can_stan <- function (super, self, private, stop = FALSE) {
     # check if input and output variables are added after parameters
     if (is.null(private$m_log$data_sim)) {
         fun("Unable to perform calibration ",
-            "because simulated data are not set. Please use `$data_sim()` to retrieve ",
-            "simulated input and output data before calling `$stan_run()`.")
+            "because simulated data are not set. Please use '$data_sim()' to retrieve ",
+            "simulated input and output data before calling '$stan_run()'.")
         return(FALSE)
     }
 
     if (is.null(private$m_log$data_field)) {
         fun("Unable to perform calibration ",
-            "because field data are not set. Please use `$data_field()` to specify ",
-            "measured input and output data before calling `$stan_run()`.")
+            "because field data are not set. Please use '$data_field()' to specify ",
+            "measured input and output data before calling '$stan_run()'.")
         return(FALSE)
     }
 
@@ -2847,25 +2846,25 @@ bc_assert_valid_resolution <- function (super, self, private, resolution) {
         cur_res <- 60 * 24 * 31
         err_res <- "1 month"
     } else {
-        abort("error_bc_cannot_resample", paste0("Cannot change data resolution ",
-            "when variable reporting frequency is `", freq, "`"
-        ))
+        abort(paste0("Cannot change data resolution ",
+            "when variable reporting frequency is '", freq, "'"
+        ), "bc_cannot_resample")
     }
 
     in_res <- standardize_resolution(resolution)
 
     if (cur_res > in_res) {
-        abort("error_bc_invalid_resolution", paste0("Input resolution should ",
+        abort(paste0("Input resolution should ",
             "not be smaller than reporting frequency (", err_res, "). ",
-            "Invalid resolution found: ", paste0("`", resolution, "`")
-        ))
+            "Invalid resolution found: ", paste0("'", resolution, "'")
+        ), "bc_invalid_resolution")
     }
 
     if (in_res %% cur_res) {
-        abort("error_bc_invalid_resolution", paste0("Input resolution should ",
+        abort(paste0("Input resolution should ",
             "be divisible by reporting frequency (", err_res, "). ",
-            "Invalid resolution found: ", paste0("`", resolution, "`")
-        ))
+            "Invalid resolution found: ", paste0("'", resolution, "'")
+        ), "bc_invalid_resolution")
     }
 
     TRUE
@@ -2874,31 +2873,31 @@ bc_assert_valid_resolution <- function (super, self, private, resolution) {
 # bc_assert_valid_measured {{{
 bc_assert_valid_measured <- function (super, self, private, dt, type = c("new_input", "output"), check_row = TRUE) {
     if (is.null(private$m_log$data_sim)) {
-        abort("error_bc_empty_data_sim", paste0("Field data should be specified ",
+        abort(paste0("Field data should be specified ",
             "after collecting simulation data in order to perform validity checking. ",
-            "Please run `$data_sim()` first."
-        ))
+            "Please run '$data_sim()' first."
+        ), "bc_empty_data_sim")
     }
 
     type <- match.arg(type)
     m_name <- if (type == "new_input") "input" else "output"
-    err_type <- paste0("error_bc_invalid_data_field_", type)
+    err_type <- paste0("bc_invalid_data_field_", type)
 
     if (!is.data.frame(dt)) {
-        abort(err_type, paste0("`", type, "` should be ",
+        abort(paste0("'", type, "' should be ",
             "a data.frame. Invalid type: ", class(dt)[1L], "."
-        ))
+        ), err_type)
     }
 
     # should exclude 11 columns:
     # "case", "environment_period_index", "environment_name", "simulation_days",
     # "datetime", "month", "day", "hour", "minute", "day_type", "Date/Time"
     if (ncol(dt) != (ncol(private$m_log$data_sim[[m_name]]) - 11L)) {
-        abort(err_type, paste0("The column number of ",
-            "`", type, "` should be the same as ", m_name, " variables (",
+        abort(paste0("The column number of ",
+            "'", type, "' should be the same as ", m_name, " variables (",
             ncol(private$m_log$data_sim[[m_name]]) - 11L, "). ",
             "Invalid column number: ", ncol(dt), "."
-        ))
+        ), err_type)
     }
 
     if (check_row) {
@@ -2906,10 +2905,10 @@ bc_assert_valid_measured <- function (super, self, private, dt, type = c("new_in
         case_count <- private$m_log$data_sim[[m_name]][, list(n = .N), by = "case"]
 
         if (nrow(dt) != unique(case_count$n)) {
-            abort(err_type, paste0("The row number of ",
-                "`", type, "` should be the same as ", m_name, " variables (",
+            abort(paste0("The row number of ",
+                "'", type, "' should be the same as ", m_name, " variables (",
                 unique(case_count$n), "). Invalid row number: ", nrow(dt), "."
-            ))
+            ), err_type)
         }
     }
 
@@ -2920,7 +2919,7 @@ bc_assert_valid_measured <- function (super, self, private, dt, type = c("new_in
 bc_check_data <- function (super, self, private, data, type = c("sim", "field")) {
     type <- match.arg(type)
     m_name <- paste0("data_", type)
-    err_type <- paste0("error_bc_invalid_", m_name)
+    err_type <- paste0("bc_invalid_", m_name)
     ori <- private$m_log[[m_name]]
 
     if (type == "sim") {
@@ -2932,27 +2931,27 @@ bc_check_data <- function (super, self, private, data, type = c("sim", "field"))
     }
 
     if (!is.list(data)) {
-        abort(err_type, paste0("`", m_name, "` should be a list. ",
-            "Invalid input class: `", class(data)[[1L]], "`."
-        ))
+        abort(paste0("'", m_name, "' should be a list. ",
+            "Invalid input class: '", class(data)[[1L]], "'."
+        ), err_type)
     }
     if (length(data) != len) {
-        abort(err_type, paste0("`", m_name, "` should be a list of ", len, ". ",
-            "Invalid input length: `", length(data), "`."
-        ))
+        abort(paste0("'", m_name, "' should be a list of ", len, ". ",
+            "Invalid input length: '", length(data), "'."
+        ), err_type)
     }
     if (!all(names(data) %in% nm)) {
-        abort(err_type, paste0("`", m_name, "` should be a list of 2 ",
-            "named element `input` and `output`. Invalid element found: ",
-            paste0("`", names(data)[!names(data) %in% nm], "`", collapse = ", ")
-        ))
+        abort(paste0("'", m_name, "' should be a list of 2 ",
+            "named element 'input' and 'output'. Invalid element found: ",
+            paste0("'", names(data)[!names(data) %in% nm], "'", collapse = ", ")
+        ), err_type)
     }
 
     for (name in nm) {
         if (!is.data.frame(data[[name]])) {
-            abort(err_type, paste0("`", name, "` of `", m_name, "` should be a ",
-                "data.frame. Invalid `", name, "` type: `", class(data[[name]])[[1L]], "`."
-            ))
+            abort(paste0("'", name, "' of '", m_name, "' should be a ",
+                "data.frame. Invalid '", name, "' type: '", class(data[[name]])[[1L]], "'."
+            ), err_type)
         }
 
         data[[name]] <- as.data.table(data[[name]])
@@ -2964,27 +2963,27 @@ bc_check_data <- function (super, self, private, data, type = c("sim", "field"))
         }
 
         if (ncol(data[[name]]) != (ncol(ori[[name]]) - 11L)) {
-            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same variable ",
-                "number (", ncol(ori[[name]]) - 11L, ") as in `$", m_name, "()$", name, "`. ",
+            abort(paste0("'", name, "' of '", m_name, "' should have the same variable ",
+                "number (", ncol(ori[[name]]) - 11L, ") as in '$", m_name, "()$", name, "'. ",
                 "Invalid variable number: ", ncol(data[[name]]), "."
-            ))
+            ), err_type)
         }
         if (nrow(data[[name]]) != nrow(ori[[name]])) {
-            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same row ",
-                "number (", nrow(ori[[name]]), ") as in `$", m_name, "()$", name, "`. ",
+            abort(paste0("'", name, "' of '", m_name, "' should have the same row ",
+                "number (", nrow(ori[[name]]), ") as in '$", m_name, "()$", name, "'. ",
                 "Invalid row number: ", nrow(data[[name]]), "."
-            ))
+            ), err_type)
         }
 
         type_in <- unlist(data[[name]][, lapply(.SD, function (x) typeof(x))])
         type <- unlist(ori[[name]][, lapply(.SD, function (x) typeof(x)), .SDcols = -(1L:11L)])
         if (any(invld <- type_in != type)) {
             idx <- which(invld)
-            abort(err_type, paste0("`", name, "` of `", m_name, "` should have the same variable ",
-                "type as in `$", m_name, "()$", name, "`. ",
+            abort(paste0("'", name, "' of '", m_name, "' should have the same variable ",
+                "type as in '$", m_name, "()$", name, "'. ",
                 "Invalid column type: ",
-                paste0("`", names(invld)[idx], "` type `", type_in[idx], "` (should be `", type[idx], "`)", collapse = ", "), "."
-            ))
+                paste0("'", names(invld)[idx], "' type '", type_in[idx], "' (should be '", type[idx], "')", collapse = ", "), "."
+            ), err_type)
         }
 
         # add meta columns
@@ -3002,9 +3001,9 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
     key_all <- private[[m_name]][key_value == "*" | is.na(key_value)]
     key_spe <- private[[m_name]][!key_all, on = "index"]
     if (nrow(key_all)) {
-        dt_all <- super$report_data(NULL, name = key_all$variable_name, all = TRUE)
+        dt_all <- super$report_data(name = key_all$variable_name, all = TRUE)
         if (nrow(dt_all)) {
-            set(dt_all, NULL, "case", as.integer(gsub("^(\\d+).*", "\\1", dt_all$case)))
+            set(dt_all, NULL, "case", as.integer(gsub("^Case(\\d+).*", "\\1", dt_all$case)))
         }
     } else {
         dt_all <- data.table()
@@ -3017,14 +3016,14 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
         # varaible, like `Environment:Site Outdoor Air Drybulb Temperature`.
         m <- dt_spe[, key_value_upper := toupper(key_value)][key_spe[, key_value_upper := toupper(key_value)], on = "key_value_upper", mult = "first"]
         if (anyNA(m$value)) {
-            abort(paste0("error_bc_", type, "_invalid_key_value"), paste0("Failed to extract ",
+            abort(paste0("Failed to extract ",
                 "simulation data of ", type, " variables. Invalid variable specification found: ",
-                paste0("`", output_var_name(m), "`", collapse = ", ")
-            ))
+                paste0("'", output_var_name(m), "'", collapse = ", ")
+            ), paste0("bc_", type, "_invalid_key_value"))
         }
         set(dt_spe, NULL, "key_value_upper", NULL)
         if (nrow(dt_spe)) {
-            set(dt_spe, NULL, "case", as.integer(stringi::stri_extract_first_regex(dt_spe$case, "^\\d+")))
+            set(dt_spe, NULL, "case", as.integer(gsub("Case(\\d+).*", "\\1", dt_spe$case)))
         }
     } else {
         dt_spe <- data.table()
@@ -3037,12 +3036,12 @@ bc_extract_report_data <- function (super, self, private, type = c("input", "out
     # make sure each case gives same output rows
     count <- dt[, list(n = .N), by = "case"]
     if (nrow(dt) && length(unique(count$n)) != 1L) {
-        abort("error_bc_data_sim_row_not_same", paste0("Internal error found when ",
+        abort(paste0("Internal error found when ",
             "extracting simulation data. Each case should give the same row number ",
-            "of report variable data. If you use `$apply_measure()` to set parameters, ",
-            "please make sure your measure does not result in different `Timestep`, ",
-            "`RunPeriod` or other objects that can effect the report variable data."
-        ))
+            "of report variable data. If you use '$apply_measure()' to set parameters, ",
+            "please make sure your measure does not result in different 'Timestep', ",
+            "'RunPeriod' or other objects that can effect the report variable data."
+        ), "bc_data_sim_row_not_same")
     }
 
     if (exclude_ddy) {
@@ -3152,9 +3151,9 @@ parse_unit_spec <- function(unitspec) {
 
     all_spec <- c("min", "hour", "day", "week", "month", "year")
     if (!unit %in% all_spec) {
-        abort("error_bc_invalid_resolution", paste0("Resolution unit should be one of ",
-            paste0("`", all_spec, "`", collapse = ", "), ". Invalid resolution ",
-            "unit found: ", "`", unit, "`")
+        abort(paste0("Resolution unit should be one of ",
+            paste0("'", all_spec, "'", collapse = ", "), ". Invalid resolution ",
+            "unit found: ", "'", unit, "'"), "bc_invalid_resolution"
         )
     }
 

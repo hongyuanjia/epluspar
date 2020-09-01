@@ -215,18 +215,18 @@ bc$data_bc()
 bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
 
 # run in the background
-bc$run(wait = TRUE)
+bc$eplus_run(wait = TRUE)
 # see job status
 bc$status()
 
 # force to kill background job before running the new one
-bc$run(force = TRUE)
+bc$eplus_run(force = TRUE)
 
 # do not show anything in the console
-bc$run(echo = FALSE)
+bc$eplus_run(echo = FALSE)
 
 # copy external files used in the model to simulation output directory
-bc$run(copy_external = TRUE)
+bc$eplus_run(copy_external = TRUE)
 }
 
 
@@ -471,6 +471,7 @@ Hongyuan Jia, Adrian Chong
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 Create a \code{BayesCalibJob} object
 \subsection{Usage}{
@@ -533,6 +534,7 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-read_rdd"></a>}}
+\if{latex}{\out{\hypertarget{method-read_rdd}{}}}
 \subsection{Method \code{read_rdd()}}{
 Read EnergyPlus Report Data Dictionary (RDD) file
 \subsection{Usage}{
@@ -550,7 +552,7 @@ Read EnergyPlus Report Data Dictionary (RDD) file
 \subsection{Details}{
 \verb{$read_rdd()} silently runs EnergyPlus using input seed model with
 design-day-only mode to create the \code{.rdd} file and returns the
-corresponding \link[eplusr:read_rdd]{RddFile} object.
+corresponding \link[eplusr:rdd]{RddFile} object.
 
 The \code{RddFile} object is stored internally and will be directly
 returned whenever you call \verb{$read_rdd()} again. You can force to
@@ -567,7 +569,7 @@ respectively.
 }
 
 \subsection{Returns}{
-An \link[eplusr:read_rdd]{RddFile} object.
+An \link[eplusr:rdd]{RddFile} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -586,6 +588,7 @@ bc$read_rdd(update = TRUE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-read_mdd"></a>}}
+\if{latex}{\out{\hypertarget{method-read_mdd}{}}}
 \subsection{Method \code{read_mdd()}}{
 Read EnergyPlus Meter Data Dictionary (MDD) file
 \subsection{Usage}{
@@ -603,7 +606,7 @@ Read EnergyPlus Meter Data Dictionary (MDD) file
 \subsection{Details}{
 \verb{$read_mdd()} silently runs EnergyPlus using input seed model with
 design-day-only mode to create the \code{.mdd} file and returns the
-corresponding \link[eplusr:read_mdd]{MddFile} object.
+corresponding \link[eplusr:rdd]{MddFile} object.
 
 The \code{MddFile} object is stored internally and will be directly
 returned whenever you call \verb{$read_mdd()} again. You can force to
@@ -621,7 +624,7 @@ respectively.
 }
 
 \subsection{Returns}{
-An \link[eplusr:read_mdd]{MddFile} object.
+An \link[eplusr:rdd]{MddFile} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -640,6 +643,7 @@ bc$read_mdd(update = TRUE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-input"></a>}}
+\if{latex}{\out{\hypertarget{method-input}{}}}
 \subsection{Method \code{input()}}{
 Set input parameters
 \subsection{Usage}{
@@ -678,7 +682,7 @@ all existing parameters. Default: \code{FALSE}.}
 you set output variables in \code{Output:Variable} and \code{Output:Meter}
 class and returns a \code{\link[data.table:data.table]{data.table::data.table()}} containing the
 information of input parameters. Only variables in
-\link[eplusr:read_rdd]{RDD} are
+\link[eplusr:rdd]{RDD} are
 allowed.The returned \code{\link[data.table:data.table]{data.table::data.table()}} has 5 columns:
 \itemize{
 \item \code{index}: Indices of input or output parameters.
@@ -698,11 +702,11 @@ You can remove all existing input parameters by setting \code{append} to
 \code{key_value} accepts 3 different formats:
 \itemize{
 \item A character vector.
-\item An \link[eplusr:read_rdd]{RddFile} object. It can be retrieved using
+\item An \link[eplusr:rdd]{RddFile} object. It can be retrieved using
 \href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}.
 In this case, \code{name} argument will be ignored, as its values are
 directly taken from variable names in input
-\link[eplusr:read_rdd]{RddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
+\link[eplusr:rdd]{RddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
 }
 \item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
 \code{Output:Meter} objects using \link[eplusr:Idf]{eplusr::Idf$load()}. In
@@ -738,6 +742,7 @@ bc$input()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-output"></a>}}
+\if{latex}{\out{\hypertarget{method-output}{}}}
 \subsection{Method \code{output()}}{
 Set output parameters
 \subsection{Usage}{
@@ -777,8 +782,8 @@ similar pattern as you set output variables in \code{Output:Variable} and
 \code{Output:Meter} class and returns a \code{\link[data.table:data.table]{data.table::data.table()}}
 containing the information of output parameters. Unlike
 \href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
-both variables in \link[eplusr:read_rdd]{RDD} and
-\link[eplusr:read_mdd]{MDD} are allowd. The returned data.table has 5
+both variables in \link[eplusr:rdd]{RDD} and
+\link[eplusr:rdd]{MDD} are allowd. The returned data.table has 5
 columns:
 \itemize{
 \item \code{index}: Indices of input or output parameters.
@@ -798,15 +803,15 @@ e.g. \code{bc$output(append = NULL)}.
 \code{key_value} accepts 3 different formats:
 \itemize{
 \item A character vector.
-\item An \link[eplusr:read_rdd]{RddFile} object or an
-\link[eplusr:read_mdd]{MddFile} object. They can be retrieved using
+\item An \link[eplusr:rdd]{RddFile} object or an
+\link[eplusr:rdd]{MddFile} object. They can be retrieved using
 \href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
 and
 \href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}},
 respectively.  In this case, \code{name} argument will be ignored, as
 its values are directly taken from variable names in input
-\link[eplusr:read_rdd]{RddFile} object or
-\link[eplusr:read_mdd]{MddFile} object. For example:\preformatted{bc$output(bc$read_mdd()[1:5])
+\link[eplusr:rdd]{RddFile} object or
+\link[eplusr:rdd]{MddFile} object. For example:\preformatted{bc$output(bc$read_mdd()[1:5])
 }
 \item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
 \code{Output:Meter} objects using \link[eplusr:Idf]{Idf$load()}. In this
@@ -843,6 +848,7 @@ bc$output()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-param"></a>}}
+\if{latex}{\out{\hypertarget{method-param}{}}}
 \subsection{Method \code{param()}}{
 Set parameters for Bayesian calibration
 \subsection{Usage}{
@@ -939,6 +945,7 @@ bc$param(
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-apply_measure"></a>}}
+\if{latex}{\out{\hypertarget{method-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
 Set parameters for Bayesian calibration using function
 \subsection{Usage}{
@@ -1040,6 +1047,7 @@ bc$apply_measure(measure,
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-samples"></a>}}
+\if{latex}{\out{\hypertarget{method-samples}{}}}
 \subsection{Method \code{samples()}}{
 Get sampled parameter values
 \subsection{Usage}{
@@ -1083,6 +1091,7 @@ bc$samples()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-models"></a>}}
+\if{latex}{\out{\hypertarget{method-models}{}}}
 \subsection{Method \code{models()}}{
 Get parametric models
 \subsection{Usage}{
@@ -1126,6 +1135,7 @@ bc$models()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-data_sim"></a>}}
+\if{latex}{\out{\hypertarget{method-data_sim}{}}}
 \subsection{Method \code{data_sim()}}{
 Collect simulation data
 \subsection{Usage}{
@@ -1206,6 +1216,7 @@ bc$data_sim()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-data_field"></a>}}
+\if{latex}{\out{\hypertarget{method-data_field}{}}}
 \subsection{Method \code{data_field()}}{
 Specify field measured data
 \subsection{Usage}{
@@ -1294,6 +1305,7 @@ For details on the meaning of each columns, see
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-data_bc"></a>}}
+\if{latex}{\out{\hypertarget{method-data_bc}{}}}
 \subsection{Method \code{data_bc()}}{
 Combine simulation data and field measured data
 \subsection{Usage}{
@@ -1362,6 +1374,7 @@ bc$data_bc()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_run"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_run}{}}}
 \subsection{Method \code{eplus_run()}}{
 Run parametric simulations
 \subsection{Usage}{
@@ -1431,18 +1444,18 @@ The modified \code{BayesCalibJob} object itself.
 bc$eplus_run(dir = tempdir(), run_period = list("example", 1, 1, 1, 31))
 
 # run in the background
-bc$run(wait = TRUE)
+bc$eplus_run(wait = TRUE)
 # see job status
 bc$status()
 
 # force to kill background job before running the new one
-bc$run(force = TRUE)
+bc$eplus_run(force = TRUE)
 
 # do not show anything in the console
-bc$run(echo = FALSE)
+bc$eplus_run(echo = FALSE)
 
 # copy external files used in the model to simulation output directory
-bc$run(copy_external = TRUE)
+bc$eplus_run(copy_external = TRUE)
 }
 
 }
@@ -1453,6 +1466,7 @@ bc$run(copy_external = TRUE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_kill"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_kill}{}}}
 \subsection{Method \code{eplus_kill()}}{
 Kill current running EnergyPlus simulations
 \subsection{Usage}{
@@ -1482,6 +1496,7 @@ bc$eplus_kill()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_status"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_status}{}}}
 \subsection{Method \code{eplus_status()}}{
 Get the EnergyPlus simulation status
 \subsection{Usage}{
@@ -1533,6 +1548,7 @@ bc$eplus_status()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_output_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_output_dir}{}}}
 \subsection{Method \code{eplus_output_dir()}}{
 Get EnergyPlus simulation output directory
 \subsection{Usage}{
@@ -1574,6 +1590,7 @@ bc$eplus_output_dir(c(1, 4))
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_locate_output"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_locate_output}{}}}
 \subsection{Method \code{eplus_locate_output()}}{
 Get paths of EnergyPlus output file
 \subsection{Usage}{
@@ -1622,6 +1639,7 @@ bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_errors"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_errors}{}}}
 \subsection{Method \code{eplus_errors()}}{
 Read EnergyPlus simulation errors
 \subsection{Usage}{
@@ -1666,6 +1684,7 @@ bc$errors(info = TRUE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_report_data_dict"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_report_data_dict}{}}}
 \subsection{Method \code{eplus_report_data_dict()}}{
 Read report data dictionary from EnergyPlus SQL outputs
 \subsection{Usage}{
@@ -1724,6 +1743,7 @@ bc$eplus_report_data_dict(c(1, 4))
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_report_data"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_report_data}{}}}
 \subsection{Method \code{eplus_report_data()}}{
 Read EnergyPlus report data
 \subsection{Usage}{
@@ -1952,6 +1972,7 @@ bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_da
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_tabular_data"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_tabular_data}{}}}
 \subsection{Method \code{eplus_tabular_data()}}{
 Read EnergyPlus tabular data
 \subsection{Usage}{
@@ -2027,6 +2048,7 @@ str(bc$eplus_tabular_data(c(1, 4),
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-eplus_save"></a>}}
+\if{latex}{\out{\hypertarget{method-eplus_save}{}}}
 \subsection{Method \code{eplus_save()}}{
 Save EnergyPlus parametric models
 \subsection{Usage}{
@@ -2085,6 +2107,7 @@ bc$save(tempdir(), separate = FALSE)
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-stan_run"></a>}}
+\if{latex}{\out{\hypertarget{method-stan_run}{}}}
 \subsection{Method \code{stan_run()}}{
 Run Bayesian calibration using Stan
 \subsection{Usage}{
@@ -2139,7 +2162,7 @@ new column \code{type} added giving \code{field} indicating field
 measured output and \code{prediction} indicating predicted output.
 Default: \code{TRUE}.}
 
-\item{\code{...}}{Additional arguments to pass to \link[rstan:sampling]{rstan::sampling} (when
+\item{\code{...}}{Additional arguments to pass to \link[rstan:stanmodel-method-sampling]{rstan::sampling} (when
 \code{file} is \code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not
 \code{NULL}).}
 }
@@ -2149,7 +2172,7 @@ Default: \code{TRUE}.}
 \verb{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
 returns a list of 2 elements:
 \itemize{
-\item \code{fit}: An object of S4 class \link[rstan:stanfit]{rstan::stanfit}.
+\item \code{fit}: An object of S4 class \link[rstan:stanfit-class]{rstan::stanfit}.
 \item \code{y_pred}: The output of
 \href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
 }
@@ -2172,6 +2195,7 @@ bc$stan_run()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-stan_file"></a>}}
+\if{latex}{\out{\hypertarget{method-stan_file}{}}}
 \subsection{Method \code{stan_file()}}{
 Extract Stan file for Bayesian calibration
 \subsection{Usage}{
@@ -2207,6 +2231,7 @@ bc$stan_file()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-post_dist"></a>}}
+\if{latex}{\out{\hypertarget{method-post_dist}{}}}
 \subsection{Method \code{post_dist()}}{
 Extract posterior distributions of calibrated parameters
 \subsection{Usage}{
@@ -2240,6 +2265,7 @@ bc$post_dist()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-prediction"></a>}}
+\if{latex}{\out{\hypertarget{method-prediction}{}}}
 \subsection{Method \code{prediction()}}{
 Extract predictions of output variables
 \subsection{Usage}{
@@ -2317,6 +2343,7 @@ bc$prediction()
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-evaluate"></a>}}
+\if{latex}{\out{\hypertarget{method-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
 Calculate statistical indicators of output variable predictions
 \subsection{Usage}{

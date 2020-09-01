@@ -29,3 +29,8 @@ reference:
     contents:
       - BayesCalibJob
       - bayes_job
+  - title: Optimization
+    desc: Conduct Optimization using Genetic Algorithm on An EnergyPlus Model
+    contents:
+      - GAOptimJob
+      - gaoptim_job
