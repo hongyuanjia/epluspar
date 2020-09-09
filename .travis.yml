@@ -32,6 +32,8 @@ before_install:
   - mkdir -p ~/.R/
   - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
   - echo "CXX14FLAGS = -O3" >> ~/.R/Makevars
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 
 script:
   - R -q -e "eplusr::install_eplus(8.8)"
