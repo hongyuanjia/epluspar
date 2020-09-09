@@ -19,6 +19,10 @@ matrix:
             - g++-7
             - libudunits2-dev
             - libv8-dev
+            - libcgal-dev
+            - libgdal-dev
+            - libglu1-mesa-dev
+            - libproj-dev
 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
