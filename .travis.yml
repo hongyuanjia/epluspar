@@ -50,7 +50,7 @@ after_success:
   - travis_wait 20 Rscript -e 'covr::codecov()'
   - test $TRAVIS_R_VERSION_STRING = "release" && test $TRAVIS_OS_NAME = "linux" &&
     Rscript -e 'source("https://raw.githubusercontent.com/hongyuanjia/epluspar/master/tools/pkglink.R")' &&
-    Rscript -e 'pkgdown::build_site(install = TRUE, run_dont_run = TRUE)'
+    travis_wait 20 Rscript -e 'pkgdown::build_site(install = TRUE, run_dont_run = TRUE)'
 
 after_failure:
   - cat epluspar.Rcheck/00*
