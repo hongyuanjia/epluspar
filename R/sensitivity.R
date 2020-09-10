@@ -424,7 +424,7 @@ sen_evaluate <- function (self, private, results) {
     sen_assert_can_evaluate(self, private)
 
     if (!is.data.frame(results)) {
-        checkmate::assert_number(results)
+        checkmate::assert_numeric(results, any.missing = FALSE, all.missing = FALSE)
     } else {
         type <- vapply(results, typeof, character(1L))
 

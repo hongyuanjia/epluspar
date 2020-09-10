@@ -1,12 +1,8 @@
 language: r
 sudo: true
 cache: packages
-dist: trusty
 
 latex: true
-
-r_github_packages:
-  - jimhester/covr
 
 env:
   global:
@@ -23,15 +19,25 @@ matrix:
             - g++-7
             - libudunits2-dev
             - libv8-dev
+            - libcgal-dev
+            - libgdal-dev
+            - libglu1-mesa-dev
+            - libproj-dev
 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+services:
+  - xvfb
 
 before_install:
   - chmod +x configure
   - mkdir -p ~/.R/
   - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
   - echo "CXX14FLAGS = -O3" >> ~/.R/Makevars
+  - R -q -e 'if (!requireNamespace("remotes")) install.packages("remotes")'
+  - R -q -e 'remotes::install_version("data.table", "1.12.8")'
+  - R -q -e 'remotes::install_deps()'
 
 script:
   - R -q -e "eplusr::install_eplus(8.8)"
@@ -46,8 +52,8 @@ after_success:
   - travis_wait 20 tar -C .. -xf $PKG_TARBALL
   - travis_wait 20 Rscript -e 'covr::codecov()'
   - test $TRAVIS_R_VERSION_STRING = "release" && test $TRAVIS_OS_NAME = "linux" &&
-    Rscript -e 'source("https://raw.githubusercontent.com/ideas-lab-nus/epluspar/master/tools/pkglink.R")' &&
-    Rscript -e 'pkgdown::build_site(install = TRUE, run_dont_run = TRUE)'
+    Rscript -e 'source("https://raw.githubusercontent.com/hongyuanjia/epluspar/master/tools/pkglink.R")' &&
+    travis_wait 20 Rscript -e 'pkgdown::build_site(install = TRUE, run_dont_run = TRUE)'
 
 after_failure:
   - cat epluspar.Rcheck/00*

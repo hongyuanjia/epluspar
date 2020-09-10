@@ -230,9 +230,12 @@ test_that("BayesCalib Class", {
         "Electricity:Facility [J](1 Month)"
     ))
 
+    expect_is(dt <- bc$data_sim(exclude_ddy = TRUE), "list")
+    expect_equal(nrow(dt$input), 864)
+    expect_equal(nrow(dt$output), 864)
     expect_is(dt <- bc$data_sim(exclude_ddy = FALSE), "list")
-    expect_equal(nrow(dt$input), 1440)
-    expect_equal(nrow(dt$output), 1440)
+    expect_equal(nrow(dt$input), 2592)
+    expect_equal(nrow(dt$output), 2592)
 
     expect_is(dt <- bc$data_sim(all = TRUE), "list")
     expect_equal(names(dt$input), c("case", "environment_period_index", "environment_name",
@@ -350,8 +353,8 @@ test_that("BayesCalib Class", {
     ## run
     job <- seed$run(bc$weather(), echo = FALSE)
     ## get output data
-    fan_power <- epluspar:::report_dt_aggregate(job$report_data(name = bc$output()$variable_name, all = TRUE), "6 hour")
-    fan_power <- eplusr:::report_dt_to_wide(fan_power)
+    fan_power <- epluspar:::report_dt_aggregate(job$report_data(name = bc$output()$variable_name, all = TRUE, day_type = "normalday"), "6 hour")
+    fan_power <- report_dt_to_wide(fan_power)
     # add Gaussian noice
     fan_power <- fan_power[, -"Date/Time"][
         , lapply(.SD, function (x) x + rnorm(length(x), sd = 0.05 * sd(x)))][

@@ -1926,8 +1926,8 @@ bc_data_sim <- function (super, self, private, resolution = NULL, exclude_ddy = 
     }
 
     # format to wide
-    input <- eplusr:::report_dt_to_wide(input, date_components = TRUE)
-    output <- eplusr:::report_dt_to_wide(output, date_components = TRUE)
+    input <- report_dt_to_wide(input, date_components = TRUE)
+    output <- report_dt_to_wide(output, date_components = TRUE)
 
     # should keep the variable order
     input <- bc_retain_variable_order(super, self, private, input, "input")
@@ -2700,6 +2700,90 @@ check_same_report_freq <- function (type, freq, old, append) {
         ), paste0("bc_invalid_", type))
     }
     eplusr:::validate_report_freq(freq)
+}
+# }}}
+# report_dt_to_wide {{{
+report_dt_to_wide <- function (dt, date_components = FALSE) {
+    checkmate::assert_names(names(dt), must.include = c(
+        "datetime", "month", "day", "hour", "minute",
+        "key_value", "name", "environment_period_index", "environment_name",
+        "reporting_frequency", "is_meter", "simulation_days", "day_type"
+    ))
+
+    # change detailed level frequency to "Each Call"
+    Variable <- NULL
+    dt[, Variable := reporting_frequency]
+    dt[J("HVAC System Timestep"), on = "reporting_frequency", Variable := "Each Call"]
+    dt[J("Zone Timestep"), on = "reporting_frequency", Variable := "TimeStep"]
+    # combine key_value, name, and unit
+    dt[J(1L), on = "is_meter", Variable := paste0(name, " [", units, "](", Variable, ")")]
+    dt[J(0L), on = "is_meter", Variable := paste0(key_value, ":", name, " [", units, "](", Variable, ")")]
+
+    # handle RunPeriod frequency
+    if ("Run Period" %in% unique(dt$reporting_frequency)) {
+        last_day <- dt[!is.na(datetime), .SD[.N],
+            .SDcols = c("datetime", "month", "day", "hour", "minute"),
+            by = "environment_period_index"
+        ]
+        data.table::set(last_day, NULL, "reporting_frequency", "Run Period")
+
+        dt[last_day, on = c("environment_period_index", "reporting_frequency"),
+            `:=`(datetime = i.datetime, month = i.month, day = i.day,
+                 hour = i.hour, minute = i.minute
+            )
+        ]
+    }
+
+    # format datetime
+    dt[, `Date/Time` := paste0(" ",
+        lpad(month, "0", 2), "/",
+        lpad(day, "0", 2), "  ",
+        lpad(hour, "0", 2), ":",
+        lpad(minute, "0", 2)
+    )]
+
+    # handle special cases
+    if (nrow(dt) & all(is.na(dt$datetime))) {
+        dt[, `Date/Time` := paste0("simdays=", simulation_days)]
+    }
+
+    if (date_components) {
+        # fill day_type
+        dt[is.na(day_type) & !is.na(datetime) & hour == 24L,
+            `:=`(day_type = lubridate::wday(datetime - lubridate::hours(1L), label = TRUE, week_start = 1L))
+        ]
+        dt[is.na(day_type) & !is.na(datetime) & hour != 24L,
+            `:=`(day_type = lubridate::wday(datetime, label = TRUE, week_start = 1L))
+        ]
+
+        if ("case" %in% names(dt)) {
+            dt <- data.table::dcast.data.table(dt, case +
+                environment_period_index + environment_name + simulation_days +
+                datetime + month + day + hour + minute +
+                day_type + `Date/Time` ~ Variable,
+                value.var = "value")
+        } else {
+            dt <- data.table::dcast.data.table(dt,
+                environment_period_index + environment_name + simulation_days +
+                datetime + month + day + hour + minute +
+                day_type + `Date/Time` ~ Variable,
+                value.var = "value")
+        }
+    } else {
+        if ("case" %in% names(dt)) {
+            dt <- data.table::dcast.data.table(dt, case +
+                environment_period_index + environment_name + simulation_days +
+                `Date/Time` ~ Variable,
+                value.var = "value")[, .SD, .SDcols = -c(1:4)]
+        } else {
+            dt <- data.table::dcast.data.table(dt,
+                environment_period_index + environment_name + simulation_days +
+                `Date/Time` ~ Variable,
+                value.var = "value")[, .SD, .SDcols = -c(1:3)]
+        }
+    }
+
+    dt
 }
 # }}}
 
