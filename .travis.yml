@@ -50,7 +50,7 @@ after_script:
 
 after_success:
   - travis_wait 20 tar -C .. -xf $PKG_TARBALL
-  - travis_wait 40 Rscript -e 'covr::codecov()'
+  # - travis_wait 40 Rscript -e 'covr::codecov()'
   - test $TRAVIS_R_VERSION_STRING = "release" && test $TRAVIS_OS_NAME = "linux" &&
     Rscript -e 'source("https://raw.githubusercontent.com/hongyuanjia/epluspar/master/tools/pkglink.R")' &&
     travis_wait 40 Rscript -e 'pkgdown::build_site(install = TRUE, run_dont_run = TRUE)'

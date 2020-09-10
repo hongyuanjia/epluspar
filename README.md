@@ -8,10 +8,7 @@ models.
 
 [![Travis-CI Build
 Status](https://api.travis-ci.com/ideas-lab-nus/epluspar.svg?token=1LqeFok1d6q5niBF8Hqr&branch=master)](https://travis-ci.com/ideas-lab-nus/epluspar)
-[![codecov](https://codecov.io/gh/ideas-lab-nus/epluspar/branch/master/graph/badge.svg)](https://codecov.io/gh/ideas-lab-nus/epluspar)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/epluspar)](https://cran.r-project.org/package=epluspar)
-[![CRAN Download
-Badge](https://cranlogs.r-pkg.org/badges/epluspar)](https://cran.r-project.org/package=epluspar)
 
 ## Installation
 
