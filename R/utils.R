@@ -62,6 +62,7 @@ makeFitnessMatrix <- function (fitness, control) {
 
 utils::globalVariables(c(
      ".BY", "i.value_id", "param_index", "param_name", "type", "value_id",
-     "value_num"
+     "value_num", "Date/Time", "datetime", "day_type", "i.datetime", "i.day",
+     "i.hour", "i.minute", "i.month", "reporting_frequency"
 ))
 # }}}

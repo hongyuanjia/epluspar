@@ -2736,10 +2736,10 @@ report_dt_to_wide <- function (dt, date_components = FALSE) {
 
     # format datetime
     dt[, `Date/Time` := paste0(" ",
-        stringi::stri_pad(month, 2, pad = "0"), "/",
-        stringi::stri_pad(day, 2, pad = "0"), "  ",
-        stringi::stri_pad(hour, 2, pad = "0"), ":",
-        stringi::stri_pad(minute, 2, pad = "0")
+        lpad(month, "0", 2), "/",
+        lpad(day, "0", 2), "  ",
+        lpad(hour, "0", 2), ":",
+        lpad(minute, "0", 2)
     )]
 
     # handle special cases
