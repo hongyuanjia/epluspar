@@ -35,6 +35,9 @@ before_install:
   - mkdir -p ~/.R/
   - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
   - echo "CXX14FLAGS = -O3" >> ~/.R/Makevars
+  - R -q -e 'if (!requireNamespace("remotes")) install.packages("remotes")'
+  - R -q -e 'remotes::install_version("data.table", "1.12.8")'
+  - R -q -e 'remotes::install_deps()'
 
 script:
   - R -q -e "eplusr::install_eplus(8.8)"
