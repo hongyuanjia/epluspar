@@ -351,7 +351,7 @@ test_that("BayesCalib Class", {
     job <- seed$run(bc$weather(), echo = FALSE)
     ## get output data
     fan_power <- epluspar:::report_dt_aggregate(job$report_data(name = bc$output()$variable_name, all = TRUE), "6 hour")
-    fan_power <- eplusr:::report_dt_to_wide(fan_power)
+    fan_power <- report_dt_to_wide(fan_power)
     # add Gaussian noice
     fan_power <- fan_power[, -"Date/Time"][
         , lapply(.SD, function (x) x + rnorm(length(x), sd = 0.05 * sd(x)))][
