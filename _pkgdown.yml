@@ -34,3 +34,13 @@ reference:
     contents:
       - GAOptimJob
       - gaoptim_job
+      - choice_space
+      - float_space
+      - integer_space
+      - mutRandomChoice
+      - print.ChoiceSpace
+      - print.FloatRange
+      - printf.IntegerRange
+      - recPCrossover
+      - setwith
+      - stopOnMaxTime
