@@ -996,7 +996,7 @@ format.IntegerRange <- format.ChoiceRange
 #' @param x An `IntegerRange` object
 #' @param ... Further arguments passed to or from other methods.
 #' @export
-printf.IntegerRange <- print.ChoiceRange
+print.IntegerRange <- print.ChoiceRange
 # }}}
 # get_param_range {{{
 get_param_range <- function (x, ...) {
