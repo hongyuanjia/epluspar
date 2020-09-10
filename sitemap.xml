@@ -16,12 +16,42 @@
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/bayes_job.html</loc>
   </url>
   <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/choice_space.html</loc>
+  </url>
+  <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/epluspar-package.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/float_space.html</loc>
   </url>
   <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/gaoptim_job.html</loc>
   </url>
   <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/integer_space.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/mutRandomChoice.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/print.ChoiceSpace.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/print.FloatRange.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/printf.IntegerRange.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/recPCrossover.html</loc>
+  </url>
+  <url>
     <loc>https://ideas-lab-nus.github.io/epluspar/reference/sensi_job.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/setwith.html</loc>
+  </url>
+  <url>
+    <loc>https://ideas-lab-nus.github.io/epluspar/reference/stopOnMaxTime.html</loc>
   </url>
 </urlset>

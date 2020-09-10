@@ -119,7 +119,7 @@ simulations using Morris method." />
     </div>
 
     <div class="ref-description">
-    <p><code>sensi_job()</code> takes an IDF and EPW as input and returns a <code>SensitivityJob</code>,
+    <p><code><a href='sensi_job.html'>sensi_job()</a></code> takes an IDF and EPW as input and returns a <code>SensitivityJob</code>,
 which provides a prototype of conducting sensitivity analysis of EnergyPlus
 simulations using <a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>Morris</a> method.</p>
     </div>
@@ -150,19 +150,23 @@ respectively.</p></li>
 <a href='../../epluspar/html/SensitivityJob#method-evaluate'><code>$evaluate()</code></a>.</p></li>
 </ol>
 
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Hongyuan Jia</p>
     <h2 class="hasAnchor" id="super-classes"><a class="anchor" href="#super-classes"></a>Super classes</h2>
 
     <p><code><a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>eplusr::EplusGroupJob</a></code> -&gt; <code><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a></code> -&gt; <code>SensitivityJob</code></p>
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
     
-<h3>Public methods</h3>
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Public methods</h3>
 
 <ul>
 <li><p><a href='#method-param'><code>SensitivityJob$param()</code></a></p></li>
 <li><p><a href='#method-apply_measure'><code>SensitivityJob$apply_measure()</code></a></p></li>
 <li><p><a href='#method-samples'><code>SensitivityJob$samples()</code></a></p></li>
 <li><p><a href='#method-evaluate'><code>SensitivityJob$evaluate()</code></a></p></li>
+<li><p><a href='#method-print'><code>SensitivityJob$print()</code></a></p></li>
 </ul>
 <p><details ><summary>Inherited methods</summary>
 <ul>
@@ -180,7 +184,6 @@ respectively.</p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data"><a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html#method-tabular_data'><code>eplusr::EplusGroupJob$tabular_data()</code></a></span></p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="initialize"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-initialize'><code>eplusr::ParametricJob$initialize()</code></a></span></p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-models'><code>eplusr::ParametricJob$models()</code></a></span></p></li>
-<li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-print'><code>eplusr::ParametricJob$print()</code></a></span></p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-run'><code>eplusr::ParametricJob$run()</code></a></span></p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-save'><code>eplusr::ParametricJob$save()</code></a></span></p></li>
 <li><p><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed"><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html#method-seed'><code>eplusr::ParametricJob$seed()</code></a></span></p></li>
@@ -190,18 +193,18 @@ respectively.</p></li>
 </details>
 
 <hr>
-<a id="method-param"></a></p><h3>Method <code>param()</code></h3>
-<p>Set parameters for sensitivity analysis</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>param</span>(
-<span class='no'>...</span>,
-<span class='kw'>.names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='kw'>.r</span> <span class='kw'>=</span> <span class='fl'>12L</span>,
-<span class='kw'>.grid_jump</span> <span class='kw'>=</span> <span class='fl'>4L</span>,
-<span class='kw'>.scale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+<a id="method-param"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>param()</code></h3>
+<p>Set parameters for sensitivity analysis</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>SensitivityJob</span><span class='op'>$</span><span class='fu'>param</span>(
+<span class='kw'>...</span>,
+.names = <span class='kw'>NULL</span>,
+.r = <span class='fl'>12L</span>,
+.grid_jump = <span class='fl'>4L</span>,
+.scale = <span class='fl'>TRUE</span>
 )</pre><p></div></p>
 
-<h3>Arguments</h3>
-<p><div class="arguments"></p><dl'>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Arguments</h4>
+<p><div class="arguments"></p><dl>
 <dt><code>...</code></dt><dd><p>Lists of paramter definitions. Please see above on the
 syntax.</p></dd>
 
@@ -224,7 +227,7 @@ effects so that all factors vary within the range [0,1].
 Default: <code>TRUE</code>. For details, see <a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>sensitivity::morris</a>.</p></dd>
 
 </dl><p></div></p>
-<h3>Details</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Details</h4>
 <p><code>$param()</code> takes parameter definitions in list format, which is
 similar to <code>$set()</code> in <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> class except that each field is
 not assigned with a single value, but a numeric vector of length 3,
@@ -242,7 +245,7 @@ like above, but note the use of <code>.()</code> in the left hand side. You
 can put multiple object ID or names in <code>.()</code>. It will set the field
 of all specified objects as one parameter.</p></li>
 <li><p><code>class := list(field = c(min, max, levels))</code>: Note the use of <code>:=</code>
-instead of <code>=</code>. The main difference is that, unlike <code>=</code>, the left
+instead of <code><a href='https://rdrr.io/r/base/assignOps.html'>=</a></code>. The main difference is that, unlike <code><a href='https://rdrr.io/r/base/assignOps.html'>=</a></code>, the left
 hand side of <code>:=</code> should be a valid class name in current
 <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a>. It will set that field of all objects in specified
 class as one parameter.</p></li>
@@ -256,15 +259,16 @@ being 0.1, 1.0 and 5, respectively.</p></li>
 and number of levels being 0.01, 1.0 and 5, respectively.</p></li>
 <li><p>Field <code>Conductivity</code> in all objects in class <code>Material</code>, with minimum,
 maximum and number of levels being 0.1, 0.6 and 10, respectively.</p></li>
-</ul><pre><span class='no'>sensi</span>$<span class='fu'>param</span>(
-<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>)),
-<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>))
-)</pre>
+</ul><pre><span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>param</span>(
+`Supply Fan 1` = <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Fan_Total_Efficiency = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(min = <span class='fl'>0.1</span>, max = <span class='fl'>1.0</span>, levels = <span class='fl'>5</span>)),
+<span class='kw'>Material</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Thickness = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), Conductivity = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>))
+)
+</pre>
 
 
-<h3>Returns</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
 <p>The modified <code>SensitivityJob</code> object itself.</p>
-<h3>Examples</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
 <p><div class="r example copy"></p><pre>\dontrun{
 sensi$param(
 `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0, levels = 5)),
@@ -275,18 +279,18 @@ Material := list(Thickness = c(0.01, 1, 5), Conductivity = c(0.1, 0.6, 10))
 </pre><p></div></p>
 
 <p><hr>
-<a id="method-apply_measure"></a></p><h3>Method <code>apply_measure()</code></h3>
-<p>Set parameters for sensitivity analysis using function</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>apply_measure</span>(
-<span class='no'>measure</span>,
-<span class='no'>...</span>,
-<span class='kw'>.r</span> <span class='kw'>=</span> <span class='fl'>12L</span>,
-<span class='kw'>.grid_jump</span> <span class='kw'>=</span> <span class='fl'>4L</span>,
-<span class='kw'>.scale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+<a id="method-apply_measure"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>apply_measure()</code></h3>
+<p>Set parameters for sensitivity analysis using function</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>SensitivityJob</span><span class='op'>$</span><span class='fu'>apply_measure</span>(
+<span class='kw'>measure</span>,
+<span class='kw'>...</span>,
+.r = <span class='fl'>12L</span>,
+.grid_jump = <span class='fl'>4L</span>,
+.scale = <span class='fl'>TRUE</span>
 )</pre><p></div></p>
 
-<h3>Arguments</h3>
-<p><div class="arguments"></p><dl'>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Arguments</h4>
+<p><div class="arguments"></p><dl>
 <dt><code>measure</code></dt><dd><p>A function that takes an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> and other
 arguments as input and returns an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object as
 output.</p></dd>
@@ -309,7 +313,7 @@ effects so that all factors vary within the range [0,1].
 Default: <code>TRUE</code>. For details, see <a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>sensitivity::morris</a>.</p></dd>
 
 </dl><p></div></p>
-<h3>Details</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Details</h4>
 <p><code>$apply_measure()</code> works in a similar way as the <code>$apply_measure</code> in
 <a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a> class, with only exception that each argument
 supplied in <code>...</code> should be a numeric vector of length 3, indicating
@@ -324,28 +328,29 @@ specifying parameters described in
 <a href='../../epluspar/html/SensitivityJob.html#method-param'><code>$param()</code></a>
 using <code>$apply_measure()</code> can be:</p><pre><span class='co'># set sensitivity parameters using $apply_measure()</span>
 <span class='co'># (a) first define a "measure"</span>
-<span class='no'>measure</span> <span class='kw'>&amp;</span><span class='no'>lt</span>;- <span class='kw'>function</span> (<span class='no'>idf</span>, <span class='no'>efficiency</span>, <span class='no'>thickness</span>, <span class='no'>conducitivy</span>) {
-<span class='no'>idf</span>$<span class='fu'>set</span>(
-<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='no'>efficiency</span>),
-<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='no'>thickness</span>, <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='no'>conducivity</span>)
+<span class='kw'>measure</span> <span class='op'>&lt;-</span> <span class='fu'>function</span> (<span class='kw'>idf</span>, <span class='kw'>efficiency</span>, <span class='kw'>thickness</span>, <span class='kw'>conducitivy</span>) {
+<span class='kw'>idf</span><span class='op'>$</span><span class='fu'>set</span>(
+`Supply Fan 1` = <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Fan_Total_Efficiency = <span class='kw'>efficiency</span>),
+<span class='kw'>Material</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Thickness = <span class='kw'>thickness</span>, Conductivity = <span class='kw'>conducivity</span>)
 )
-<span class='no'>idf</span>
+<span class='kw'>idf</span>
 }
 <span class='co'># (b) then apply that measure with parameter space definitions as</span>
 <span class='co'># function arguments</span>
-<span class='no'>sensi</span>$<span class='fu'>apply_measure</span>(<span class='no'>measure</span>,
-<span class='kw'>efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>),
-<span class='kw'>thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>)
-)</pre>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>apply_measure</span>(<span class='kw'>measure</span>,
+efficiency = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(min = <span class='fl'>0.1</span>, max = <span class='fl'>1.0</span>, levels = <span class='fl'>5</span>),
+thickness = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), conductivity = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>)
+)
+</pre>
 
 
-<h3>Returns</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
 <p>The modified <code>SensitivityJob</code> object itself.</p>
-<h3>Examples</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
 <p><div class="r example copy"></p><pre>\dontrun{
 # set sensitivity parameters using $apply_measure()
 # (a) first define a "measure"
-measure &amp;lt;- function (idf, efficiency, thickness, conducitivy) {
+measure &lt;- function (idf, efficiency, thickness, conducitivy) {
 idf$set(
 `Supply Fan 1` = list(Fan_Total_Efficiency = efficiency),
 Material := list(Thickness = thickness, Conductivity = conducivity)
@@ -363,20 +368,20 @@ thickness = c(0.01, 1, 5), conductivity = c(0.1, 0.6, 10)
 </pre><p></div></p>
 
 <p><hr>
-<a id="method-samples"></a></p><h3>Method <code>samples()</code></h3>
-<p>Get sampled parameter values</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>samples</span>()</pre><p></div></p>
+<a id="method-samples"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>samples()</code></h3>
+<p>Get sampled parameter values</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>SensitivityJob</span><span class='op'>$</span><span class='fu'>samples</span>()</pre><p></div></p>
 
-<h3>Details</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Details</h4>
 <p><code>$samples()</code> returns a <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code> which contains the
 sampled value for each parameter using <a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>Morris</a>
 method. The returned data.table has <code>1 + n</code> columns, where <code>n</code> is the
 parameter number, while <code>1</code> indicates an extra column named <code>case</code>
 giving the index of each sample.</p>
 
-<h3>Returns</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
 <p>A <code><a href='https://Rdatatable.gitlab.io/data.table/reference/data.table.html'>data.table::data.table()</a></code>.</p>
-<h3>Examples</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
 <p><div class="r example copy"></p><pre>\dontrun{
 sensi$samples()
 }
@@ -384,28 +389,28 @@ sensi$samples()
 </pre><p></div></p>
 
 <p><hr>
-<a id="method-evaluate"></a></p><h3>Method <code>evaluate()</code></h3>
-<p>Evaluate sensitivity</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>SensitivityJob</span>$<span class='fu'>evaluate</span>(<span class='no'>results</span>)</pre><p></div></p>
+<a id="method-evaluate"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>evaluate()</code></h3>
+<p>Evaluate sensitivity</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>SensitivityJob</span><span class='op'>$</span><span class='fu'>evaluate</span>(<span class='kw'>results</span>)</pre><p></div></p>
 
-<h3>Arguments</h3>
-<p><div class="arguments"></p><dl'>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Arguments</h4>
+<p><div class="arguments"></p><dl>
 <dt><code>results</code></dt><dd><p>A numeric vector. Usually the output of parametric
 simulations extracted using
 <a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>$report_data()</a> or
 <a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>$tabular_data()</a>.</p></dd>
 
 </dl><p></div></p>
-<h3>Details</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Details</h4>
 <p><code>$evaluate()</code> takes a numeric vector with the same length as total
 sample number and returns the a <code><a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>sensitivity::morris()</a></code> object. The
 statistics of interest (mu, mu* and sigma) are stored as an attribute
 named <code>data</code> and can be retrieved using <code>atrr(sensi$evaluate(), "data")</code>.</p>
 
-<h3>Returns</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
 <p>a <code><a href='https://rdrr.io/pkg/sensitivity/man/morris.html'>sensitivity::morris()</a></code> object with an extra <code>data</code>
 attribute.</p>
-<h3>Examples</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
 <p><div class="r example copy"></p><pre>\dontrun{
 # run parametric simulations
 sensi$run(wait = TRUE)
@@ -418,16 +423,38 @@ sensi$errors()
 
 # extract a target simulation output value for each case to evaluate the
 # sensitivity results
-eng &amp;lt;- sen$tabular_data(table_name = "site and source energy",
+eng &lt;- sen$tabular_data(table_name = "site and source energy",
 column_name = "energy per total building area",
 row_name = "total site energy")[, as.numeric(value)]
-(result &amp;lt;- sensi$evaluate(eng))
+(result &lt;- sensi$evaluate(eng))
 
 # extract sensivitity data
 attr(result, "data")
 
 # plot
 plot(result)
+}
+
+</pre><p></div></p>
+
+<p><hr>
+<a id="method-print"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code><a href='https://rdrr.io/r/base/print.html'>print()</a></code></h3>
+<p>Print <code>SensitivityJob</code> object</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>SensitivityJob</span><span class='op'>$</span><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>()</pre><p></div></p>
+
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Details</h4>
+<p><code>$print()</code> shows the core information of this <code>SensitivityJob</code>,
+including the path of IDFs and EPWs and also the simulation job
+status.</p>
+<p><code>$print()</code> is quite useful to get the simulation status, especially
+when <code>wait</code> is <code>FALSE</code> in <code>$run()</code>. The job status will be updated
+and printed whenever <code>$print()</code> is called.</p>
+
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
+<p>The <code>SensitivityJob</code> object itself, invisibly.</p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
+<p><div class="r example copy"></p><pre>\dontrun{
+sen$print()
 }
 
 </pre><p></div></p>
@@ -442,10 +469,11 @@ plot(result)
 <span class='co'>## ------------------------------------------------</span>
 
 <span class='co'># \dontrun{</span>
-<span class='no'>sensi</span>$<span class='fu'>param</span>(
-<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>)),
-<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>))
-)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>param</span>(
+`Supply Fan 1` = <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Fan_Total_Efficiency = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(min = <span class='fl'>0.1</span>, max = <span class='fl'>1.0</span>, levels = <span class='fl'>5</span>)),
+<span class='kw'>Material</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Thickness = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), Conductivity = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>))
+)
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
 
 
 <span class='co'>## ------------------------------------------------</span>
@@ -455,19 +483,20 @@ plot(result)
 <span class='co'># \dontrun{</span>
 <span class='co'># set sensitivity parameters using $apply_measure()</span>
 <span class='co'># (a) first define a "measure"</span>
-<span class='no'>measure</span> <span class='kw'>&lt;-</span> <span class='kw'>function</span> (<span class='no'>idf</span>, <span class='no'>efficiency</span>, <span class='no'>thickness</span>, <span class='no'>conducitivy</span>) {
-<span class='no'>idf</span>$<span class='fu'>set</span>(
-<span class='kw'>`Supply Fan 1`</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Fan_Total_Efficiency</span> <span class='kw'>=</span> <span class='no'>efficiency</span>),
-<span class='no'>Material</span> <span class='kw'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Thickness</span> <span class='kw'>=</span> <span class='no'>thickness</span>, <span class='kw'>Conductivity</span> <span class='kw'>=</span> <span class='no'>conducivity</span>)
+<span class='kw'>measure</span> <span class='op'>&lt;-</span> <span class='fu'>function</span> (<span class='kw'>idf</span>, <span class='kw'>efficiency</span>, <span class='kw'>thickness</span>, <span class='kw'>conducitivy</span>) {
+<span class='kw'>idf</span><span class='op'>$</span><span class='fu'>set</span>(
+`Supply Fan 1` = <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Fan_Total_Efficiency = <span class='kw'>efficiency</span>),
+<span class='kw'>Material</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(Thickness = <span class='kw'>thickness</span>, Conductivity = <span class='kw'>conducivity</span>)
 )
-<span class='no'>idf</span>
+<span class='kw'>idf</span>
 }
 <span class='co'># (b) then apply that measure with parameter space definitions as</span>
 <span class='co'># function arguments</span>
-<span class='no'>sensi</span>$<span class='fu'>apply_measure</span>(<span class='no'>measure</span>,
-<span class='kw'>efficiency</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>1.0</span>, <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fl'>5</span>),
-<span class='kw'>thickness</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), <span class='kw'>conductivity</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>)
-)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>apply_measure</span>(<span class='kw'>measure</span>,
+efficiency = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(min = <span class='fl'>0.1</span>, max = <span class='fl'>1.0</span>, levels = <span class='fl'>5</span>),
+thickness = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.01</span>, <span class='fl'>1</span>, <span class='fl'>5</span>), conductivity = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.6</span>, <span class='fl'>10</span>)
+)
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
 
 
 <span class='co'>## ------------------------------------------------</span>
@@ -475,7 +504,8 @@ plot(result)
 <span class='co'>## ------------------------------------------------</span>
 
 <span class='co'># \dontrun{</span>
-<span class='no'>sensi</span>$<span class='fu'>samples</span>()</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>samples</span>()
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'><span class='co'># }</span>
 
 
 <span class='co'>## ------------------------------------------------</span>
@@ -484,20 +514,36 @@ plot(result)
 
 <span class='co'># \dontrun{</span>
 <span class='co'># run parametric simulations</span>
-<span class='no'>sensi</span>$<span class='fu'>run</span>(<span class='kw'>wait</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>run</span>(wait = <span class='fl'>TRUE</span>)
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
 <span class='co'># status now includes a data.table with detailed information on each simulation</span>
-<span class='no'>sensi</span>$<span class='fu'>status</span>()</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>status</span>()
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
 <span class='co'># print simulation errors</span>
-<span class='no'>sensi</span>$<span class='fu'>errors</span>()</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
+<span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>errors</span>()
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
 <span class='co'># extract a target simulation output value for each case to evaluate the</span>
 <span class='co'># sensitivity results</span>
-<span class='no'>eng</span> <span class='kw'>&lt;-</span> <span class='no'>sen</span>$<span class='fu'>tabular_data</span>(<span class='kw'>table_name</span> <span class='kw'>=</span> <span class='st'>"site and source energy"</span>,
-<span class='kw'>column_name</span> <span class='kw'>=</span> <span class='st'>"energy per total building area"</span>,
-<span class='kw'>row_name</span> <span class='kw'>=</span> <span class='st'>"total site energy"</span>)[, <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span>(<span class='no'>value</span>)]</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sen' not found</span></div><div class='input'>(<span class='no'>result</span> <span class='kw'>&lt;-</span> <span class='no'>sensi</span>$<span class='fu'>evaluate</span>(<span class='no'>eng</span>))</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
+<span class='kw'>eng</span> <span class='op'>&lt;-</span> <span class='kw'>sen</span><span class='op'>$</span><span class='fu'>tabular_data</span>(table_name = <span class='st'>"site and source energy"</span>,
+column_name = <span class='st'>"energy per total building area"</span>,
+row_name = <span class='st'>"total site energy"</span>)[, <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span>(<span class='kw'>value</span>)]
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sen' not found</span></div><div class='input'>(<span class='kw'>result</span> <span class='op'>&lt;-</span> <span class='kw'>sensi</span><span class='op'>$</span><span class='fu'>evaluate</span>(<span class='kw'>eng</span>))
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sensi' not found</span></div><div class='input'>
 <span class='co'># extract sensivitity data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='no'>result</span>, <span class='st'>"data"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result' not found</span></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span>(<span class='kw'>result</span>, <span class='st'>"data"</span>)
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result' not found</span></div><div class='input'>
 <span class='co'># plot</span>
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>result</span>)</div><div class='output co'>#&gt; <span class='error'>Error in plot(result): object 'result' not found</span></div><div class='input'># }
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span>(<span class='kw'>result</span>)
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(result): object 'result' not found</span></div><div class='input'><span class='co'># }</span>
+
+
+<span class='co'>## ------------------------------------------------</span>
+<span class='co'>## Method `SensitivityJob$print`</span>
+<span class='co'>## ------------------------------------------------</span>
+
+<span class='co'># \dontrun{</span>
+<span class='kw'>sen</span><span class='op'>$</span><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>()
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'sen' not found</span></div><div class='input'><span class='co'># }</span>
 
 </div></pre>
   </div>
@@ -515,7 +561,7 @@ plot(result)
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

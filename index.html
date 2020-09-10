@@ -77,13 +77,15 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#epluspar" class="anchor"></a>epluspar</h1></div>
 <p>Conduct sensitivity analysis and Bayesian calibration of EnergyPlus models.</p>
-<p><a href="https://travis-ci.com/ideas-lab-nus/epluspar"><img src="https://api.travis-ci.com/ideas-lab-nus/epluspar.svg?token=1LqeFok1d6q5niBF8Hqr&amp;branch=master" alt="Travis-CI Build Status"></a> <a href="https://codecov.io/gh/ideas-lab-nus/epluspar"><img src="https://codecov.io/gh/ideas-lab-nus/epluspar/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://cran.r-project.org/package=epluspar"><img src="http://www.r-pkg.org/badges/version/epluspar" alt="CRAN_Status_Badge"></a> <a href="https://cran.r-project.org/package=epluspar"><img src="https://cranlogs.r-pkg.org/badges/epluspar" alt="CRAN Download Badge"></a></p>
+<p><a href="https://travis-ci.com/ideas-lab-nus/epluspar"><img src="https://api.travis-ci.com/ideas-lab-nus/epluspar.svg?token=1LqeFok1d6q5niBF8Hqr&amp;branch=master" alt="Travis-CI Build Status"></a> <a href="https://cran.r-project.org/package=epluspar"><img src="http://www.r-pkg.org/badges/version/epluspar" alt="CRAN_Status_Badge"></a></p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>Currently, epluspar is not on CRAN. You can install the development version from GitHub.</p>
-<div class="sourceCode" id="cb1"><pre class="r"><span class="co"># install.packages("remotes")</span>
-<span class="kw pkg">remotes</span><span class="kw ns">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"ideas-lab-nus/epluspar"</span>)</pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="co"># install.packages("remotes")</span>
+<span class="kw">remotes</span>::<span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"ideas-lab-nus/epluspar"</span>)
+</pre></div>
 <!-- TOC GFM -->
 <ul>
 <li>
@@ -135,157 +137,170 @@
 <h3 class="hasAnchor">
 <a href="#examples" class="anchor"></a>Examples</h3>
 <p>Create a <code>SensitivityJob</code> object:</p>
-<div class="sourceCode" id="cb2"><pre class="r"><span class="co"># use an example file from EnergyPlus v8.8 for demonstration here</span>
-<span class="no">path_idf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)$<span class="no">dir</span>, <span class="st">"ExampleFiles"</span>, <span class="st">"5Zone_Transformer.idf"</span>)
-<span class="no">path_epw</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)$<span class="no">dir</span>, <span class="st">"WeatherData"</span>, <span class="st">"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>)
+<div class="sourceCode" id="cb2"><pre class="downlit">
+<span class="co"># use an example file from EnergyPlus v8.8 for demonstration here</span>
+<span class="kw">path_idf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)<span class="op">$</span><span class="kw">dir</span>, <span class="st">"ExampleFiles"</span>, <span class="st">"5Zone_Transformer.idf"</span>)
+<span class="kw">path_epw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)<span class="op">$</span><span class="kw">dir</span>, <span class="st">"WeatherData"</span>, <span class="st">"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>)
 
 <span class="co"># create a `SensitivityJob` class which inheris from eplusr::ParametricJob class</span>
-<span class="no">sen</span> <span class="kw">&lt;-</span> <span class="fu">sensi_job</span>(<span class="no">path_idf</span>, <span class="no">path_epw</span>)
-<span class="co">#&gt; IDD v8.8.0 has not been parsed before.</span>
-<span class="co">#&gt; Try to locate `Energy+.idd` in EnergyPlus v8.8.0 installation folder '/usr/local/EnergyPlus-8-8-0'.</span>
-<span class="co">#&gt; IDD file found: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/Energy+.idd'.</span>
-<span class="co">#&gt; Start parsing...</span>
-<span class="co">#&gt; Parsing completed.</span></pre></div>
+<span class="kw">sen</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sensi_job.html">sensi_job</a></span>(<span class="kw">path_idf</span>, <span class="kw">path_epw</span>)
+<span class="co">#&gt; Adding an object in class 'Output:SQLite' and setting its 'Option Type' to 'SimpleAndTabular' in order to create SQLite output file.</span>
+<span class="co">#&gt; Moving all objects in class 'Output:Meter:MeterFileOnly' to 'Output:Meter' in order to use csv for data extraction.</span>
+</pre></div>
 <p>Set sensitivity parameters using <code>$param()</code> or <code>$apply_measure()</code>.</p>
 <ul>
 <li>Using <code>$param()</code>
 </li>
 </ul>
-<!-- end list --><div class="sourceCode" id="cb3"><pre class="r"><span class="co"># set parameter using similar syntax to `Idf$set()` in eplusr</span>
-<span class="no">sen</span>$<span class="fu">param</span>(
+<!-- end list --><div class="sourceCode" id="cb3"><pre class="downlit">
+<span class="co"># set parameter using similar syntax to `Idf$set()` in eplusr</span>
+<span class="kw">sen</span><span class="op">$</span><span class="fu">param</span>(
     <span class="co"># For adding a single object field as parameter</span>
     <span class="co"># Syntax: Object = list(Field = c(Min, Max, Levels))</span>
-    <span class="kw">`Supply Fan 1`</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">Fan_Total_Efficiency</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">5</span>)),
+    `Supply Fan 1` = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(Fan_Total_Efficiency = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">5</span>)),
 
     <span class="co"># For adding a class field as parameter</span>
-    <span class="no">Material</span> <span class="kw">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-        <span class="kw">Thickness</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="kw">min</span> <span class="kw">=</span> <span class="fl">0.01</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">0.08</span>, <span class="kw">levels</span> <span class="kw">=</span> <span class="fl">5</span>),
-        <span class="kw">Conductivity</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="kw">min</span> <span class="kw">=</span> <span class="fl">0.01</span>, <span class="kw">max</span> <span class="kw">=</span> <span class="fl">0.6</span>, <span class="kw">levels</span> <span class="kw">=</span> <span class="fl">6</span>)
+    <span class="kw">Material</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+        Thickness = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(min = <span class="fl">0.01</span>, max = <span class="fl">0.08</span>, levels = <span class="fl">5</span>),
+        Conductivity = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(min = <span class="fl">0.01</span>, max = <span class="fl">0.6</span>, levels = <span class="fl">6</span>)
     ),
 
     <span class="co"># use `.names` to give names to each parameter</span>
-    <span class="kw">.names</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"efficiency"</span>, <span class="st">"thickness"</span>, <span class="st">"conductivity"</span>),
+    .names = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"efficiency"</span>, <span class="st">"thickness"</span>, <span class="st">"conductivity"</span>),
 
     <span class="co"># See `r` and `grid_jump` in `sensitivity::morris`</span>
-    <span class="kw">.r</span> <span class="kw">=</span> <span class="fl">8</span>, <span class="kw">.grid_jump</span> <span class="kw">=</span> <span class="fl">1</span>
-)</pre></div>
+    .r = <span class="fl">8</span>, .grid_jump = <span class="fl">1</span>
+)
+</pre></div>
 <ul>
 <li>Using <code>$apply_measure()</code>
 </li>
 </ul>
-<!-- end list --><div class="sourceCode" id="cb4"><pre class="r"><span class="co"># first define a "measure"</span>
-<span class="no">my_actions</span> <span class="kw">&lt;-</span> <span class="kw">function</span> (<span class="no">idf</span>, <span class="no">efficiency</span>, <span class="no">thickness</span>, <span class="no">conducitivy</span>) {
-    <span class="no">idf</span>$<span class="fu">set</span>(
-        <span class="kw">`Supply Fan 1`</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">Fan_Total_Efficiency</span> <span class="kw">=</span> <span class="no">efficiency</span>),
-        <span class="no">Material</span> <span class="kw">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">Thickness</span> <span class="kw">=</span> <span class="no">thickness</span>, <span class="kw">Conductivity</span> <span class="kw">=</span> <span class="no">conducitivy</span>)
+<!-- end list --><div class="sourceCode" id="cb4"><pre class="downlit">
+<span class="co"># first define a "measure"</span>
+<span class="kw">my_actions</span> <span class="op">&lt;-</span> <span class="fu">function</span> (<span class="kw">idf</span>, <span class="kw">efficiency</span>, <span class="kw">thickness</span>, <span class="kw">conducitivy</span>) {
+    <span class="kw">idf</span><span class="op">$</span><span class="fu">set</span>(
+        `Supply Fan 1` = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(Fan_Total_Efficiency = <span class="kw">efficiency</span>),
+        <span class="kw">Material</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(Thickness = <span class="kw">thickness</span>, Conductivity = <span class="kw">conducitivy</span>)
     )
 
-    <span class="no">idf</span>
+    <span class="kw">idf</span>
 }
 
 <span class="co"># then apply that measure with parameter space definitions as function arguments</span>
-<span class="no">sen</span>$<span class="fu">apply_measure</span>(<span class="no">my_actions</span>,
-    <span class="kw">efficiency</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">5</span>),
-    <span class="kw">thickness</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.01</span>, <span class="fl">0.08</span>, <span class="fl">5</span>),
-    <span class="kw">conducitivy</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">0.6</span>, <span class="fl">6</span>),
-    <span class="kw">.r</span> <span class="kw">=</span> <span class="fl">8</span>, <span class="kw">.grid_jump</span> <span class="kw">=</span> <span class="fl">1</span>
+<span class="kw">sen</span><span class="op">$</span><span class="fu">apply_measure</span>(<span class="kw">my_actions</span>,
+    efficiency = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">5</span>),
+    thickness = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.01</span>, <span class="fl">0.08</span>, <span class="fl">5</span>),
+    conducitivy = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">0.6</span>, <span class="fl">6</span>),
+    .r = <span class="fl">8</span>, .grid_jump = <span class="fl">1</span>
 )
-<span class="co">#&gt; ── EnergPlus Parametric Simulation Job ─────────────────────────────────────────</span>
-<span class="co">#&gt; * Seed: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/ExampleFiles/5Zone_Trans...</span>
-<span class="co">#&gt; * Weather: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/WeatherData/USA_CA_Sa...</span>
+<span class="co">#&gt; -- EnergPlus Sensitivity Analysis Job ------------------------------------</span>
+<span class="co">#&gt; * Seed: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\ExampleFiles\5...</span>
+<span class="co">#&gt; * Weather: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\WeatherData...</span>
 <span class="co">#&gt; * EnergyPlus Version: '8.8.0'</span>
-<span class="co">#&gt; * EnergyPlus Path: '/home/hongyuanjia/.local/EnergyPlus-8-8-0'</span>
+<span class="co">#&gt; * EnergyPlus Path: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0'</span>
 <span class="co">#&gt; Applied Measure: 'my_actions'</span>
+<span class="co">#&gt; Parameters [3]</span>
+<span class="co">#&gt; [1]: 'efficiency' [0.1, 1] (lvl: 5)</span>
+<span class="co">#&gt; [2]: 'thickness' [0.01, 0.08] (lvl: 5)</span>
+<span class="co">#&gt; [3]: 'conducitivy' [0.1, 0.6] (lvl: 6)</span>
 <span class="co">#&gt; Parametric Models [32]: </span>
-<span class="co">#&gt; [01]: '1_effic(0.775)_thick(0.0275)_condu(0.2)'</span>
-<span class="co">#&gt; [02]: '2_effic(0.775)_thick(0.01)_condu(0.2)'</span>
-<span class="co">#&gt; [03]: '3_effic(0.775)_thick(0.01)_condu(0.3)'</span>
-<span class="co">#&gt; [04]: '4_effic(0.55)_thick(0.01)_condu(0.3)'</span>
-<span class="co">#&gt; [05]: '5_effic(0.55)_thick(0.0275)_condu(0.4)'</span>
-<span class="co">#&gt; [06]: '6_effic(0.55)_thick(0.0275)_condu(0.5)'</span>
-<span class="co">#&gt; [07]: '7_effic(0.775)_thick(0.0275)_condu(0.5)'</span>
-<span class="co">#&gt; [08]: '8_effic(0.775)_thick(0.01)_condu(0.5)'</span>
-<span class="co">#&gt; [09]: '9_effic(0.1)_thick(0.0275)_condu(0.4)'</span>
-<span class="co">#&gt; [10]: '10_effic(0.1)_thick(0.045)_condu(0.4)'</span>
-<span class="co">#&gt; [11]: '11_effic(0.1)_thick(0.045)_condu(0.5)'</span>
-<span class="co">#&gt; [12]: '12_effic(0.325)_thick(0.045)_condu(0.5)'</span>
-<span class="co">#&gt; [13]: '13_effic(0.775)_thick(0.01)_condu(0.2)'</span>
-<span class="no">....</span></pre></div>
+<span class="co">#&gt; [01]: 'Case01.idf'</span>
+<span class="co">#&gt; [02]: 'Case02.idf'</span>
+<span class="co">#&gt; [03]: 'Case03.idf'</span>
+<span class="co">#&gt; [04]: 'Case04.idf'</span>
+<span class="co">#&gt; [05]: 'Case05.idf'</span>
+<span class="co">#&gt; [06]: 'Case06.idf'</span>
+<span class="co">#&gt; [07]: 'Case07.idf'</span>
+<span class="co">#&gt; [08]: 'Case08.idf'</span>
+<span class="co">#&gt; [09]: 'Case09.idf'</span>
+<span class="kw">....</span>
+</pre></div>
 <p>Get samples</p>
-<div class="sourceCode" id="cb5"><pre class="r"><span class="no">sen</span>$<span class="fu">samples</span>()
-<span class="co">#&gt;     case efficiency thickness conducitivy</span>
-<span class="co">#&gt;  1:    1      0.775    0.0275         0.2</span>
-<span class="co">#&gt;  2:    2      0.775    0.0100         0.2</span>
-<span class="co">#&gt;  3:    3      0.775    0.0100         0.3</span>
-<span class="co">#&gt;  4:    4      0.550    0.0100         0.3</span>
-<span class="co">#&gt;  5:    5      0.550    0.0275         0.4</span>
-<span class="co">#&gt;  6:    6      0.550    0.0275         0.5</span>
-<span class="co">#&gt;  7:    7      0.775    0.0275         0.5</span>
-<span class="co">#&gt;  8:    8      0.775    0.0100         0.5</span>
-<span class="co">#&gt;  9:    9      0.100    0.0275         0.4</span>
-<span class="co">#&gt; 10:   10      0.100    0.0450         0.4</span>
-<span class="co">#&gt; 11:   11      0.100    0.0450         0.5</span>
-<span class="co">#&gt; 12:   12      0.325    0.0450         0.5</span>
-<span class="co">#&gt; 13:   13      0.775    0.0100         0.2</span>
-<span class="co">#&gt; 14:   14      0.775    0.0275         0.2</span>
-<span class="co">#&gt; 15:   15      0.775    0.0275         0.3</span>
-<span class="co">#&gt; 16:   16      0.550    0.0275         0.3</span>
-<span class="co">#&gt; 17:   17      0.550    0.0450         0.3</span>
-<span class="co">#&gt; 18:   18      0.550    0.0450         0.2</span>
-<span class="co">#&gt; 19:   19      0.775    0.0450         0.2</span>
-<span class="no">....</span></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit">
+<span class="kw">sen</span><span class="op">$</span><span class="fu">samples</span>()
+<span class="co">#&gt;      case efficiency thickness conducitivy</span>
+<span class="co">#&gt;     &lt;int&gt;      &lt;num&gt;     &lt;num&gt;       &lt;num&gt;</span>
+<span class="co">#&gt;  1:     1      0.325    0.0275         0.4</span>
+<span class="co">#&gt;  2:     2      0.100    0.0275         0.4</span>
+<span class="co">#&gt;  3:     3      0.100    0.0100         0.4</span>
+<span class="co">#&gt;  4:     4      0.100    0.0100         0.3</span>
+<span class="co">#&gt;  5:     5      0.100    0.0625         0.3</span>
+<span class="co">#&gt;  6:     6      0.325    0.0625         0.3</span>
+<span class="co">#&gt;  7:     7      0.325    0.0800         0.3</span>
+<span class="co">#&gt;  8:     8      0.325    0.0800         0.4</span>
+<span class="co">#&gt;  9:     9      0.100    0.0800         0.3</span>
+<span class="co">#&gt; 10:    10      0.325    0.0800         0.3</span>
+<span class="co">#&gt; 11:    11      0.325    0.0800         0.2</span>
+<span class="co">#&gt; 12:    12      0.325    0.0625         0.2</span>
+<span class="co">#&gt; 13:    13      0.100    0.0450         0.2</span>
+<span class="co">#&gt; 14:    14      0.325    0.0450         0.2</span>
+<span class="co">#&gt; 15:    15      0.325    0.0450         0.1</span>
+<span class="co">#&gt; 16:    16      0.325    0.0625         0.1</span>
+<span class="co">#&gt; 17:    17      0.550    0.0100         0.5</span>
+<span class="co">#&gt; 18:    18      0.775    0.0100         0.5</span>
+<span class="kw">....</span>
+</pre></div>
 <p>Run simulations and calculate statistic indicators</p>
-<div class="sourceCode" id="cb6"><pre class="r"><span class="co"># run simulations in temporary directory</span>
-<span class="no">sen</span>$<span class="fu">run</span>(<span class="kw">dir</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>(), <span class="kw">echo</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
+<div class="sourceCode" id="cb6"><pre class="downlit">
+<span class="co"># run simulations in temporary directory</span>
+<span class="kw">sen</span><span class="op">$</span><span class="fu">run</span>(dir = <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>(), echo = <span class="fl">FALSE</span>)
 <span class="co">#&gt; ── EnergPlus Parametric Simulation Job ─────────────────────────────────────────</span>
 <span class="co">#&gt; * Seed: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/ExampleFiles/5Zone_Trans...</span>
 <span class="co">#&gt; * Weather: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/WeatherData/USA_CA_Sa...</span>
+<span class="co">#&gt; -- EnergPlus Sensitivity Analysis Job ------------------------------------</span>
+<span class="co">#&gt; * Seed: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\ExampleFiles\5...</span>
+<span class="co">#&gt; * Weather: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\WeatherData...</span>
 <span class="co">#&gt; * EnergyPlus Version: '8.8.0'</span>
-<span class="co">#&gt; * EnergyPlus Path: '/home/hongyuanjia/.local/EnergyPlus-8-8-0'</span>
+<span class="co">#&gt; * EnergyPlus Path: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0'</span>
 <span class="co">#&gt; Applied Measure: 'my_actions'</span>
+<span class="co">#&gt; Parameters [3]</span>
+<span class="co">#&gt; [1]: 'efficiency' [0.1, 1] (lvl: 5)</span>
+<span class="co">#&gt; [2]: 'thickness' [0.01, 0.08] (lvl: 5)</span>
+<span class="co">#&gt; [3]: 'conducitivy' [0.1, 0.6] (lvl: 6)</span>
 <span class="co">#&gt; Parametric Models [32]: </span>
-<span class="co">#&gt; [01]: '1_effic(0.775)_thick(0.0275)_condu(0.2)'  &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [02]: '2_effic(0.775)_thick(0.01)_condu(0.2)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [03]: '3_effic(0.775)_thick(0.01)_condu(0.3)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [04]: '4_effic(0.55)_thick(0.01)_condu(0.3)'     &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [05]: '5_effic(0.55)_thick(0.0275)_condu(0.4)'   &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [06]: '6_effic(0.55)_thick(0.0275)_condu(0.5)'   &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [07]: '7_effic(0.775)_thick(0.0275)_condu(0.5)'  &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [08]: '8_effic(0.775)_thick(0.01)_condu(0.5)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [09]: '9_effic(0.1)_thick(0.0275)_condu(0.4)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [10]: '10_effic(0.1)_thick(0.045)_condu(0.4)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [11]: '11_effic(0.1)_thick(0.045)_condu(0.5)'    &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [12]: '12_effic(0.325)_thick(0.045)_condu(0.5)'  &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [13]: '13_effic(0.775)_thick(0.01)_condu(0.2)'   &lt;-- SUCCEEDED</span>
-<span class="no">....</span>
+<span class="co">#&gt; [01]: 'Case01.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [02]: 'Case02.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [03]: 'Case03.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [04]: 'Case04.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [05]: 'Case05.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [06]: 'Case06.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [07]: 'Case07.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [08]: 'Case08.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [09]: 'Case09.idf' &lt;-- SUCCEEDED</span>
+<span class="kw">....</span>
 
 <span class="co"># extract output</span>
 <span class="co"># here is just am example</span>
-<span class="no">eng</span> <span class="kw">&lt;-</span> <span class="no">sen</span>$<span class="fu">tabular_data</span>(<span class="kw">table_name</span> <span class="kw">=</span> <span class="st">"site and source energy"</span>,
-    <span class="kw">column_name</span> <span class="kw">=</span> <span class="st">"energy per total building area"</span>,
-    <span class="kw">row_name</span> <span class="kw">=</span> <span class="st">"total site energy"</span>)[, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="no">value</span>)]
+<span class="kw">eng</span> <span class="op">&lt;-</span> <span class="kw">sen</span><span class="op">$</span><span class="fu">tabular_data</span>(table_name = <span class="st">"site and source energy"</span>,
+    column_name = <span class="st">"energy per total building area"</span>,
+    row_name = <span class="st">"total site energy"</span>)[, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="kw">value</span>)]
 
 <span class="co"># calculate sensitivity</span>
-(<span class="no">result</span> <span class="kw">&lt;-</span> <span class="no">sen</span>$<span class="fu">evaluate</span>(<span class="no">eng</span>))
+(<span class="kw">result</span> <span class="op">&lt;-</span> <span class="kw">sen</span><span class="op">$</span><span class="fu">evaluate</span>(<span class="kw">eng</span>))
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Call:</span>
-<span class="co">#&gt; sensitivity::morris(model = NULL, factors = fctr, r = r, design = list(type = "oat",     levels = par$num$meta$levels, grid.jump = grid_jump), binf = par$num$meta$min,     bsup = par$num$meta$max, scale = scale)</span>
+<span class="co">#&gt; sensitivity::morris(model = NULL, factors = l$param$param_name,     r = .r, design = list(type = "oat", levels = l$param$levels,         grid.jump = .grid_jump), binf = l$param$min, bsup = l$param$max,     scale = .scale)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Model runs: 32 </span>
-<span class="co">#&gt;                 mu mu.star      sigma</span>
-<span class="co">#&gt; efficiency  -0.320   0.320 0.49036430</span>
-<span class="co">#&gt; thickness   -0.690   0.690 0.19683205</span>
-<span class="co">#&gt; conducitivy  0.225   0.225 0.05976143</span>
+<span class="co">#&gt;                   mu mu.star      sigma</span>
+<span class="co">#&gt; efficiency  -0.88000 0.88000 0.80796040</span>
+<span class="co">#&gt; thickness   -0.51000 0.51000 0.36893670</span>
+<span class="co">#&gt; conducitivy  0.16875 0.16875 0.09613049</span>
 
 <span class="co"># extract data</span>
-<span class="fu"><a href="https://rdrr.io/r/base/attr.html">attr</a></span>(<span class="no">result</span>, <span class="st">"data"</span>)
-<span class="co">#&gt;    index        name     mu mu.star      sigma</span>
-<span class="co">#&gt; 1:     1  efficiency -0.320   0.320 0.49036430</span>
-<span class="co">#&gt; 2:     2   thickness -0.690   0.690 0.19683205</span>
-<span class="co">#&gt; 3:     3 conducitivy  0.225   0.225 0.05976143</span></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/attr.html">attr</a></span>(<span class="kw">result</span>, <span class="st">"data"</span>)
+<span class="co">#&gt;    index        name       mu mu.star      sigma</span>
+<span class="co">#&gt;    &lt;int&gt;      &lt;char&gt;    &lt;num&gt;   &lt;num&gt;      &lt;num&gt;</span>
+<span class="co">#&gt; 1:     1  efficiency -0.88000 0.88000 0.80796040</span>
+<span class="co">#&gt; 2:     2   thickness -0.51000 0.51000 0.36893670</span>
+<span class="co">#&gt; 3:     3 conducitivy  0.16875 0.16875 0.09613049</span>
+</pre></div>
 <p>Plot</p>
-<div class="sourceCode" id="cb7"><pre class="r"><span class="co"># plot</span>
-<span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">result</span>)</pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit">
+<span class="co"># plot</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span>(<span class="kw">result</span>)
+</pre></div>
 <p><img src="reference/figures/get-started-1.png"><!-- --></p>
 </div>
 </div>
@@ -311,25 +326,29 @@
 <h3 class="hasAnchor">
 <a href="#examples-1" class="anchor"></a>Examples</h3>
 <p>Create a <code>BayesCalibJob</code> object:</p>
-<div class="sourceCode" id="cb8"><pre class="r"><span class="co"># use an example file from EnergyPlus v8.8 for demonstration here</span>
-<span class="no">path_idf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)$<span class="no">dir</span>, <span class="st">"ExampleFiles"</span>, <span class="st">"RefBldgLargeOfficeNew2004_Chicago.idf"</span>)
-<span class="no">path_epw</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)$<span class="no">dir</span>, <span class="st">"WeatherData"</span>, <span class="st">"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>)
+<div class="sourceCode" id="cb8"><pre class="downlit">
+<span class="co"># use an example file from EnergyPlus v8.8 for demonstration here</span>
+<span class="kw">path_idf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)<span class="op">$</span><span class="kw">dir</span>, <span class="st">"ExampleFiles"</span>, <span class="st">"RefBldgLargeOfficeNew2004_Chicago.idf"</span>)
+<span class="kw">path_epw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/use_eplus.html">eplus_config</a></span>(<span class="fl">8.8</span>)<span class="op">$</span><span class="kw">dir</span>, <span class="st">"WeatherData"</span>, <span class="st">"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>)
 
 <span class="co"># create a `SensitivityJob` class which inherits from eplusr::ParametricJob class</span>
-<span class="no">bc</span> <span class="kw">&lt;-</span> <span class="fu">bayes_job</span>(<span class="no">path_idf</span>, <span class="no">path_epw</span>)</pre></div>
+<span class="kw">bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bayes_job.html">bayes_job</a></span>(<span class="kw">path_idf</span>, <span class="kw">path_epw</span>)
+</pre></div>
 <div id="get-rdd-and-mdd" class="section level4">
 <h4 class="hasAnchor">
 <a href="#get-rdd-and-mdd" class="anchor"></a>Get RDD and MDD</h4>
 <p><code>$read_rdd()</code> and <code>$read_mdd()</code> can be used to get RDD and MDD for current seed model.</p>
-<div class="sourceCode" id="cb9"><pre class="r">(<span class="no">rdd</span> <span class="kw">&lt;-</span> <span class="no">bc</span>$<span class="fu">read_rdd</span>())
+<div class="sourceCode" id="cb9"><pre class="downlit">
+(<span class="kw">rdd</span> <span class="op">&lt;-</span> <span class="kw">bc</span><span class="op">$</span><span class="fu">read_rdd</span>())
 <span class="co">#&gt; Initializing RDD...</span>
 <span class="co">#&gt; Initializing RDD... [SUCCESSFUL]</span>
-<span class="co">#&gt; ══ EnergyPlus Report Data Dictionary File ══════════════════════════════════════</span>
+<span class="co">#&gt; == EnergyPlus Report Data Dictionary File ================================</span>
 <span class="co">#&gt;   * EnergyPlus version: 8.8.0 (7c3bbe4830)</span>
-<span class="co">#&gt;   * Simulation started: 2020-01-27 14:54:00</span>
+<span class="co">#&gt;   * Simulation started: 2020-09-10 18:55:00</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; ── Details ─────────────────────────────────────────────────────────────────────</span>
+<span class="co">#&gt; -- Details ---------------------------------------------------------------</span>
 <span class="co">#&gt;      index reported_time_step report_type</span>
+<span class="co">#&gt;      &lt;int&gt;             &lt;char&gt;      &lt;char&gt;</span>
 <span class="co">#&gt;   1:     1               Zone     Average</span>
 <span class="co">#&gt;   2:     2               Zone     Average</span>
 <span class="co">#&gt;   3:     3               Zone     Average</span>
@@ -342,16 +361,16 @@
 <span class="co">#&gt; 619:   619               HVAC         Sum</span>
 <span class="co">#&gt; 620:   620               HVAC     Average</span>
 <span class="co">#&gt;                                                           variable</span>
-<span class="co">#&gt;   1:                          Site Outdoor Air Drybulb Temperature</span>
-<span class="co">#&gt;   2:                         Site Outdoor Air Dewpoint Temperature</span>
-<span class="no">....</span>
-(<span class="no">mdd</span> <span class="kw">&lt;-</span> <span class="no">bc</span>$<span class="fu">read_mdd</span>())
-<span class="co">#&gt; ══ EnergyPlus Meter Data Dictionary File ═══════════════════════════════════════</span>
+<span class="co">#&gt;                                                             &lt;char&gt;</span>
+<span class="kw">....</span>
+(<span class="kw">mdd</span> <span class="op">&lt;-</span> <span class="kw">bc</span><span class="op">$</span><span class="fu">read_mdd</span>())
+<span class="co">#&gt; == EnergyPlus Meter Data Dictionary File =================================</span>
 <span class="co">#&gt;   * EnergyPlus version: 8.8.0 (7c3bbe4830)</span>
-<span class="co">#&gt;   * Simulation started: 2020-01-27 14:54:00</span>
+<span class="co">#&gt;   * Simulation started: 2020-09-10 18:55:00</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; ── Details ─────────────────────────────────────────────────────────────────────</span>
+<span class="co">#&gt; -- Details ---------------------------------------------------------------</span>
 <span class="co">#&gt;      index reported_time_step report_type</span>
+<span class="co">#&gt;      &lt;int&gt;             &lt;char&gt;      &lt;char&gt;</span>
 <span class="co">#&gt;   1:     1               Zone       Meter</span>
 <span class="co">#&gt;   2:     2               Zone       Meter</span>
 <span class="co">#&gt;   3:     3               Zone       Meter</span>
@@ -363,76 +382,99 @@
 <span class="co">#&gt; 175:   175               Zone       Meter</span>
 <span class="co">#&gt; 176:   176               Zone       Meter</span>
 <span class="co">#&gt; 177:   177               Zone       Meter</span>
-<span class="co">#&gt;                                         variable units</span>
-<span class="co">#&gt;   1:                        Electricity:Facility     J</span>
-<span class="co">#&gt;   2:                        Electricity:Building     J</span>
-<span class="no">....</span></pre></div>
+<span class="co">#&gt;                                         variable  units</span>
+<span class="co">#&gt;                                           &lt;char&gt; &lt;char&gt;</span>
+<span class="kw">....</span>
+</pre></div>
 </div>
 <div id="setting-input-and-output-variables" class="section level4">
 <h4 class="hasAnchor">
 <a href="#setting-input-and-output-variables" class="anchor"></a>Setting Input and Output Variables</h4>
 <p>Input variables and output variables can be set by using <code>$input()</code> and <code>$output()</code>, respectively. For <code>$input()</code>, only variables listed in RDD are supported. For <code>$output()</code>, variables listed in RDD and MDD are both supported.</p>
 <p>By default, they are all empty and <code>$input()</code>, <code>$output()</code> will return <code>NULL</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="r"><span class="no">bc</span>$<span class="fu">input</span>()
+<div class="sourceCode" id="cb10"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">input</span>()
 <span class="co">#&gt; NULL</span>
-<span class="no">bc</span>$<span class="fu">output</span>()
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>()
 <span class="co">#&gt; NULL</span>
-<span class="no">bc</span>$<span class="fu">models</span>()
-<span class="co">#&gt; Unable to create parametric models because input variables are not set. Please use `$input()` to set input variables.</span></pre></div>
+<span class="kw">bc</span><span class="op">$</span><span class="fu">models</span>()
+<span class="co">#&gt; Unable to create parametric models because input variables are not set. Please use '$input()' to set input variables.</span>
+<span class="co">#&gt; NULL</span>
+</pre></div>
 <p>You can specify input and output parameters using <code>RddFile</code>, <code>MddFile</code> and data.frames.</p>
-<div class="sourceCode" id="cb11"><pre class="r"><span class="co"># using RDD and MDD</span>
-<span class="no">bc</span>$<span class="fu">input</span>(<span class="no">rdd</span>[<span class="fl">1</span>:<span class="fl">3</span>])
+<div class="sourceCode" id="cb11"><pre class="downlit">
+<span class="co"># using RDD and MDD</span>
+<span class="kw">bc</span><span class="op">$</span><span class="fu">input</span>(<span class="kw">rdd</span>[<span class="fl">1</span><span class="op">:</span><span class="fl">3</span>])
 <span class="co">#&gt;    index           class key_value                         variable_name</span>
+<span class="co">#&gt;    &lt;int&gt;          &lt;char&gt;    &lt;char&gt;                                &lt;char&gt;</span>
 <span class="co">#&gt; 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature</span>
 <span class="co">#&gt; 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature</span>
 <span class="co">#&gt; 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature</span>
 <span class="co">#&gt;    reporting_frequency</span>
+<span class="co">#&gt;                 &lt;char&gt;</span>
 <span class="co">#&gt; 1:            Timestep</span>
 <span class="co">#&gt; 2:            Timestep</span>
 <span class="co">#&gt; 3:            Timestep</span>
-<span class="no">bc</span>$<span class="fu">output</span>(<span class="no">mdd</span>[<span class="fl">1</span>])
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(<span class="kw">mdd</span>[<span class="fl">1</span>])
 <span class="co">#&gt;    index        class key_value        variable_name reporting_frequency</span>
+<span class="co">#&gt;    &lt;int&gt;       &lt;char&gt;    &lt;char&gt;               &lt;char&gt;              &lt;char&gt;</span>
 <span class="co">#&gt; 1:     1 Output:Meter      &lt;NA&gt; Electricity:Facility            Timestep</span>
 
 <span class="co"># using data.frame</span>
-<span class="no">bc</span>$<span class="fu">input</span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html">rdd_to_load</a></span>(<span class="no">rdd</span>[<span class="fl">1</span>:<span class="fl">3</span>]))
+<span class="kw">bc</span><span class="op">$</span><span class="fu">input</span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html">rdd_to_load</a></span>(<span class="kw">rdd</span>[<span class="fl">1</span><span class="op">:</span><span class="fl">3</span>]))
 <span class="co">#&gt;    index           class key_value                         variable_name</span>
+<span class="co">#&gt;    &lt;int&gt;          &lt;char&gt;    &lt;char&gt;                                &lt;char&gt;</span>
 <span class="co">#&gt; 1:     1 Output:Variable         *  Site Outdoor Air Drybulb Temperature</span>
 <span class="co">#&gt; 2:     2 Output:Variable         * Site Outdoor Air Dewpoint Temperature</span>
 <span class="co">#&gt; 3:     3 Output:Variable         *  Site Outdoor Air Wetbulb Temperature</span>
 <span class="co">#&gt;    reporting_frequency</span>
+<span class="co">#&gt;                 &lt;char&gt;</span>
 <span class="co">#&gt; 1:            Timestep</span>
 <span class="co">#&gt; 2:            Timestep</span>
 <span class="co">#&gt; 3:            Timestep</span>
-<span class="no">bc</span>$<span class="fu">output</span>(<span class="kw pkg">eplusr</span><span class="kw ns">::</span><span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html">mdd_to_load</a></span>(<span class="no">mdd</span>[<span class="fl">1</span>]))
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(<span class="kw">eplusr</span>::<span class="fu"><a href="https://hongyuanjia.github.io/eplusr/reference/rdd_to_load.html">mdd_to_load</a></span>(<span class="kw">mdd</span>[<span class="fl">1</span>]))
 <span class="co">#&gt;    index        class key_value        variable_name reporting_frequency</span>
-<span class="co">#&gt; 1:     1 Output:Meter      &lt;NA&gt; Electricity:Facility            Timestep</span></pre></div>
+<span class="co">#&gt;    &lt;int&gt;       &lt;char&gt;    &lt;char&gt;               &lt;char&gt;              &lt;char&gt;</span>
+<span class="co">#&gt; 1:     1 Output:Meter      &lt;NA&gt; Electricity:Facility            Timestep</span>
+</pre></div>
 <p>You can set <code>append</code> to <code>NULL</code> to remove all existing input and output parameters.</p>
-<div class="sourceCode" id="cb12"><pre class="r"><span class="no">bc</span>$<span class="fu">input</span>(<span class="kw">append</span> <span class="kw">=</span> <span class="kw">NULL</span>)
+<div class="sourceCode" id="cb12"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">input</span>(append = <span class="kw">NULL</span>)
 <span class="co">#&gt; NULL</span>
-<span class="no">bc</span>$<span class="fu">output</span>(<span class="kw">append</span> <span class="kw">=</span> <span class="kw">NULL</span>)
-<span class="co">#&gt; NULL</span></pre></div>
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(append = <span class="kw">NULL</span>)
+<span class="co">#&gt; NULL</span>
+</pre></div>
 <p>You can also directly specify variable names:</p>
-<div class="sourceCode" id="cb13"><pre class="r"><span class="no">bc</span>$<span class="fu">input</span>(<span class="st">"CoolSys1 Chiller 1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"chiller evaporator"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"inlet temperature"</span>, <span class="st">"outlet temperature"</span>, <span class="st">"mass flow rate"</span>)), <span class="st">"hourly"</span>)
+<div class="sourceCode" id="cb13"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">input</span>(<span class="st">"CoolSys1 Chiller 1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"chiller evaporator"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"inlet temperature"</span>, <span class="st">"outlet temperature"</span>, <span class="st">"mass flow rate"</span>)), <span class="st">"hourly"</span>)
 <span class="co">#&gt;    index           class          key_value</span>
+<span class="co">#&gt;    &lt;int&gt;          &lt;char&gt;             &lt;char&gt;</span>
 <span class="co">#&gt; 1:     1 Output:Variable CoolSys1 Chiller 1</span>
 <span class="co">#&gt; 2:     2 Output:Variable CoolSys1 Chiller 1</span>
 <span class="co">#&gt; 3:     3 Output:Variable CoolSys1 Chiller 1</span>
 <span class="co">#&gt;                            variable_name reporting_frequency</span>
+<span class="co">#&gt;                                   &lt;char&gt;              &lt;char&gt;</span>
 <span class="co">#&gt; 1:  Chiller Evaporator Inlet Temperature              Hourly</span>
 <span class="co">#&gt; 2: Chiller Evaporator Outlet Temperature              Hourly</span>
 <span class="co">#&gt; 3:     Chiller Evaporator Mass Flow Rate              Hourly</span>
-<span class="no">bc</span>$<span class="fu">output</span>(<span class="st">"CoolSys1 Chiller 1"</span>, <span class="st">"chiller electric power"</span>, <span class="st">"hourly"</span>)
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(<span class="st">"CoolSys1 Chiller 1"</span>, <span class="st">"chiller electric power"</span>, <span class="st">"hourly"</span>)
 <span class="co">#&gt;    index           class          key_value          variable_name</span>
+<span class="co">#&gt;    &lt;int&gt;          &lt;char&gt;             &lt;char&gt;                 &lt;char&gt;</span>
 <span class="co">#&gt; 1:     1 Output:Variable CoolSys1 Chiller 1 Chiller Electric Power</span>
 <span class="co">#&gt;    reporting_frequency</span>
-<span class="co">#&gt; 1:              Hourly</span></pre></div>
+<span class="co">#&gt;                 &lt;char&gt;</span>
+<span class="co">#&gt; 1:              Hourly</span>
+</pre></div>
 <p>Note that variable cannot be set as both an input and output variable.</p>
-<div class="sourceCode" id="cb14"><pre class="r"><span class="no">bc</span>$<span class="fu">output</span>(<span class="st">"CoolSys1 Chiller 1"</span>, <span class="kw">name</span> <span class="kw">=</span> <span class="st">"chiller evaporator inlet temperature"</span>, <span class="kw">reporting_frequency</span> <span class="kw">=</span> <span class="st">"hourly"</span>)
-<span class="co">#&gt; Error: Variables specified have already been set as input: `CoolSys1 Chiller 1:Chiller Evaporator Inlet Temperature`</span></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(<span class="st">"CoolSys1 Chiller 1"</span>, name = <span class="st">"chiller evaporator inlet temperature"</span>, reporting_frequency = <span class="st">"hourly"</span>)
+<span class="co">#&gt; Error: Variables specified have already been set as input: 'CoolSys1 Chiller 1:Chiller Evaporator Inlet Temperature'</span>
+</pre></div>
 <p>Also, note that input and output variables should have the same reporting frequency.</p>
-<div class="sourceCode" id="cb15"><pre class="r"><span class="no">bc</span>$<span class="fu">output</span>(<span class="no">mdd</span>[<span class="fl">1</span>], <span class="kw">reporting_frequency</span> <span class="kw">=</span> <span class="st">"daily"</span>)
-<span class="co">#&gt; Error: Object specified does not have the same reporting frequency as existing input (`Hourly`). Invalid input reporting frequency: `daily`</span></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>(<span class="kw">mdd</span>[<span class="fl">1</span>], reporting_frequency = <span class="st">"daily"</span>)
+<span class="co">#&gt; Error: Object specified does not have the same reporting frequency as existing input ('Hourly'). Invalid input reporting frequency: 'daily'</span>
+</pre></div>
 <p>For <code>$output()</code>, both variables in RDD and MDD are supported. However, for <code>$input()</code>, only variables in RDD are allowed.</p>
 </div>
 <div id="adding-parameters-to-calibrate" class="section level4">
@@ -447,97 +489,111 @@
 </li>
 <li>
 <p><code>class := list(field1 = c(min, max), field2 = c(min, max), ...)</code></p>
-<p>This is useful when you want to treat <code>field1</code> and <code>field2</code> in all objects in <code>class</code> as two different parameters. Please note the use of special notion of <code>:=</code> instead of <code>=</code>.</p>
+<p>This is useful when you want to treat <code>field1</code> and <code>field2</code> in all objects in <code>class</code> as two different parameters. Please note the use of special notion of <code>:=</code> instead of <code><a href="https://rdrr.io/r/base/assignOps.html">=</a></code>.</p>
 </li>
 <li>
 <p><code>.(objects) := list(field1 = c(min, max), field2 = c(min, max), ...)</code></p>
 <p>Sometimes you may not want to treat a field in all objects in a class but only a subset of objects. You can use a special notation on the left hand side <code>.()</code>. In the parentheses can be object names or IDs.</p>
 </li>
 </ul>
-<!-- end list --><div class="sourceCode" id="cb16"><pre class="r"><span class="no">bc</span>$<span class="fu">param</span>(
-    <span class="kw">`CoolSys1 Chiller 1`</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">reference_cop</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">4</span>, <span class="fl">6</span>), <span class="kw">reference_capacity</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2.5e6</span>, <span class="fl">3.0e6</span>)),
-    <span class="kw">.names</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"cop1"</span>, <span class="st">"cap1"</span>), <span class="kw">.num_sim</span> <span class="kw">=</span> <span class="fl">5</span>
+<!-- end list --><div class="sourceCode" id="cb16"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">param</span>(
+    `CoolSys1 Chiller 1` = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(reference_cop = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">4</span>, <span class="fl">6</span>), reference_capacity = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2.5e6</span>, <span class="fl">3.0e6</span>)),
+    .names = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"cop1"</span>, <span class="st">"cap1"</span>), .num_sim = <span class="fl">5</span>
 )
-<span class="co">#&gt; ── EnergPlus Parametric Simulation Job ─────────────────────────────────────────</span>
-<span class="co">#&gt; * Seed: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLarg...</span>
-<span class="co">#&gt; * Weather: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/WeatherData/USA_CA_Sa...</span>
+<span class="co">#&gt; -- EnergPlus Parametric Simulation Job -----------------------------------</span>
+<span class="co">#&gt; * Seed: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\ExampleFiles\R...</span>
+<span class="co">#&gt; * Weather: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\WeatherData...</span>
 <span class="co">#&gt; * EnergyPlus Version: '8.8.0'</span>
-<span class="co">#&gt; * EnergyPlus Path: '/home/hongyuanjia/.local/EnergyPlus-8-8-0'</span>
+<span class="co">#&gt; * EnergyPlus Path: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0'</span>
 <span class="co">#&gt; Applied Measure: ''</span>
 <span class="co">#&gt; Parametric Models [5]: </span>
-<span class="co">#&gt; [1]: '1_cop1(5.249956)_cap1(2664917)'</span>
-<span class="co">#&gt; [2]: '2_cop1(5.789432)_cap1(2877641)'</span>
-<span class="co">#&gt; [3]: '3_cop1(4.209261)_cap1(2928436)'</span>
-<span class="co">#&gt; [4]: '4_cop1(4.764233)_cap1(2560513)'</span>
-<span class="co">#&gt; [5]: '5_cop1(4.902332)_cap1(2744097)'</span>
-<span class="co">#&gt; &lt;&lt; Job has not been run before &gt;&gt;</span></pre></div>
+<span class="co">#&gt; [1]: 'Case1.idf'</span>
+<span class="co">#&gt; [2]: 'Case2.idf'</span>
+<span class="co">#&gt; [3]: 'Case3.idf'</span>
+<span class="co">#&gt; [4]: 'Case4.idf'</span>
+<span class="co">#&gt; [5]: 'Case5.idf'</span>
+<span class="co">#&gt; &lt;&lt; Job has not been run before &gt;&gt;</span>
+</pre></div>
 </div>
 <div id="getting-sample-values-and-parametric-models" class="section level4">
 <h4 class="hasAnchor">
 <a href="#getting-sample-values-and-parametric-models" class="anchor"></a>Getting Sample Values and Parametric Models</h4>
 <p>Parameter values can be retrieved using <code>$samples()</code>.</p>
-<div class="sourceCode" id="cb17"><pre class="r"><span class="no">bc</span>$<span class="fu">samples</span>()
-<span class="co">#&gt;    case     cop1    cap1</span>
-<span class="co">#&gt; 1:    1 5.249956 2664917</span>
-<span class="co">#&gt; 2:    2 5.789432 2877641</span>
-<span class="co">#&gt; 3:    3 4.209261 2928436</span>
-<span class="co">#&gt; 4:    4 4.764233 2560513</span>
-<span class="co">#&gt; 5:    5 4.902332 2744097</span></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">samples</span>()
+<span class="co">#&gt;     case     cop1    cap1</span>
+<span class="co">#&gt;    &lt;int&gt;    &lt;num&gt;   &lt;num&gt;</span>
+<span class="co">#&gt; 1:     1 5.568475 2581922</span>
+<span class="co">#&gt; 2:     2 4.806140 2875407</span>
+<span class="co">#&gt; 3:     3 4.794320 2753627</span>
+<span class="co">#&gt; 4:     4 4.145201 2628566</span>
+<span class="co">#&gt; 5:     5 5.923980 2946315</span>
+</pre></div>
 <p>Generated <code>Idf</code>s can be retrieved using <code>$models()</code>.</p>
-<div class="sourceCode" id="cb18"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">bc</span>$<span class="fu">models</span>())
-<span class="co">#&gt; [1] "1_cop1(5.249956)_cap1(2664917)" "2_cop1(5.789432)_cap1(2877641)"</span>
-<span class="co">#&gt; [3] "3_cop1(4.209261)_cap1(2928436)" "4_cop1(4.764233)_cap1(2560513)"</span>
-<span class="co">#&gt; [5] "5_cop1(4.902332)_cap1(2744097)"</span></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="kw">bc</span><span class="op">$</span><span class="fu">models</span>())
+<span class="co">#&gt; [1] "Case1" "Case2" "Case3" "Case4" "Case5"</span>
+</pre></div>
 </div>
 <div id="run-simulations-and-gather-data" class="section level4">
 <h4 class="hasAnchor">
 <a href="#run-simulations-and-gather-data" class="anchor"></a>Run simulations and gather data</h4>
 <p><code>$eplus_run()</code> runs all parametric models in parallel. Parameter <code>run_period</code> can be given to insert a new <code>RunPeriod</code> object. In this case, all existing <code>RunPeriod</code> objects in the seed model will be commented out.</p>
-<div class="sourceCode" id="cb19"><pre class="r"><span class="no">bc</span>$<span class="fu">eplus_run</span>(<span class="kw">dir</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>(), <span class="kw">run_period</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="st">"example"</span>, <span class="fl">7</span>, <span class="fl">1</span>, <span class="fl">7</span>, <span class="fl">3</span>), <span class="kw">echo</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
-<span class="co">#&gt; Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.</span>
-<span class="co">#&gt; Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.</span>
-<span class="co">#&gt; Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.</span>
-<span class="co">#&gt; Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.</span>
-<span class="co">#&gt; Reset `Run Simulation for Weather File Run Periods` in `SimulationControl` from `No` to `Yes` to make sure input run period can take effect.</span>
+<div class="sourceCode" id="cb19"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">eplus_run</span>(dir = <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>(), run_period = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="st">"example"</span>, <span class="fl">7</span>, <span class="fl">1</span>, <span class="fl">7</span>, <span class="fl">3</span>), echo = <span class="fl">FALSE</span>)
+<span class="co">#&gt; Reset 'Run Simulation for Weather File Run Periods' in 'SimulationControl' from 'No' to 'Yes' to make sure input run period can take effect.</span>
+<span class="co">#&gt; Reset 'Run Simulation for Weather File Run Periods' in 'SimulationControl' from 'No' to 'Yes' to make sure input run period can take effect.</span>
+<span class="co">#&gt; Reset 'Run Simulation for Weather File Run Periods' in 'SimulationControl' from 'No' to 'Yes' to make sure input run period can take effect.</span>
+<span class="co">#&gt; Reset 'Run Simulation for Weather File Run Periods' in 'SimulationControl' from 'No' to 'Yes' to make sure input run period can take effect.</span>
+<span class="co">#&gt; Reset 'Run Simulation for Weather File Run Periods' in 'SimulationControl' from 'No' to 'Yes' to make sure input run period can take effect.</span>
 <span class="co">#&gt; ── EnergPlus Parametric Simulation Job ─────────────────────────────────────────</span>
 <span class="co">#&gt; * Seed: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/ExampleFiles/RefBldgLarg...</span>
 <span class="co">#&gt; * Weather: '/home/hongyuanjia/.local/EnergyPlus-8-8-0/WeatherData/USA_CA_Sa...</span>
+<span class="co">#&gt; -- EnergPlus Parametric Simulation Job -----------------------------------</span>
+<span class="co">#&gt; * Seed: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\ExampleFiles\R...</span>
+<span class="co">#&gt; * Weather: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0\WeatherData...</span>
 <span class="co">#&gt; * EnergyPlus Version: '8.8.0'</span>
-<span class="co">#&gt; * EnergyPlus Path: '/home/hongyuanjia/.local/EnergyPlus-8-8-0'</span>
+<span class="co">#&gt; * EnergyPlus Path: 'C:\Users\hongy\AppData\Local\EnergyPlusV8-8-0'</span>
 <span class="co">#&gt; Applied Measure: ''</span>
 <span class="co">#&gt; Parametric Models [5]: </span>
-<span class="co">#&gt; [1]: '1_cop1(5.249956)_cap1(2664917)' &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [2]: '2_cop1(5.789432)_cap1(2877641)' &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [3]: '3_cop1(4.209261)_cap1(2928436)' &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [4]: '4_cop1(4.764233)_cap1(2560513)' &lt;-- SUCCEEDED</span>
-<span class="co">#&gt; [5]: '5_cop1(4.902332)_cap1(2744097)' &lt;-- SUCCEEDED</span>
-<span class="co">#&gt;  Simulation started at '2020-01-27 14:54:13' and completed successfully after 11.12 secs.</span></pre></div>
+<span class="co">#&gt; [1]: 'Case1.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [2]: 'Case2.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [3]: 'Case3.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [4]: 'Case4.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt; [5]: 'Case5.idf' &lt;-- SUCCEEDED</span>
+<span class="co">#&gt;  Simulation started at '2020-09-10 18:55:43' and completed successfully after 13.28 secs.</span>
+</pre></div>
 <p><code>$data_sim()</code> returns a <code>data.table</code> (when <code>merge</code> is <code>TRUE</code>) or a list of 2 <code>data.table</code> (when <code>merge</code> is <code>FALSE</code>) which contains the simulated data of input and output parameters. These data will be stored internally and used during Bayesian calibration using Stan.</p>
 <p>The <code>resolution</code> parameter can be used to specify the time resolution of returned data. Note that input time resolution cannot be smaller than the reporting frequency, otherwise an error will be issued.</p>
-<div class="sourceCode" id="cb20"><pre class="r"><span class="no">bc</span>$<span class="fu">data_sim</span>(<span class="st">"1 min"</span>)
-<span class="co">#&gt; Error: Input resolution should not be smaller than reporting frequency (1 hour). Invalid resolution found: `1 min`</span></pre></div>
-<div class="sourceCode" id="cb21"><pre class="r"><span class="no">bc</span>$<span class="fu">data_sim</span>(<span class="st">"6 hour"</span>)
+<div class="sourceCode" id="cb20"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">data_sim</span>(<span class="st">"1 min"</span>)
+<span class="co">#&gt; Error: Input resolution should not be smaller than reporting frequency (1 hour). Invalid resolution found: '1 min'</span>
+</pre></div>
+<div class="sourceCode" id="cb21"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">data_sim</span>(<span class="st">"6 hour"</span>)
 <span class="co">#&gt; $input</span>
-<span class="co">#&gt;     case     Date/Time</span>
-<span class="co">#&gt;  1:    1  07/01  06:00</span>
-<span class="co">#&gt;  2:    1  07/01  12:00</span>
-<span class="co">#&gt;  3:    1  07/01  18:00</span>
-<span class="co">#&gt;  4:    1  07/01  24:00</span>
-<span class="co">#&gt;  5:    1  07/02  06:00</span>
-<span class="co">#&gt;  6:    1  07/02  12:00</span>
-<span class="co">#&gt;  7:    1  07/02  18:00</span>
-<span class="co">#&gt;  8:    1  07/02  24:00</span>
-<span class="co">#&gt;  9:    1  07/03  06:00</span>
-<span class="co">#&gt; 10:    1  07/03  12:00</span>
-<span class="co">#&gt; 11:    1  07/03  18:00</span>
-<span class="co">#&gt; 12:    1  07/03  24:00</span>
-<span class="co">#&gt; 13:    2  07/01  06:00</span>
-<span class="co">#&gt; 14:    2  07/01  12:00</span>
-<span class="co">#&gt; 15:    2  07/01  18:00</span>
-<span class="co">#&gt; 16:    2  07/01  24:00</span>
-<span class="co">#&gt; 17:    2  07/02  06:00</span>
-<span class="co">#&gt; 18:    2  07/02  12:00</span>
-<span class="no">....</span></pre></div>
+<span class="co">#&gt;      case     Date/Time</span>
+<span class="co">#&gt;     &lt;int&gt;        &lt;char&gt;</span>
+<span class="co">#&gt;  1:     1  07/01  06:00</span>
+<span class="co">#&gt;  2:     1  07/01  12:00</span>
+<span class="co">#&gt;  3:     1  07/01  18:00</span>
+<span class="co">#&gt;  4:     1  07/01  24:00</span>
+<span class="co">#&gt;  5:     1  07/02  06:00</span>
+<span class="co">#&gt;  6:     1  07/02  12:00</span>
+<span class="co">#&gt;  7:     1  07/02  18:00</span>
+<span class="co">#&gt;  8:     1  07/02  24:00</span>
+<span class="co">#&gt;  9:     1  07/03  06:00</span>
+<span class="co">#&gt; 10:     1  07/03  12:00</span>
+<span class="co">#&gt; 11:     1  07/03  18:00</span>
+<span class="co">#&gt; 12:     1  07/03  24:00</span>
+<span class="co">#&gt; 13:     2  07/01  06:00</span>
+<span class="co">#&gt; 14:     2  07/01  12:00</span>
+<span class="co">#&gt; 15:     2  07/01  18:00</span>
+<span class="co">#&gt; 16:     2  07/01  24:00</span>
+<span class="co">#&gt; 17:     2  07/02  06:00</span>
+<span class="kw">....</span>
+</pre></div>
 </div>
 <div id="specify-measured-data" class="section level4">
 <h4 class="hasAnchor">
@@ -545,75 +601,77 @@
 <p><code>$data_field()</code> takes a <code>data.frame</code> of measured value of output parameters and returns a list of <code>data.table</code>s which contains the measured value of input and output parameters, and newly measured value of input if applicable.</p>
 <p>For input parameters, the values of simulation data for the first case are directly used as the measured values.</p>
 <p>For demonstration, we use the seed model to generate fake measured output data.</p>
-<div class="sourceCode" id="cb22"><pre class="r"><span class="co"># clone the seed model</span>
-<span class="no">seed</span> <span class="kw">&lt;-</span> <span class="no">bc</span>$<span class="fu">seed</span>()$<span class="fu">clone</span>()
+<div class="sourceCode" id="cb22"><pre class="downlit">
+<span class="co"># clone the seed model</span>
+<span class="kw">seed</span> <span class="op">&lt;-</span> <span class="kw">bc</span><span class="op">$</span><span class="fu">seed</span>()<span class="op">$</span><span class="fu">clone</span>()
 <span class="co"># remove existing RunPeriod objects</span>
-<span class="no">seed</span>$<span class="no">RunPeriod</span> <span class="kw">&lt;-</span> <span class="kw">NULL</span>
+<span class="kw">seed</span><span class="op">$</span><span class="kw">RunPeriod</span> <span class="op">&lt;-</span> <span class="kw">NULL</span>
 <span class="co"># set run period as the same as in `$eplus_run()`</span>
-<span class="no">seed</span>$<span class="fu">add</span>(<span class="kw">RunPeriod</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="st">"test"</span>, <span class="fl">7</span>, <span class="fl">1</span>, <span class="fl">7</span>, <span class="fl">3</span>))
+<span class="kw">seed</span><span class="op">$</span><span class="fu">add</span>(RunPeriod = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="st">"test"</span>, <span class="fl">7</span>, <span class="fl">1</span>, <span class="fl">7</span>, <span class="fl">3</span>))
 <span class="co">#&gt; $test</span>
 <span class="co">#&gt; &lt;IdfObject: 'RunPeriod'&gt; [ID:846] `test`</span>
 <span class="co">#&gt; Class: &lt;RunPeriod&gt;</span>
-<span class="co">#&gt; ├─ 01 : "test",           !- Name</span>
-<span class="co">#&gt; │─ 02*: 7,                !- Begin Month</span>
-<span class="co">#&gt; │─ 03*: 1,                !- Begin Day of Month</span>
-<span class="co">#&gt; │─ 04*: 7,                !- End Month</span>
-<span class="co">#&gt; │─ 05*: 3,                !- End Day of Month</span>
-<span class="co">#&gt; │─ 06 : "UseWeatherFile", !- Day of Week for Start Day</span>
-<span class="co">#&gt; │─ 07 : "Yes",            !- Use Weather File Holidays and Special Days</span>
-<span class="co">#&gt; │─ 08 : "Yes",            !- Use Weather File Daylight Saving Period</span>
-<span class="co">#&gt; │─ 09 : "No",             !- Apply Weekend Holiday Rule</span>
-<span class="co">#&gt; │─ 10 : "Yes",            !- Use Weather File Rain Indicators</span>
-<span class="co">#&gt; └─ 11 : "Yes";            !- Use Weather File Snow Indicators</span>
-<span class="no">seed</span>$<span class="no">SimulationControl</span>$<span class="fu">set</span>(
-    <span class="kw">`Run Simulation for Sizing Periods`</span> <span class="kw">=</span> <span class="st">"No"</span>,
-    <span class="kw">`Run Simulation for Weather File Run Periods`</span> <span class="kw">=</span> <span class="st">"Yes"</span>
+<span class="co">#&gt; +- 01 : "test",           !- Name</span>
+<span class="co">#&gt; |- 02*: 7,                !- Begin Month</span>
+<span class="co">#&gt; |- 03*: 1,                !- Begin Day of Month</span>
+<span class="co">#&gt; |- 04*: 7,                !- End Month</span>
+<span class="co">#&gt; |- 05*: 3,                !- End Day of Month</span>
+<span class="co">#&gt; |- 06 : "UseWeatherFile", !- Day of Week for Start Day</span>
+<span class="co">#&gt; |- 07 : "Yes",            !- Use Weather File Holidays and Special Da...</span>
+<span class="co">#&gt; |- 08 : "Yes",            !- Use Weather File Daylight Saving Period</span>
+<span class="co">#&gt; |- 09 : "No",             !- Apply Weekend Holiday Rule</span>
+<span class="co">#&gt; |- 10 : "Yes",            !- Use Weather File Rain Indicators</span>
+<span class="co">#&gt; \- 11 : "Yes";            !- Use Weather File Snow Indicators</span>
+<span class="kw">seed</span><span class="op">$</span><span class="kw">SimulationControl</span><span class="op">$</span><span class="fu">set</span>(
+    `Run Simulation for Sizing Periods` = <span class="st">"No"</span>,
+    `Run Simulation for Weather File Run Periods` = <span class="st">"Yes"</span>
 )
 <span class="co">#&gt; &lt;IdfObject: 'SimulationControl'&gt; [ID:2]</span>
 <span class="co">#&gt; Class: &lt;SimulationControl&gt;</span>
-<span class="co">#&gt; ├─ 1: "YES",      !- Do Zone Sizing Calculation</span>
-<span class="co">#&gt; │─ 2: "YES",      !- Do System Sizing Calculation</span>
-<span class="co">#&gt; │─ 3: "YES",      !- Do Plant Sizing Calculation</span>
-<span class="co">#&gt; │─ 4: "No",       !- Run Simulation for Sizing Periods</span>
-<span class="co">#&gt; │─ 5: "Yes",      !- Run Simulation for Weather File Run Periods</span>
-<span class="co">#&gt; │─ 6: "YES",      !- Do HVAC Sizing Simulation for Sizing Periods</span>
-<span class="co">#&gt; └─ 7: 2;          !- Maximum Number of HVAC Sizing Simulation Passes</span>
+<span class="co">#&gt; +- 1: "YES",      !- Do Zone Sizing Calculation</span>
+<span class="co">#&gt; |- 2: "YES",      !- Do System Sizing Calculation</span>
+<span class="co">#&gt; |- 3: "YES",      !- Do Plant Sizing Calculation</span>
+<span class="co">#&gt; |- 4: "No",       !- Run Simulation for Sizing Periods</span>
+<span class="co">#&gt; |- 5: "Yes",      !- Run Simulation for Weather File Run Periods</span>
+<span class="co">#&gt; |- 6: "YES",      !- Do HVAC Sizing Simulation for Sizing Periods</span>
+<span class="co">#&gt; \- 7: 2;          !- Maximum Number of HVAC Sizing Simulation Passes</span>
 <span class="co"># save the model to tempdir</span>
-<span class="no">seed</span>$<span class="fu"><a href="https://rdrr.io/r/base/save.html">save</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>(<span class="kw">fileext</span> <span class="kw">=</span> <span class="st">".idf"</span>))
+<span class="kw">seed</span><span class="op">$</span><span class="fu"><a href="https://rdrr.io/r/base/save.html">save</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>(fileext = <span class="st">".idf"</span>))
 <span class="co"># run</span>
-<span class="no">job</span> <span class="kw">&lt;-</span> <span class="no">seed</span>$<span class="fu">run</span>(<span class="no">bc</span>$<span class="fu">weather</span>(), <span class="kw">echo</span> <span class="kw">=</span> <span class="fl">FALSE</span>)
+<span class="kw">job</span> <span class="op">&lt;-</span> <span class="kw">seed</span><span class="op">$</span><span class="fu">run</span>(<span class="kw">bc</span><span class="op">$</span><span class="fu">weather</span>(), echo = <span class="fl">FALSE</span>)
 <span class="co"># get output data</span>
-<span class="no">fan_power</span> <span class="kw">&lt;-</span> <span class="kw pkg">epluspar</span><span class="kw ns">:::</span><span class="fu">report_dt_aggregate</span>(<span class="no">job</span>$<span class="fu">report_data</span>(<span class="kw">name</span> <span class="kw">=</span> <span class="no">bc</span>$<span class="fu">output</span>()$<span class="no">variable_name</span>, <span class="kw">all</span> <span class="kw">=</span> <span class="fl">TRUE</span>), <span class="st">"6 hour"</span>)
-<span class="no">fan_power</span> <span class="kw">&lt;-</span> <span class="kw pkg">eplusr</span><span class="kw ns">:::</span><span class="fu">report_dt_to_wide</span>(<span class="no">fan_power</span>)
+<span class="kw">fan_power</span> <span class="op">&lt;-</span> <span class="kw">epluspar</span>:::<span class="fu">report_dt_aggregate</span>(<span class="kw">job</span><span class="op">$</span><span class="fu">report_data</span>(name = <span class="kw">bc</span><span class="op">$</span><span class="fu">output</span>()<span class="op">$</span><span class="kw">variable_name</span>, all = <span class="fl">TRUE</span>, day_type = <span class="st">"normalday"</span>), <span class="st">"6 hour"</span>)
+<span class="kw">fan_power</span> <span class="op">&lt;-</span> <span class="kw">epluspar</span>:::<span class="fu">report_dt_to_wide</span>(<span class="kw">fan_power</span>)
 <span class="co"># add Gaussian noice</span>
-<span class="no">fan_power</span> <span class="kw">&lt;-</span> <span class="no">fan_power</span>[, -<span class="st">"Date/Time"</span>][
-    , <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">.SD</span>, <span class="kw">function</span> (<span class="no">x</span>) <span class="no">x</span> + <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">x</span>), <span class="kw">sd</span> <span class="kw">=</span> <span class="fl">0.05</span> * <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="no">x</span>)))][
-    , <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">.SD</span>, <span class="kw">function</span> (<span class="no">x</span>) {<span class="no">x</span>[<span class="no">x</span> <span class="kw">&lt;</span> <span class="fl">0</span>] <span class="kw">&lt;-</span> <span class="fl">0</span>; <span class="no">x</span>})
+<span class="kw">fan_power</span> <span class="op">&lt;-</span> <span class="kw">fan_power</span>[, <span class="op">-</span><span class="st">"Date/Time"</span>][
+    , <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">.SD</span>, <span class="fu">function</span> (<span class="kw">x</span>) <span class="kw">x</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="kw">x</span>), sd = <span class="fl">0.05</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(<span class="kw">x</span>)))][
+    , <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">.SD</span>, <span class="fu">function</span> (<span class="kw">x</span>) {<span class="kw">x</span>[<span class="kw">x</span> <span class="op">&lt;</span> <span class="fl">0</span>] <span class="op">&lt;-</span> <span class="fl">0</span>; <span class="kw">x</span>})
     ]
 
 <span class="co"># set field data</span>
-<span class="no">bc</span>$<span class="fu">data_field</span>(<span class="no">fan_power</span>)
+<span class="kw">bc</span><span class="op">$</span><span class="fu">data_field</span>(<span class="kw">fan_power</span>)
 <span class="co">#&gt; $input</span>
-<span class="co">#&gt;     case     Date/Time</span>
-<span class="co">#&gt;  1:   NA  07/01  06:00</span>
-<span class="co">#&gt;  2:   NA  07/01  12:00</span>
-<span class="co">#&gt;  3:   NA  07/01  18:00</span>
-<span class="co">#&gt;  4:   NA  07/01  24:00</span>
-<span class="co">#&gt;  5:   NA  07/02  06:00</span>
-<span class="co">#&gt;  6:   NA  07/02  12:00</span>
-<span class="co">#&gt;  7:   NA  07/02  18:00</span>
-<span class="co">#&gt;  8:   NA  07/02  24:00</span>
-<span class="co">#&gt;  9:   NA  07/03  06:00</span>
-<span class="co">#&gt; 10:   NA  07/03  12:00</span>
-<span class="co">#&gt; 11:   NA  07/03  18:00</span>
-<span class="co">#&gt; 12:   NA  07/03  24:00</span>
+<span class="co">#&gt;      case     Date/Time</span>
+<span class="co">#&gt;     &lt;int&gt;        &lt;char&gt;</span>
+<span class="co">#&gt;  1:    NA  07/01  06:00</span>
+<span class="co">#&gt;  2:    NA  07/01  12:00</span>
+<span class="co">#&gt;  3:    NA  07/01  18:00</span>
+<span class="co">#&gt;  4:    NA  07/01  24:00</span>
+<span class="co">#&gt;  5:    NA  07/02  06:00</span>
+<span class="co">#&gt;  6:    NA  07/02  12:00</span>
+<span class="co">#&gt;  7:    NA  07/02  18:00</span>
+<span class="co">#&gt;  8:    NA  07/02  24:00</span>
+<span class="co">#&gt;  9:    NA  07/03  06:00</span>
+<span class="co">#&gt; 10:    NA  07/03  12:00</span>
+<span class="co">#&gt; 11:    NA  07/03  18:00</span>
+<span class="co">#&gt; 12:    NA  07/03  24:00</span>
 <span class="co">#&gt;     COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour)</span>
-<span class="co">#&gt;  1:                                                            8.186808</span>
-<span class="co">#&gt;  2:                                                            8.065751</span>
+<span class="co">#&gt;                                                                   &lt;num&gt;</span>
+<span class="co">#&gt;  1:                                                            8.186813</span>
+<span class="co">#&gt;  2:                                                            8.065758</span>
 <span class="co">#&gt;  3:                                                            8.195386</span>
-<span class="co">#&gt;  4:                                                            8.189395</span>
-<span class="co">#&gt;  5:                                                            8.189395</span>
-<span class="no">....</span></pre></div>
+<span class="kw">....</span>
+</pre></div>
 </div>
 <div id="specify-input-data-for-stan" class="section level4">
 <h4 class="hasAnchor">
@@ -639,35 +697,38 @@
 <li>
 <code>tc</code>: Data of calibration parameters after min-max normalization.</li>
 </ul>
-<!-- end list --><div class="sourceCode" id="cb23"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">bc</span>$<span class="fu">data_bc</span>())
+<!-- end list --><div class="sourceCode" id="cb23"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">bc</span><span class="op">$</span><span class="fu">data_bc</span>())
 <span class="co">#&gt; List of 11</span>
 <span class="co">#&gt;  $ n     : int 12</span>
 <span class="co">#&gt;  $ n_pred: int 12</span>
 <span class="co">#&gt;  $ m     : int 60</span>
 <span class="co">#&gt;  $ p     : int 3</span>
 <span class="co">#&gt;  $ q     : int 2</span>
-<span class="co">#&gt;  $ yf    : num [1:12] -0.884 1.091 1.605 -0.884 -0.884 ...</span>
-<span class="co">#&gt;  $ yc    : num [1:60] -0.88 1.248 1.771 -0.884 -0.884 ...</span>
+<span class="co">#&gt;  $ yf    : num [1:12] -0.879 1.111 1.498 -0.848 -0.879 ...</span>
+<span class="co">#&gt;  $ yc    : num [1:60] -0.876 1.149 1.648 -0.879 -0.879 ...</span>
 <span class="co">#&gt;  $ xf    :Classes 'data.table' and 'data.frame': 12 obs. of  3 variables:</span>
-<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:12] 2.52e-01 9.56e-05 2.70e-01 2.57e-01 2.57e-01 ...</span>
+<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:12] 0.251854 0.000112 0.269682 0.25723 0.25723 ...</span>
 <span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour): num [1:12] 0.816 0 0.0627 0.8792 0.8792 ...</span>
 <span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour) : num [1:12] 0.00247 0.87075 1 0 0 ...</span>
 <span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span>
 <span class="co">#&gt;  $ xc    :Classes 'data.table' and 'data.frame': 60 obs. of  3 variables:</span>
-<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:60] 2.52e-01 9.56e-05 2.70e-01 2.57e-01 2.57e-01 ...</span>
+<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:60] 0.251854 0.000112 0.269682 0.25723 0.25723 ...</span>
 <span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour): num [1:60] 0.816 0 0.0627 0.8792 0.8792 ...</span>
 <span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour) : num [1:60] 0.00247 0.87075 1 0 0 ...</span>
 <span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span>
 <span class="co">#&gt;  $ x_pred:Classes 'data.table' and 'data.frame': 12 obs. of  3 variables:</span>
-<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:12] 2.52e-01 9.56e-05 2.70e-01 2.57e-01 2.57e-01 ...</span>
-<span class="no">....</span></pre></div>
+<span class="co">#&gt;   ..$ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num [1:12] 0.251854 0.000112 0.269682 0.25723 0.25723 ...</span>
+<span class="kw">....</span>
+</pre></div>
 <p>You can also supply your own field data and simulated data and using <code>$data_bc()</code> to construct the input for the Stan model. Input <code>data_field</code> and <code>data_sim</code> should have the same structure as the output from <code>$data_field()</code> and <code>$data_sim()</code>. If <code>data_field</code> and <code>data_sim</code> is not specified, the output from <code>$data_field()</code> and <code>$data_sim()</code> will be used.</p>
 </div>
 <div id="get-stan-file" class="section level4">
 <h4 class="hasAnchor">
 <a href="#get-stan-file" class="anchor"></a>Get Stan file</h4>
 <p>You can save the internal Stan code using <code>$stan_file()</code>. If no path is specified, a character vector that contains the stan code will be returned.</p>
-<div class="sourceCode" id="cb24"><pre class="r"><span class="no">bc</span>$<span class="fu">stan_file</span>()
+<div class="sourceCode" id="cb24"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">stan_file</span>()
 <span class="co">#&gt;   [1] "/*"                                                                                 </span>
 <span class="co">#&gt;   [2] "    The MIT License (MIT)"                                                          </span>
 <span class="co">#&gt;   [3] ""                                                                                   </span>
@@ -688,44 +749,61 @@
 <span class="co">#&gt;  [18] "    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE"    </span>
 <span class="co">#&gt;  [19] "    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"         </span>
 <span class="co">#&gt;  [20] "    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,"  </span>
-<span class="no">....</span></pre></div>
+<span class="kw">....</span>
+</pre></div>
 </div>
 <div id="run-bayesian-calibration-using-stan" class="section level4">
 <h4 class="hasAnchor">
 <a href="#run-bayesian-calibration-using-stan" class="anchor"></a>Run Bayesian Calibration Using Stan</h4>
 <p>You can run Bayesian calibration using Stan using <code>$stan_run()</code>.</p>
 <p>If <code>data</code> argument is not specified, the output of <code>$data_bc()</code> is directly used.</p>
-<div class="sourceCode" id="cb25"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
-<span class="no">bc</span>$<span class="fu">stan_run</span>(<span class="kw">iter</span> <span class="kw">=</span> <span class="fl">300</span>, <span class="kw">chains</span> <span class="kw">=</span> <span class="fl">3</span>)</pre></div>
+<div class="sourceCode" id="cb25"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<span class="kw">bc</span><span class="op">$</span><span class="fu">stan_run</span>(iter = <span class="fl">300</span>, chains = <span class="fl">3</span>)
+</pre></div>
 <p>Instead of using builtin Stan model, you can also provide your own Stan code using <code>file</code> argument.</p>
-<div class="sourceCode" id="cb26"><pre class="r"><span class="no">bc</span>$<span class="fu">stan_run</span>(<span class="kw">file</span> <span class="kw">=</span> <span class="no">bc</span>$<span class="fu">stan_file</span>(<span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>(<span class="kw">fileext</span> <span class="kw">=</span> <span class="st">".stan"</span>)), <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">300</span>, <span class="kw">chains</span> <span class="kw">=</span> <span class="fl">3</span>)</pre></div>
+<div class="sourceCode" id="cb26"><pre class="downlit">
+<span class="kw">bc</span><span class="op">$</span><span class="fu">stan_run</span>(file = <span class="kw">bc</span><span class="op">$</span><span class="fu">stan_file</span>(<span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span>(fileext = <span class="st">".stan"</span>)), iter = <span class="fl">300</span>, chains = <span class="fl">3</span>)
+</pre></div>
 <p>You can also use custom data set</p>
-<div class="sourceCode" id="cb27"><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="no">bc</span>$<span class="fu">stan_run</span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">bc</span>$<span class="fu">data_bc</span>(), <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">300</span>, <span class="kw">chains</span> <span class="kw">=</span> <span class="fl">3</span>)
+<div class="sourceCode" id="cb27"><pre class="downlit">
+<span class="kw">res</span> <span class="op">&lt;-</span> <span class="kw">bc</span><span class="op">$</span><span class="fu">stan_run</span>(data = <span class="kw">bc</span><span class="op">$</span><span class="fu">data_bc</span>(), iter = <span class="fl">300</span>, chains = <span class="fl">3</span>)
+<span class="co">#&gt; Warning: The largest R-hat is NA, indicating chains have not mixed.</span>
+<span class="co">#&gt; Running the chains for more iterations may help. See</span>
+<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#r-hat</span>
 <span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
 <span class="co">#&gt; Running the chains for more iterations may help. See</span>
 <span class="co">#&gt; http://mc-stan.org/misc/warnings.html#bulk-ess</span>
 <span class="co">#&gt; Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
 <span class="co">#&gt; Running the chains for more iterations may help. See</span>
-<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#tail-ess</span></pre></div>
+<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#tail-ess</span>
+</pre></div>
 <p>The stan model is store in <code>fit</code></p>
-<div class="sourceCode" id="cb28"><pre class="r"><span class="kw pkg">rstan</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/rstan/man/stan_plot.html">stan_trace</a></span>(<span class="no">res</span>$<span class="no">fit</span>)
-<span class="co">#&gt; 'pars' not specified. Showing first 10 parameters by default.</span></pre></div>
-<p><img src="reference/figures/stan-1.png"><!-- --></p>
-<div class="sourceCode" id="cb29"><pre class="r"><span class="kw pkg">rstan</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/rstan/man/stan_plot.html">stan_hist</a></span>(<span class="no">res</span>$<span class="no">fit</span>)
+<div class="sourceCode" id="cb28"><pre class="downlit">
+<span class="kw">rstan</span>::<span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot.html">stan_trace</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">fit</span>)
 <span class="co">#&gt; 'pars' not specified. Showing first 10 parameters by default.</span>
-<span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></pre></div>
+</pre></div>
+<p><img src="reference/figures/stan-1.png"><!-- --></p>
+<div class="sourceCode" id="cb29"><pre class="downlit">
+<span class="kw">rstan</span>::<span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot.html">stan_hist</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">fit</span>)
+<span class="co">#&gt; 'pars' not specified. Showing first 10 parameters by default.</span>
+<span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
+</pre></div>
 <p><img src="reference/figures/stan-2.png"><!-- --></p>
 <p>The predicted values is stored in <code>y_pred</code>.</p>
-<div class="sourceCode" id="cb30"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">res</span>$<span class="no">y_pred</span>)
-<span class="co">#&gt; Classes 'data.table' and 'data.frame':   5400 obs. of  7 variables:</span>
+<div class="sourceCode" id="cb30"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">y_pred</span>)
+<span class="co">#&gt; Classes 'data.table' and 'data.frame':   5400 obs. of  8 variables:</span>
 <span class="co">#&gt;  $ index                                                               : int  1 1 1 1 1 1 1 1 1 1 ...</span>
+<span class="co">#&gt;  $ sample                                                              : int  1 2 3 4 5 6 7 8 9 10 ...</span>
 <span class="co">#&gt;  $ Date/Time                                                           : chr  " 07/01  06:00" " 07/01  06:00" " 07/01  06:00" " 07/01  06:00" ...</span>
 <span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Evaporator Inlet Temperature [C](6 Hour) : num  8.19 8.19 8.19 8.19 8.19 ...</span>
 <span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Evaporator Outlet Temperature [C](6 Hour): num  8.08 8.08 8.08 8.08 8.08 ...</span>
 <span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Evaporator Mass Flow Rate [kg/s](6 Hour) : num  0.0683 0.0683 0.0683 0.0683 0.0683 ...</span>
 <span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour)               : num  0 0 0 0 0 0 0 0 0 0 ...</span>
-<span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour) [Prediction]  : num  40.404 49.248 -0.789 153.691 126.242 ...</span>
-<span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;</span></pre></div>
+<span class="co">#&gt;  $ COOLSYS1 CHILLER 1:Chiller Electric Power [W](6 Hour) [Prediction]  : num  -65.3 56.4 -67.2 -23.1 83.5 ...</span>
+<span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt;</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -767,7 +845,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

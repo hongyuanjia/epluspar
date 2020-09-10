@@ -127,13 +127,16 @@ objective(s) optimizations on an EnergyPlus model using Genetic Algorithm</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The basic workflow is basically:</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Hongyuan Jia</p>
     <h2 class="hasAnchor" id="super-classes"><a class="anchor" href="#super-classes"></a>Super classes</h2>
 
     <p><code><a href='https://hongyuanjia.github.io/eplusr/reference/EplusGroupJob.html'>eplusr::EplusGroupJob</a></code> -&gt; <code><a href='https://hongyuanjia.github.io/eplusr/reference/ParametricJob.html'>eplusr::ParametricJob</a></code> -&gt; <code>GAOptimJob</code></p>
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
     
-<h3>Public methods</h3>
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Public methods</h3>
 
 <ul>
 <li><p><a href='#method-new'><code>GAOptimJob$new()</code></a></p></li>
@@ -146,10 +149,9 @@ objective(s) optimizations on an EnergyPlus model using Genetic Algorithm</p>
 <li><p><a href='#method-terminator'><code>GAOptimJob$terminator()</code></a></p></li>
 <li><p><a href='#method-validate'><code>GAOptimJob$validate()</code></a></p></li>
 <li><p><a href='#method-run'><code>GAOptimJob$run()</code></a></p></li>
-<li><p><a href='#method-pareto_front'><code>GAOptimJob$pareto_front()</code></a></p></li>
+<li><p><a href='#method-best_set'><code>GAOptimJob$best_set()</code></a></p></li>
 <li><p><a href='#method-pareto_set'><code>GAOptimJob$pareto_set()</code></a></p></li>
 <li><p><a href='#method-population'><code>GAOptimJob$population()</code></a></p></li>
-<li><p><a href='#method-plot'><code>GAOptimJob$plot()</code></a></p></li>
 <li><p><a href='#method-print'><code>GAOptimJob$print()</code></a></p></li>
 </ul>
 <p><details ><summary>Inherited methods</summary>
@@ -175,149 +177,143 @@ objective(s) optimizations on an EnergyPlus model using Genetic Algorithm</p>
 </details>
 
 <hr>
-<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
-<p>Create a <code>GAOptimJob</code> object</p><h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>new</span>(<span class='no'>idf</span>, <span class='no'>epw</span>)</pre><p></div></p>
+<a id="method-new"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>new()</code></h3>
+<p>Create a <code>GAOptimJob</code> object</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>new</span>(<span class='kw'>idf</span>, <span class='kw'>epw</span>)</pre><p></div></p>
 
-<h3>Arguments</h3>
-<p><div class="arguments"></p><dl'>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Arguments</h4>
+<p><div class="arguments"></p><dl>
 <dt><code>idf</code></dt><dd><p>A path to an local EnergyPlus IDF file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Idf.html'>eplusr::Idf</a> object.</p></dd>
 
 <dt><code>epw</code></dt><dd><p>A path to an local EnergyPlus EPW file or an <a href='https://hongyuanjia.github.io/eplusr/reference/Epw.html'>eplusr::Epw</a> object.</p></dd>
 
 </dl><p></div></p>
-<h3>Returns</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Returns</h4>
 <p>A <code>GAOptimJob</code> object.</p>
-<h3>Examples</h3>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Examples</h4>
 <p><div class="r example copy"></p><pre>\dontrun{
 if (eplusr::is_avail_eplus(8.8)) {
-idf_name &amp;lt;- "1ZoneUncontrolled.idf"
-epw_name &amp;lt;-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+idf_name &lt;- "1ZoneUncontrolled.idf"
+epw_name &lt;-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
-idf_path &amp;lt;- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-epw_path &amp;lt;- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+idf_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+epw_path &lt;- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
 
 # create from local files
 GAOptimJob$new(idf_path, epw_path)
 
 # create from an Idf and an Epw object
-opt &amp;lt;- GAOptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+opt &lt;- GAOptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
 }
 }
 
 </pre><p></div></p>
 
 <p><hr>
-<a id="method-param"></a></p><h3>Method <code>param()</code></h3>
+<a id="method-param"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>param()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>param</span>(<span class='no'>...</span>, <span class='kw'>.names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
-
-<p><hr>
-<a id="method-apply_measure"></a></p><h3>Method <code>apply_measure()</code></h3>
-
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>apply_measure</span>(<span class='no'>measure</span>, <span class='no'>...</span>, <span class='kw'>.names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>param</span>(<span class='kw'>...</span>, .names = <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <p><hr>
-<a id="method-objective"></a></p><h3>Method <code>objective()</code></h3>
+<a id="method-apply_measure"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>apply_measure()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>objective</span>(<span class='no'>...</span>, <span class='kw'>.n</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>.dir</span> <span class='kw'>=</span> <span class='st'>"min"</span>)</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>apply_measure</span>(<span class='kw'>measure</span>, <span class='kw'>...</span>, .names = <span class='kw'>NULL</span>)</pre><p></div></p>
 
 <p><hr>
-<a id="method-recombinator"></a></p><h3>Method <code>recombinator()</code></h3>
+<a id="method-objective"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>objective()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>recombinator</span>(
-<span class='no'>...</span>,
-<span class='kw'>.float</span> <span class='kw'>=</span> <span class='fu'>setwith</span>(<span class='kw pkg'>ecr</span><span class='kw ns'>::</span><span class='no'><a href='https://rdrr.io/pkg/ecr/man/recSBX.html'>recSBX</a></span>, <span class='kw'>eta</span> <span class='kw'>=</span> <span class='fl'>15</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>0.7</span>),
-<span class='kw'>.integer</span> <span class='kw'>=</span> <span class='fu'>setwith</span>(<span class='no'>recPCrossover</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>0.7</span>),
-<span class='kw'>.choice</span> <span class='kw'>=</span> <span class='fu'>setwith</span>(<span class='no'>recPCrossover</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>0.7</span>)
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>objective</span>(<span class='kw'>...</span>, .n = <span class='kw'>NULL</span>, .dir = <span class='st'>"min"</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-recombinator"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>recombinator()</code></h3>
+
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>recombinator</span>(
+<span class='kw'>...</span>,
+.float = <span class='fu'><a href='setwith.html'>setwith</a></span>(<span class='kw'>ecr</span>::<span class='kw'><a href='https://rdrr.io/pkg/ecr/man/recSBX.html'>recSBX</a></span>, eta = <span class='fl'>15</span>, p = <span class='fl'>0.7</span>),
+.integer = <span class='fu'><a href='setwith.html'>setwith</a></span>(<span class='kw'>recPCrossover</span>, p = <span class='fl'>0.7</span>),
+.choice = <span class='fu'><a href='setwith.html'>setwith</a></span>(<span class='kw'>recPCrossover</span>, p = <span class='fl'>0.7</span>)
 )</pre><p></div></p>
 
 <p><hr>
-<a id="method-mutator"></a></p><h3>Method <code>mutator()</code></h3>
+<a id="method-mutator"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>mutator()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>mutator</span>(
-<span class='no'>...</span>,
-<span class='kw'>.float</span> <span class='kw'>=</span> <span class='fu'>setwith</span>(<span class='kw pkg'>ecr</span><span class='kw ns'>::</span><span class='no'><a href='https://rdrr.io/pkg/ecr/man/mutPolynomial.html'>mutPolynomial</a></span>, <span class='kw'>eta</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
-<span class='kw'>.integer</span> <span class='kw'>=</span> <span class='no'>mutRandomChoice</span>,
-<span class='kw'>.choice</span> <span class='kw'>=</span> <span class='no'>mutRandomChoice</span>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>mutator</span>(
+<span class='kw'>...</span>,
+.float = <span class='fu'><a href='setwith.html'>setwith</a></span>(<span class='kw'>ecr</span>::<span class='kw'><a href='https://rdrr.io/pkg/ecr/man/mutPolynomial.html'>mutPolynomial</a></span>, eta = <span class='fl'>25</span>, p = <span class='fl'>0.1</span>),
+.integer = <span class='kw'>mutRandomChoice</span>,
+.choice = <span class='kw'>mutRandomChoice</span>
 )</pre><p></div></p>
 
 <p><hr>
-<a id="method-selector"></a></p><h3>Method <code>selector()</code></h3>
+<a id="method-selector"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>selector()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>selector</span>(
-<span class='kw'>parent</span> <span class='kw'>=</span> <span class='kw pkg'>ecr</span><span class='kw ns'>::</span><span class='no'><a href='https://rdrr.io/pkg/ecr/man/selSimple.html'>selSimple</a></span>,
-<span class='kw'>survival</span> <span class='kw'>=</span> <span class='kw pkg'>ecr</span><span class='kw ns'>::</span><span class='no'><a href='https://rdrr.io/pkg/ecr/man/selNondom.html'>selNondom</a></span>,
-<span class='kw'>strategy</span> <span class='kw'>=</span> <span class='st'>"plus"</span>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>selector</span>(
+parent = <span class='kw'>ecr</span>::<span class='kw'><a href='https://rdrr.io/pkg/ecr/man/selSimple.html'>selSimple</a></span>,
+survival = <span class='kw'>ecr</span>::<span class='kw'><a href='https://rdrr.io/pkg/ecr/man/selNondom.html'>selNondom</a></span>,
+strategy = <span class='st'>"plus"</span>
 )</pre><p></div></p>
 
 <p><hr>
-<a id="method-terminator"></a></p><h3>Method <code>terminator()</code></h3>
+<a id="method-terminator"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>terminator()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>terminator</span>(
-<span class='kw'>fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='no'>name</span>,
-<span class='no'>message</span>,
-<span class='kw'>max_gen</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='kw'>max_eval</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='kw'>max_time</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>terminator</span>(
+fun = <span class='kw'>NULL</span>,
+<span class='kw'>name</span>,
+<span class='kw'>message</span>,
+max_gen = <span class='kw'>NULL</span>,
+max_eval = <span class='kw'>NULL</span>,
+max_time = <span class='kw'>NULL</span>
 )</pre><p></div></p>
 
 <p><hr>
-<a id="method-validate"></a></p><h3>Method <code>validate()</code></h3>
+<a id="method-validate"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>validate()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>validate</span>(<span class='kw'>param</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>validate</span>(param = <span class='kw'>NULL</span>, ddy_only = <span class='fl'>TRUE</span>, verbose = <span class='fl'>TRUE</span>)</pre><p></div></p>
 
 <p><hr>
-<a id="method-run"></a></p><h3>Method <code>run()</code></h3>
+<a id="method-run"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>run()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>run</span>(
-<span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>20L</span>,
-<span class='kw'>p_recomb</span> <span class='kw'>=</span> <span class='fl'>0.7</span>,
-<span class='kw'>p_mut</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
-<span class='kw'>dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='kw'>wait</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-<span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>run</span>(
+mu = <span class='fl'>20L</span>,
+p_recomb = <span class='fl'>0.7</span>,
+p_mut = <span class='fl'>0.1</span>,
+dir = <span class='kw'>NULL</span>,
+wait = <span class='fl'>TRUE</span>,
+parallel = <span class='fl'>TRUE</span>
 )</pre><p></div></p>
 
 <p><hr>
-<a id="method-pareto_front"></a></p><h3>Method <code>pareto_front()</code></h3>
+<a id="method-best_set"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>best_set()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>pareto_front</span>()</pre><p></div></p>
-
-<p><hr>
-<a id="method-pareto_set"></a></p><h3>Method <code>pareto_set()</code></h3>
-
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>pareto_set</span>()</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>best_set</span>(unique = <span class='fl'>TRUE</span>)</pre><p></div></p>
 
 <p><hr>
-<a id="method-population"></a></p><h3>Method <code>population()</code></h3>
+<a id="method-pareto_set"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>pareto_set()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'>population</span>()</pre><p></div></p>
-
-<p><hr>
-<a id="method-plot"></a></p><h3>Method <code><a href='https://rdrr.io/r/base/plot.html'>plot()</a></code></h3>
-
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='kw'>pareto_front</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>pareto_set</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>pareto_set</span>(unique = <span class='fl'>TRUE</span>)</pre><p></div></p>
 
 <p><hr>
-<a id="method-print"></a></p><h3>Method <code><a href='https://rdrr.io/r/base/print.html'>print()</a></code></h3>
+<a id="method-population"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>population()</code></h3>
 
-<h3>Usage</h3>
-<p><div class="r"></p><pre><span class='no'>GAOptimJob</span>$<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>()</pre><p></div></p>
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>population</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-print"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code><a href='https://rdrr.io/r/base/print.html'>print()</a></code></h3>
+
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p><div class="r"></p><pre><span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>()</pre><p></div></p>
 
 
 
@@ -329,20 +325,22 @@ opt &amp;lt;- GAOptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_pa
 <span class='co'>## ------------------------------------------------</span>
 
 <span class='co'># \dontrun{</span>
-<span class='kw'>if</span> (<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>is_avail_eplus</a></span>(<span class='fl'>8.8</span>)) {
-<span class='no'>idf_name</span> <span class='kw'>&lt;-</span> <span class='st'>"1ZoneUncontrolled.idf"</span>
-<span class='no'>epw_name</span> <span class='kw'>&lt;-</span>  <span class='st'>"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>
+<span class='co'>if</span> (<span class='kw'>eplusr</span>::<span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>is_avail_eplus</a></span>(<span class='fl'>8.8</span>)) {
+<span class='kw'>idf_name</span> <span class='op'>&lt;-</span> <span class='st'>"1ZoneUncontrolled.idf"</span>
+<span class='kw'>epw_name</span> <span class='op'>&lt;-</span>  <span class='st'>"USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"</span>
 
-<span class='no'>idf_path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)$<span class='no'>dir</span>, <span class='st'>"ExampleFiles"</span>, <span class='no'>idf_name</span>)
-<span class='no'>epw_path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)$<span class='no'>dir</span>, <span class='st'>"WeatherData"</span>, <span class='no'>epw_name</span>)
+<span class='kw'>idf_path</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw'>eplusr</span>::<span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)<span class='op'>$</span><span class='kw'>dir</span>, <span class='st'>"ExampleFiles"</span>, <span class='kw'>idf_name</span>)
+<span class='kw'>epw_path</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='kw'>eplusr</span>::<span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/use_eplus.html'>eplus_config</a></span>(<span class='fl'>8.8</span>)<span class='op'>$</span><span class='kw'>dir</span>, <span class='st'>"WeatherData"</span>, <span class='kw'>epw_name</span>)
 
 <span class='co'># create from local files</span>
-<span class='no'>GAOptimJob</span>$<span class='fu'>new</span>(<span class='no'>idf_path</span>, <span class='no'>epw_path</span>)
+<span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>new</span>(<span class='kw'>idf_path</span>, <span class='kw'>epw_path</span>)
 
 <span class='co'># create from an Idf and an Epw object</span>
-<span class='no'>opt</span> <span class='kw'>&lt;-</span> <span class='no'>GAOptimJob</span>$<span class='fu'>new</span>(<span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/read_idf.html'>read_idf</a></span>(<span class='no'>idf_path</span>), <span class='kw pkg'>eplusr</span><span class='kw ns'>::</span><span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/read_epw.html'>read_epw</a></span>(<span class='no'>epw_path</span>))
+<span class='kw'>opt</span> <span class='op'>&lt;-</span> <span class='kw'>GAOptimJob</span><span class='op'>$</span><span class='fu'>new</span>(<span class='kw'>eplusr</span>::<span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/read_idf.html'>read_idf</a></span>(<span class='kw'>idf_path</span>), <span class='kw'>eplusr</span>::<span class='fu'><a href='https://hongyuanjia.github.io/eplusr/reference/read_epw.html'>read_epw</a></span>(<span class='kw'>epw_path</span>))
 }
-<span class='co'># }</span></div></pre>
+<span class='co'># }</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -358,7 +356,7 @@ opt &amp;lt;- GAOptimJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_pa
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>
