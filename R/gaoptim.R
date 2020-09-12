@@ -680,10 +680,13 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
         future::plan(parallel)
     }
 
+    # resolve globals. See #22
+    glo <- globals::globalsOf(private$m_log$measure$fun, mustExist = FALSE)
+
     fitness <- future.apply::future_mapply(
         gaopt_fitness_fun, param = population, path = path,
         MoreArgs = list(super = super, self = self, private = private, weather = weather),
-        SIMPLIFY = FALSE
+        SIMPLIFY = FALSE, future.globals = glo
     )
     makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
 }
