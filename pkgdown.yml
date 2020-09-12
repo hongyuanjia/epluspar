@@ -1,8 +1,8 @@
 pandoc: '2.2'
-pkgdown: 1.6.0
+pkgdown: 1.6.1
 pkgdown_sha: ~
-articles: []
-last_built: 2020-09-10T15:33Z
+articles: {}
+last_built: 2020-09-12T12:09Z
 urls:
   reference: https://ideas-lab-nus.github.io/epluspar/reference
   article: https://ideas-lab-nus.github.io/epluspar/articles
