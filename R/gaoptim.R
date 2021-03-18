@@ -607,7 +607,7 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
     if (!isTRUE(idf$last_job()$status()$successful)) {
         stop("Validation failed. Test simulation did not complete successfully. ",
             "The error messages are:\n",
-            paste(paste0("  > ", utils::capture.output(print(idf$last_job()$errors()))), collapse = "\n"),
+            paste(paste0("  > ", utils::capture.output(print(idf$last_job()$errors()[!level %in% c("Info", "Warning")]))), collapse = "\n"),
             call. = FALSE
         )
     }
