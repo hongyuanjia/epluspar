@@ -692,7 +692,7 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
     fitness <- future.apply::future_mapply(
         gaopt_fitness_fun, param = population, path = path,
         MoreArgs = list(super = super, self = self, private = private, weather = weather),
-        SIMPLIFY = FALSE, future.globals = glo
+        SIMPLIFY = FALSE, future.globals = glo, future.seed = 1L
     )
     makeFitnessMatrix(do.call(cbind, fitness), private$m_ctrl)
 }
