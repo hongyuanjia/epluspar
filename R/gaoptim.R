@@ -672,7 +672,11 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
 
     if (checkmate::test_flag(parallel)) {
         if (parallel) {
-            future::plan(future::multiprocess)
+            if (packageVersion("future") < 1.20) {
+                future::plan(future::multiprocess)
+            } else {
+                future::plan(future::multisession)
+            }
         } else {
             future::plan(future::sequential)
         }
