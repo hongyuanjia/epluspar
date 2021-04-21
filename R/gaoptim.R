@@ -685,7 +685,9 @@ gaopt_evaluate_fitness <- function (super, self, private, gen, population, weath
     }
 
     # resolve globals. See #22
-    glo <- globals::globalsOf(private$m_log$measure$fun, mustExist = FALSE)
+    glo <- globals::globalsOf(mustExist = FALSE,
+        c(private$m_log$objective$fun, list(private$m_log$measure$fun))
+    )
 
     fitness <- future.apply::future_mapply(
         gaopt_fitness_fun, param = population, path = path,
