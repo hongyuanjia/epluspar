@@ -16,8 +16,7 @@ Currently, epluspar is not on CRAN. You can install the development
 version from GitHub.
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("ideas-lab-nus/epluspar")
+install.packages("epluspar", repos = "https://hongyuanjia.r-universe.dev")
 ```
 
 <!-- TOC GFM -->
