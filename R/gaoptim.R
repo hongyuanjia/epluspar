@@ -534,7 +534,7 @@ gaopt_gen_fitness_idf <- function (super, self, private, param, outfile = NULL) 
     # initial run on a single individual
     measure <- private$m_log$measure
     idf <- do.call(measure$fun, c(private$m_seed$clone(), param))
-    if (!is.null(outfile)) suppressMessages(idf$save(outfile, overwrite = TRUE))
+    if (!is.null(outfile)) suppressMessages(idf$save(outfile, overwrite = TRUE, copy_external = TRUE))
     idf
 }
 # }}}
@@ -595,12 +595,12 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
         } else {
             if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
             idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
-            eplusr::with_silent(idf$save(overwrite = TRUE))
+            eplusr::with_silent(idf$save(overwrite = TRUE, copy_external = TRUE))
             idf$run(private$m_epws_path[[1]], echo = FALSE)
         }
     } else {
         idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
-        eplusr::with_silent(idf$save(overwrite = TRUE))
+        eplusr::with_silent(idf$save(overwrite = TRUE, copy_external = TRUE))
         idf$run(private$m_epws_path[[1]], echo = FALSE)
     }
 

@@ -1633,7 +1633,7 @@ bc_run_ddy <- function (super, self, private) {
         eplusr::with_silent(idf$del(idf$object_id("SizingPeriod:DesignDay", simplify = TRUE)[2L:num]))
     }
 
-    eplusr::with_silent(idf$save(tempfile(fileext = ".idf")))
+    eplusr::with_silent(idf$save(tempfile(fileext = ".idf"), copy_external = TRUE))
     job <- eplusr::with_silent(idf$run(NULL, dir = tempdir(), echo = FALSE))
 
     if (is.na(job$status()$successful) || !job$status()$successful) {
