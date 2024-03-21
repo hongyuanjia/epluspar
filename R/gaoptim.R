@@ -525,7 +525,7 @@ gaopt_init_population <- function (super, self, private, mu = 20L) {
 # gaopt_fitness_fun {{{
 gaopt_fitness_fun <- function (super, self, private, param, path, weather) {
     idf <- gaopt_gen_fitness_idf(super, self, private, param, path)
-    idf$run(weather, NULL, force = TRUE, echo = FALSE)
+    idf$run(weather, NULL, force = TRUE, echo = FALSE, copy_external = TRUE)
     gaopt_gen_fitness_obj(super, self, private, idf, param)
 }
 # }}}
@@ -591,17 +591,17 @@ gaopt_validate <- function (super, self, private, param = NULL, ddy_only = TRUE,
     # check if model has DDY
     if (isTRUE(ddy_only)) {
         if ("SizingPeriod:DesignDay" %in% idf$class_name()) {
-            idf$run(NULL, echo = FALSE)
+            idf$run(NULL, echo = FALSE, copy_external = TRUE)
         } else {
             if (verbose) message("    NOTE: No design day found in sample model. Full run will be conducted which may take longer time.")
             idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
             eplusr::with_silent(idf$save(overwrite = TRUE, copy_external = TRUE))
-            idf$run(private$m_epws_path[[1]], echo = FALSE)
+            idf$run(private$m_epws_path[[1]], echo = FALSE, copy_external = TRUE)
         }
     } else {
         idf$SimulationControl$Run_Simulation_for_Weather_File_Run_Periods <- "Yes"
         eplusr::with_silent(idf$save(overwrite = TRUE, copy_external = TRUE))
-        idf$run(private$m_epws_path[[1]], echo = FALSE)
+        idf$run(private$m_epws_path[[1]], echo = FALSE, copy_external = TRUE)
     }
 
     if (!isTRUE(idf$last_job()$status()$successful)) {
