@@ -43,48 +43,50 @@ Hongyuan Jia
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{GAOptimJob$new()}}
-\item \href{#method-param}{\code{GAOptimJob$param()}}
-\item \href{#method-apply_measure}{\code{GAOptimJob$apply_measure()}}
-\item \href{#method-objective}{\code{GAOptimJob$objective()}}
-\item \href{#method-recombinator}{\code{GAOptimJob$recombinator()}}
-\item \href{#method-mutator}{\code{GAOptimJob$mutator()}}
-\item \href{#method-selector}{\code{GAOptimJob$selector()}}
-\item \href{#method-terminator}{\code{GAOptimJob$terminator()}}
-\item \href{#method-validate}{\code{GAOptimJob$validate()}}
-\item \href{#method-run}{\code{GAOptimJob$run()}}
-\item \href{#method-best_set}{\code{GAOptimJob$best_set()}}
-\item \href{#method-pareto_set}{\code{GAOptimJob$pareto_set()}}
-\item \href{#method-population}{\code{GAOptimJob$population()}}
-\item \href{#method-print}{\code{GAOptimJob$print()}}
+\item \href{#method-GAOptimJob-new}{\code{GAOptimJob$new()}}
+\item \href{#method-GAOptimJob-param}{\code{GAOptimJob$param()}}
+\item \href{#method-GAOptimJob-apply_measure}{\code{GAOptimJob$apply_measure()}}
+\item \href{#method-GAOptimJob-objective}{\code{GAOptimJob$objective()}}
+\item \href{#method-GAOptimJob-recombinator}{\code{GAOptimJob$recombinator()}}
+\item \href{#method-GAOptimJob-mutator}{\code{GAOptimJob$mutator()}}
+\item \href{#method-GAOptimJob-selector}{\code{GAOptimJob$selector()}}
+\item \href{#method-GAOptimJob-terminator}{\code{GAOptimJob$terminator()}}
+\item \href{#method-GAOptimJob-validate}{\code{GAOptimJob$validate()}}
+\item \href{#method-GAOptimJob-run}{\code{GAOptimJob$run()}}
+\item \href{#method-GAOptimJob-best_set}{\code{GAOptimJob$best_set()}}
+\item \href{#method-GAOptimJob-pareto_set}{\code{GAOptimJob$pareto_set()}}
+\item \href{#method-GAOptimJob-population}{\code{GAOptimJob$population()}}
+\item \href{#method-GAOptimJob-print}{\code{GAOptimJob$print()}}
 }
 }
-\if{html}{
-\out{<details ><summary>Inherited methods</summary>}
-\itemize{
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors">}\href{../../eplusr/html/EplusGroupJob.html#method-errors}{\code{eplusr::EplusGroupJob$errors()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill">}\href{../../eplusr/html/EplusGroupJob.html#method-kill}{\code{eplusr::EplusGroupJob$kill()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table">}\href{../../eplusr/html/EplusGroupJob.html#method-list_table}{\code{eplusr::EplusGroupJob$list_table()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output">}\href{../../eplusr/html/EplusGroupJob.html#method-locate_output}{\code{eplusr::EplusGroupJob$locate_output()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir">}\href{../../eplusr/html/EplusGroupJob.html#method-output_dir}{\code{eplusr::EplusGroupJob$output_dir()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_mdd">}\href{../../eplusr/html/EplusGroupJob.html#method-read_mdd}{\code{eplusr::EplusGroupJob$read_mdd()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_rdd">}\href{../../eplusr/html/EplusGroupJob.html#method-read_rdd}{\code{eplusr::EplusGroupJob$read_rdd()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table">}\href{../../eplusr/html/EplusGroupJob.html#method-read_table}{\code{eplusr::EplusGroupJob$read_table()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data}{\code{eplusr::EplusGroupJob$report_data()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data_dict}{\code{eplusr::EplusGroupJob$report_data_dict()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status">}\href{../../eplusr/html/EplusGroupJob.html#method-status}{\code{eplusr::EplusGroupJob$status()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data">}\href{../../eplusr/html/EplusGroupJob.html#method-tabular_data}{\code{eplusr::EplusGroupJob$tabular_data()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models">}\href{../../eplusr/html/ParametricJob.html#method-models}{\code{eplusr::ParametricJob$models()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save">}\href{../../eplusr/html/ParametricJob.html#method-save}{\code{eplusr::ParametricJob$save()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed">}\href{../../eplusr/html/ParametricJob.html#method-seed}{\code{eplusr::ParametricJob$seed()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version">}\href{../../eplusr/html/ParametricJob.html#method-version}{\code{eplusr::ParametricJob$version()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather">}\href{../../eplusr/html/ParametricJob.html#method-weather}{\code{eplusr::ParametricJob$weather()}}\out{</span>}
-}
-\out{</details>}
-}
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-errors'><code>eplusr::EplusGroupJob$errors()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-kill'><code>eplusr::EplusGroupJob$kill()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_files"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-list_files'><code>eplusr::EplusGroupJob$list_files()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-list_table'><code>eplusr::EplusGroupJob$list_table()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-locate_output'><code>eplusr::EplusGroupJob$locate_output()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-output_dir'><code>eplusr::EplusGroupJob$output_dir()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_mdd"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-read_mdd'><code>eplusr::EplusGroupJob$read_mdd()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_rdd"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-read_rdd'><code>eplusr::EplusGroupJob$read_rdd()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-read_table'><code>eplusr::EplusGroupJob$read_table()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-report_data'><code>eplusr::EplusGroupJob$report_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-report_data_dict'><code>eplusr::EplusGroupJob$report_data_dict()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-status'><code>eplusr::EplusGroupJob$status()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-tabular_data'><code>eplusr::EplusGroupJob$tabular_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="cases"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-cases'><code>eplusr::ParametricJob$cases()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-models'><code>eplusr::ParametricJob$models()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-save'><code>eplusr::ParametricJob$save()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-seed'><code>eplusr::ParametricJob$seed()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-version'><code>eplusr::ParametricJob$version()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-weather'><code>eplusr::ParametricJob$weather()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-new"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-new}{}}}
 \subsection{Method \code{new()}}{
 Create a \code{GAOptimJob} object
 \subsection{Usage}{
@@ -128,8 +130,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-param"></a>}}
-\if{latex}{\out{\hypertarget{method-param}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-param"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-param}{}}}
 \subsection{Method \code{param()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$param(..., .names = NULL)}\if{html}{\out{</div>}}
@@ -137,8 +139,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-apply_measure"></a>}}
-\if{latex}{\out{\hypertarget{method-apply_measure}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-apply_measure"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$apply_measure(measure, ..., .names = NULL)}\if{html}{\out{</div>}}
@@ -146,8 +148,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-objective"></a>}}
-\if{latex}{\out{\hypertarget{method-objective}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-objective"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-objective}{}}}
 \subsection{Method \code{objective()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$objective(..., .n = NULL, .dir = "min")}\if{html}{\out{</div>}}
@@ -155,8 +157,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-recombinator"></a>}}
-\if{latex}{\out{\hypertarget{method-recombinator}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-recombinator"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-recombinator}{}}}
 \subsection{Method \code{recombinator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$recombinator(
@@ -169,8 +171,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mutator"></a>}}
-\if{latex}{\out{\hypertarget{method-mutator}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-mutator"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-mutator}{}}}
 \subsection{Method \code{mutator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$mutator(
@@ -183,8 +185,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-selector"></a>}}
-\if{latex}{\out{\hypertarget{method-selector}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-selector"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-selector}{}}}
 \subsection{Method \code{selector()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$selector(
@@ -196,8 +198,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-terminator"></a>}}
-\if{latex}{\out{\hypertarget{method-terminator}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-terminator"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-terminator}{}}}
 \subsection{Method \code{terminator()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$terminator(
@@ -212,8 +214,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-validate}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-validate}{}}}
 \subsection{Method \code{validate()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$validate(param = NULL, ddy_only = TRUE, verbose = TRUE)}\if{html}{\out{</div>}}
@@ -221,8 +223,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-run"></a>}}
-\if{latex}{\out{\hypertarget{method-run}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-run"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-run}{}}}
 \subsection{Method \code{run()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$run(
@@ -237,8 +239,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-best_set"></a>}}
-\if{latex}{\out{\hypertarget{method-best_set}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-best_set"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-best_set}{}}}
 \subsection{Method \code{best_set()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$best_set(unique = TRUE)}\if{html}{\out{</div>}}
@@ -246,8 +248,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-pareto_set"></a>}}
-\if{latex}{\out{\hypertarget{method-pareto_set}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-pareto_set"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-pareto_set}{}}}
 \subsection{Method \code{pareto_set()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_set(unique = TRUE)}\if{html}{\out{</div>}}
@@ -255,8 +257,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-population"></a>}}
-\if{latex}{\out{\hypertarget{method-population}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-population"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-population}{}}}
 \subsection{Method \code{population()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$population()}\if{html}{\out{</div>}}
@@ -264,8 +266,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-GAOptimJob-print"></a>}}
+\if{latex}{\out{\hypertarget{method-GAOptimJob-print}{}}}
 \subsection{Method \code{print()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$print()}\if{html}{\out{</div>}}

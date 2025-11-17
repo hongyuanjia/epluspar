@@ -24,8 +24,9 @@ License: MIT + file LICENSE
 Depends:
     R (>= 3.4.0)
 Imports:
-    cli,
     checkmate,
+    cli,
+    cmdstanr,
     data.table,
     ecr (>= 2.1.0),
     eplusr (>= 0.12.0),
@@ -34,35 +35,16 @@ Imports:
     globals,
     lhs,
     lubridate,
-    methods,
-    Rcpp (>= 0.12.0),
-    rstan (>= 2.18.1),
-    rstantools (>= 1.4.0),
     sensitivity
-LinkingTo:
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
 Suggests:
-    testthat,
-    covr,
-    pkgdown,
-    pkgload,
-    knitr,
-    rmarkdown
+    testthat
 SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>); GNU make
 Encoding: UTF-8
-LazyData: true
-Biarch: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
-RoxygenNote: 7.3.1
-Remotes: hongyuanjia/eplusr
+RoxygenNote: 7.3.3
 Collate:
     'bayesian.R'
     'epluspar.R'
     'utils.R'
     'gaoptim.R'
     'sensitivity.R'
-    'stanmodels.R'

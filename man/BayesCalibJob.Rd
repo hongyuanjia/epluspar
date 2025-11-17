@@ -11,32 +11,18 @@ of EnergyPlus model.
 \details{
 The basic workflow is basically:
 \enumerate{
-\item Setting input and output variables using
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
-respectively.
-Input variables should be variables listed in RDD while output variables
-should be variables listed in RDD and MDD.
-\item Adding parameters to calibrate using
-\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
-or
-\href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}.
+\item Setting input and output variables using \verb{$input()} and \verb{$output()},
+respectively. Input variables should be variables listed in RDD while
+output variables should be variables listed in RDD and MDD.
+\item Adding parameters to calibrate using \verb{$param()} or \verb{$apply_measure()}.
 \item Check parameter sampled values and generated parametric models using
-\href{../../epluspar/html/BayesCalibJob.html#method-samples}{\code{$samples()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
-respectively.
-\item Run EnergyPlus simulations in parallel using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_run}{\code{$eplus_run()}},
-\item Gather simulated data of input and output parameters using
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+\verb{$samples()} and \verb{$models()}, respectively.
+\item Run EnergyPlus simulations in parallel using \verb{$eplus_run()},
+\item Gather simulated data of input and output parameters using \verb{$data_sim()}.
 \item Specify field measured data of input and output parameters using
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
-\item Specify input data for Stan for Bayesian calibration using
-\href{../../epluspar/html/BayesCalibJob.html#method-data_bc}{\code{$data_bc()}}.
-\item Run bayesian calibration using stan using
-\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}.
+\verb{$data_field()}.
+\item Specify input data for Stan for Bayesian calibration using \verb{$data_bc()}.
+\item Run bayesian calibration using stan using \verb{$stan_run()}.
 }
 }
 \note{
@@ -418,60 +404,62 @@ Hongyuan Jia, Adrian Chong
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{BayesCalibJob$new()}}
-\item \href{#method-read_rdd}{\code{BayesCalibJob$read_rdd()}}
-\item \href{#method-read_mdd}{\code{BayesCalibJob$read_mdd()}}
-\item \href{#method-input}{\code{BayesCalibJob$input()}}
-\item \href{#method-output}{\code{BayesCalibJob$output()}}
-\item \href{#method-param}{\code{BayesCalibJob$param()}}
-\item \href{#method-apply_measure}{\code{BayesCalibJob$apply_measure()}}
-\item \href{#method-samples}{\code{BayesCalibJob$samples()}}
-\item \href{#method-models}{\code{BayesCalibJob$models()}}
-\item \href{#method-data_sim}{\code{BayesCalibJob$data_sim()}}
-\item \href{#method-data_field}{\code{BayesCalibJob$data_field()}}
-\item \href{#method-data_bc}{\code{BayesCalibJob$data_bc()}}
-\item \href{#method-eplus_run}{\code{BayesCalibJob$eplus_run()}}
-\item \href{#method-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
-\item \href{#method-eplus_status}{\code{BayesCalibJob$eplus_status()}}
-\item \href{#method-eplus_output_dir}{\code{BayesCalibJob$eplus_output_dir()}}
-\item \href{#method-eplus_locate_output}{\code{BayesCalibJob$eplus_locate_output()}}
-\item \href{#method-eplus_errors}{\code{BayesCalibJob$eplus_errors()}}
-\item \href{#method-eplus_report_data_dict}{\code{BayesCalibJob$eplus_report_data_dict()}}
-\item \href{#method-eplus_report_data}{\code{BayesCalibJob$eplus_report_data()}}
-\item \href{#method-eplus_tabular_data}{\code{BayesCalibJob$eplus_tabular_data()}}
-\item \href{#method-eplus_save}{\code{BayesCalibJob$eplus_save()}}
-\item \href{#method-stan_run}{\code{BayesCalibJob$stan_run()}}
-\item \href{#method-stan_file}{\code{BayesCalibJob$stan_file()}}
-\item \href{#method-post_dist}{\code{BayesCalibJob$post_dist()}}
-\item \href{#method-prediction}{\code{BayesCalibJob$prediction()}}
-\item \href{#method-evaluate}{\code{BayesCalibJob$evaluate()}}
+\item \href{#method-BayesCalibJob-new}{\code{BayesCalibJob$new()}}
+\item \href{#method-BayesCalibJob-read_rdd}{\code{BayesCalibJob$read_rdd()}}
+\item \href{#method-BayesCalibJob-read_mdd}{\code{BayesCalibJob$read_mdd()}}
+\item \href{#method-BayesCalibJob-input}{\code{BayesCalibJob$input()}}
+\item \href{#method-BayesCalibJob-output}{\code{BayesCalibJob$output()}}
+\item \href{#method-BayesCalibJob-param}{\code{BayesCalibJob$param()}}
+\item \href{#method-BayesCalibJob-apply_measure}{\code{BayesCalibJob$apply_measure()}}
+\item \href{#method-BayesCalibJob-samples}{\code{BayesCalibJob$samples()}}
+\item \href{#method-BayesCalibJob-models}{\code{BayesCalibJob$models()}}
+\item \href{#method-BayesCalibJob-data_sim}{\code{BayesCalibJob$data_sim()}}
+\item \href{#method-BayesCalibJob-data_field}{\code{BayesCalibJob$data_field()}}
+\item \href{#method-BayesCalibJob-data_bc}{\code{BayesCalibJob$data_bc()}}
+\item \href{#method-BayesCalibJob-eplus_run}{\code{BayesCalibJob$eplus_run()}}
+\item \href{#method-BayesCalibJob-eplus_kill}{\code{BayesCalibJob$eplus_kill()}}
+\item \href{#method-BayesCalibJob-eplus_status}{\code{BayesCalibJob$eplus_status()}}
+\item \href{#method-BayesCalibJob-eplus_output_dir}{\code{BayesCalibJob$eplus_output_dir()}}
+\item \href{#method-BayesCalibJob-eplus_locate_output}{\code{BayesCalibJob$eplus_locate_output()}}
+\item \href{#method-BayesCalibJob-eplus_errors}{\code{BayesCalibJob$eplus_errors()}}
+\item \href{#method-BayesCalibJob-eplus_report_data_dict}{\code{BayesCalibJob$eplus_report_data_dict()}}
+\item \href{#method-BayesCalibJob-eplus_report_data}{\code{BayesCalibJob$eplus_report_data()}}
+\item \href{#method-BayesCalibJob-eplus_tabular_data}{\code{BayesCalibJob$eplus_tabular_data()}}
+\item \href{#method-BayesCalibJob-eplus_save}{\code{BayesCalibJob$eplus_save()}}
+\item \href{#method-BayesCalibJob-stan_run}{\code{BayesCalibJob$stan_run()}}
+\item \href{#method-BayesCalibJob-stan_file}{\code{BayesCalibJob$stan_file()}}
+\item \href{#method-BayesCalibJob-post_dist}{\code{BayesCalibJob$post_dist()}}
+\item \href{#method-BayesCalibJob-prediction}{\code{BayesCalibJob$prediction()}}
+\item \href{#method-BayesCalibJob-evaluate}{\code{BayesCalibJob$evaluate()}}
 }
 }
-\if{html}{
-\out{<details ><summary>Inherited methods</summary>}
-\itemize{
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors">}\href{../../eplusr/html/EplusGroupJob.html#method-errors}{\code{eplusr::EplusGroupJob$errors()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill">}\href{../../eplusr/html/EplusGroupJob.html#method-kill}{\code{eplusr::EplusGroupJob$kill()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table">}\href{../../eplusr/html/EplusGroupJob.html#method-list_table}{\code{eplusr::EplusGroupJob$list_table()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output">}\href{../../eplusr/html/EplusGroupJob.html#method-locate_output}{\code{eplusr::EplusGroupJob$locate_output()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir">}\href{../../eplusr/html/EplusGroupJob.html#method-output_dir}{\code{eplusr::EplusGroupJob$output_dir()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table">}\href{../../eplusr/html/EplusGroupJob.html#method-read_table}{\code{eplusr::EplusGroupJob$read_table()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data}{\code{eplusr::EplusGroupJob$report_data()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict">}\href{../../eplusr/html/EplusGroupJob.html#method-report_data_dict}{\code{eplusr::EplusGroupJob$report_data_dict()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status">}\href{../../eplusr/html/EplusGroupJob.html#method-status}{\code{eplusr::EplusGroupJob$status()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data">}\href{../../eplusr/html/EplusGroupJob.html#method-tabular_data}{\code{eplusr::EplusGroupJob$tabular_data()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print">}\href{../../eplusr/html/ParametricJob.html#method-print}{\code{eplusr::ParametricJob$print()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run">}\href{../../eplusr/html/ParametricJob.html#method-run}{\code{eplusr::ParametricJob$run()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save">}\href{../../eplusr/html/ParametricJob.html#method-save}{\code{eplusr::ParametricJob$save()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed">}\href{../../eplusr/html/ParametricJob.html#method-seed}{\code{eplusr::ParametricJob$seed()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version">}\href{../../eplusr/html/ParametricJob.html#method-version}{\code{eplusr::ParametricJob$version()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather">}\href{../../eplusr/html/ParametricJob.html#method-weather}{\code{eplusr::ParametricJob$weather()}}\out{</span>}
-}
-\out{</details>}
-}
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="errors"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-errors'><code>eplusr::EplusGroupJob$errors()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="kill"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-kill'><code>eplusr::EplusGroupJob$kill()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_files"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-list_files'><code>eplusr::EplusGroupJob$list_files()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="list_table"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-list_table'><code>eplusr::EplusGroupJob$list_table()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="locate_output"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-locate_output'><code>eplusr::EplusGroupJob$locate_output()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="output_dir"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-output_dir'><code>eplusr::EplusGroupJob$output_dir()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="read_table"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-read_table'><code>eplusr::EplusGroupJob$read_table()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-report_data'><code>eplusr::EplusGroupJob$report_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="report_data_dict"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-report_data_dict'><code>eplusr::EplusGroupJob$report_data_dict()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-status'><code>eplusr::EplusGroupJob$status()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-tabular_data'><code>eplusr::EplusGroupJob$tabular_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="cases"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-cases'><code>eplusr::ParametricJob$cases()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="print"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-print'><code>eplusr::ParametricJob$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-run'><code>eplusr::ParametricJob$run()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-save'><code>eplusr::ParametricJob$save()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="seed"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-seed'><code>eplusr::ParametricJob$seed()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="version"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-version'><code>eplusr::ParametricJob$version()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="weather"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-weather'><code>eplusr::ParametricJob$weather()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-new"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-new}{}}}
 \subsection{Method \code{new()}}{
 Create a \code{BayesCalibJob} object
 \subsection{Usage}{
@@ -533,8 +521,8 @@ if (eplusr::is_avail_eplus(8.8)) {
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_rdd"></a>}}
-\if{latex}{\out{\hypertarget{method-read_rdd}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-read_rdd"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-read_rdd}{}}}
 \subsection{Method \code{read_rdd()}}{
 Read EnergyPlus Report Data Dictionary (RDD) file
 \subsection{Usage}{
@@ -559,13 +547,8 @@ returned whenever you call \verb{$read_rdd()} again. You can force to
 rerun the design-day-only simulation again to update the contents by
 setting \code{update} to \code{TRUE}.
 
-\verb{$read_rdd()} and
-\href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}}
-are useful when adding input and output parameters using
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
-respectively.
+\verb{$read_rdd()} and \verb{$read_mdd()} are useful when adding input and
+output parameters using \verb{$input()} and \verb{$output()}, respectively.
 }
 
 \subsection{Returns}{
@@ -587,8 +570,8 @@ bc$read_rdd(update = TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_mdd"></a>}}
-\if{latex}{\out{\hypertarget{method-read_mdd}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-read_mdd"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-read_mdd}{}}}
 \subsection{Method \code{read_mdd()}}{
 Read EnergyPlus Meter Data Dictionary (MDD) file
 \subsection{Usage}{
@@ -613,14 +596,8 @@ returned whenever you call \verb{$read_mdd()} again. You can force to
 rerun the design-day-only simulation again to update the contents by
 setting \code{update} to \code{TRUE}.
 
-\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
-and
-\code{read_mdd()}
-are useful when adding input and output parameters using
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
-respectively.
+\verb{$read_rdd()} and \verb{$read_mdd()} are useful when adding input and
+output parameters using \verb{$input()} and \verb{$output()}, respectively.
 }
 
 \subsection{Returns}{
@@ -642,8 +619,8 @@ bc$read_mdd(update = TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-input"></a>}}
-\if{latex}{\out{\hypertarget{method-input}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-input"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-input}{}}}
 \subsection{Method \code{input()}}{
 Set input parameters
 \subsection{Usage}{
@@ -703,16 +680,19 @@ You can remove all existing input parameters by setting \code{append} to
 \itemize{
 \item A character vector.
 \item An \link[eplusr:rdd]{RddFile} object. It can be retrieved using
-\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}.
-In this case, \code{name} argument will be ignored, as its values are
-directly taken from variable names in input
-\link[eplusr:rdd]{RddFile} object. For example:\preformatted{bc$input(bc$read_rdd()[1:5])
-}
+\verb{$read_rdd()}. In this case, \code{name} argument will be ignored, as
+its values are directly taken from variable names in input
+\link[eplusr:rdd]{RddFile} object. For example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bc$input(bc$read_rdd()[1:5])
+}\if{html}{\out{</div>}}
 \item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
 \code{Output:Meter} objects using \link[eplusr:Idf]{eplusr::Idf$load()}. In
 this case, \code{name} argument will be ignored. For example:
-}\preformatted{bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
 }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bc$input(eplusr::rdd_to_load(bc$read_rdd()[1:5]))
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
@@ -741,8 +721,8 @@ bc$input()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-output"></a>}}
-\if{latex}{\out{\hypertarget{method-output}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-output"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-output}{}}}
 \subsection{Method \code{output()}}{
 Set output parameters
 \subsection{Usage}{
@@ -781,8 +761,7 @@ all existing parameters. Default: \code{FALSE}.}
 similar pattern as you set output variables in \code{Output:Variable} and
 \code{Output:Meter} class and returns a \code{\link[data.table:data.table]{data.table::data.table()}}
 containing the information of output parameters. Unlike
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}
-both variables in \link[eplusr:rdd]{RDD} and
+\verb{$input()} both variables in \link[eplusr:rdd]{RDD} and
 \link[eplusr:rdd]{MDD} are allowd. The returned data.table has 5
 columns:
 \itemize{
@@ -805,19 +784,20 @@ e.g. \code{bc$output(append = NULL)}.
 \item A character vector.
 \item An \link[eplusr:rdd]{RddFile} object or an
 \link[eplusr:rdd]{MddFile} object. They can be retrieved using
-\href{../../epluspar/html/BayesCalibJob.html#method-read_rdd}{\code{$read_rdd()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-read_mdd}{\code{$read_mdd()}},
-respectively.  In this case, \code{name} argument will be ignored, as
-its values are directly taken from variable names in input
-\link[eplusr:rdd]{RddFile} object or
-\link[eplusr:rdd]{MddFile} object. For example:\preformatted{bc$output(bc$read_mdd()[1:5])
-}
+\verb{$read_rdd()} and \verb{$read_mdd()}, respectively.  In this case,
+\code{name} argument will be ignored, as its values are directly taken
+from variable names in input \link[eplusr:rdd]{RddFile} object
+or \link[eplusr:rdd]{MddFile} object. For example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bc$output(bc$read_mdd()[1:5])
+}\if{html}{\out{</div>}}
 \item A \code{\link[=data.frame]{data.frame()}} with valid format for adding \code{Output:Variable} and
 \code{Output:Meter} objects using \link[eplusr:Idf]{Idf$load()}. In this
 case, \code{name} argument will be ignored. For example:
-}\preformatted{bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
 }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bc$output(eplusr::mdd_to_load(bc$read_mdd()[1:5]))
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
@@ -847,8 +827,8 @@ bc$output()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-param"></a>}}
-\if{latex}{\out{\hypertarget{method-param}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-param"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-param}{}}}
 \subsection{Method \code{param()}}{
 Set parameters for Bayesian calibration
 \subsection{Usage}{
@@ -909,12 +889,14 @@ minimum and maximum being 0.1 and 0.6, respectively.
 \item Field \verb{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2}
 in class \code{Lights}, with minimum and maximum being 10 and 30,
 respectively.
-}\preformatted{bc$param(
+}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{bc$param(
     `Supply Fan 1` = list(Fan_Total_Efficiency = c(min = 0.1, max = 1.0)),
     Material := list(Thickness = c(0.01, 1), Conductivity = c(0.1, 0.6)),
    .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = c(10, 30))
 )
-}
+}\if{html}{\out{</div>}}
 
 All models created using \verb{$param()} will be named in the same
 pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
@@ -944,8 +926,8 @@ bc$param(
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-apply_measure"></a>}}
-\if{latex}{\out{\hypertarget{method-apply_measure}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-apply_measure"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
 Set parameters for Bayesian calibration using function
 \subsection{Usage}{
@@ -982,8 +964,9 @@ modified \link[eplusr:Idf]{eplusr::Idf} object as output.
 The names of function parameter will be used as the names of
 calibration parameter. For example, the equivalent version of
 specifying parameters described in
-\href{../../epluspar/html/SensitivityJob.html#method-param}{\code{$param()}}
-using \verb{$apply_measure()} can be:\preformatted{# set calibration parameters using $apply_measure()
+\verb{$param()} using \verb{$apply_measure()} can be:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{# set calibration parameters using $apply_measure()
 # (a) first define a "measure"
 measure <- function (idf, efficiency, thickness, conducitivy, lpd) \{
     idf$set(
@@ -1002,7 +985,7 @@ bc$apply_measure(measure,
     thickness = c(0.01, 1), conductivity = c(0.1, 0.6),
     lpd = c(10, 30)
 )
-}
+}\if{html}{\out{</div>}}
 
 All models created using \verb{$apply_measure()} will be named in the same
 pattern, i.e. \verb{Case_ParameterName(ParamterValue)...}. Note that only
@@ -1046,8 +1029,8 @@ bc$apply_measure(measure,
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-samples"></a>}}
-\if{latex}{\out{\hypertarget{method-samples}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-samples"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-samples}{}}}
 \subsection{Method \code{samples()}}{
 Get sampled parameter values
 \subsection{Usage}{
@@ -1062,16 +1045,12 @@ parameter number, and \code{1} indicates an extra column named \code{case}
 giving the index of each sample.
 
 Note that if \verb{$samples()} is called before input and output
-parameters being set using
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}},
-only the sampling will be performed and no parametric models will be
-created.  This is because information of input and output parameters
-are needed in order to make sure that corresponding variables will be
-reported during simulations. In this case, you can use
-\href{../../epluspar/html/BayesCalibJob.html#method-models}{\code{$models()}},
-to create those models.
+parameters being set using \verb{$input()} and \verb{$output()}, only the
+sampling will be performed and no parametric models will be created.
+This is because information of input and output parameters are needed
+in order to make sure that corresponding variables will be reported
+during simulations. In this case, you can use \verb{$models()}, to create
+those models.
 }
 
 \subsection{Returns}{
@@ -1090,8 +1069,8 @@ bc$samples()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-models"></a>}}
-\if{latex}{\out{\hypertarget{method-models}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-models"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-models}{}}}
 \subsection{Method \code{models()}}{
 Get parametric models
 \subsection{Usage}{
@@ -1103,14 +1082,8 @@ Get parametric models
 created using calibration parameter values genereated using Random
 Latin Hypercube Sampling. As stated above, parametric models can only
 be created after input, output and calibration parameters have all be
-set using
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}},
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}
-and
-\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}
-(or
-\href{../../epluspar/html/BayesCalibJob.html#method-apply_measure}{\code{$apply_measure()}}
-), respectively.
+set using \verb{$input()}, \verb{$output()} and \verb{$param()}
+(or \verb{$apply_measure()}), respectively.
 
 All models will be named in the same pattern, i.e.
 \verb{Case_ParameterName(ParamterValue)...}. Note that paramter names will
@@ -1134,8 +1107,8 @@ bc$models()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-data_sim"></a>}}
-\if{latex}{\out{\hypertarget{method-data_sim}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-data_sim"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-data_sim}{}}}
 \subsection{Method \code{data_sim()}}{
 Collect simulation data
 \subsection{Usage}{
@@ -1215,8 +1188,8 @@ bc$data_sim()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-data_field"></a>}}
-\if{latex}{\out{\hypertarget{method-data_field}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-data_field"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-data_field}{}}}
 \subsection{Method \code{data_field()}}{
 Specify field measured data
 \subsection{Usage}{
@@ -1231,14 +1204,11 @@ parameters.}
 
 \item{\code{new_input}}{A \code{\link[=data.frame]{data.frame()}} containing newly measured value of
 input parameters used for prediction. If \code{NULL}, values of the
-first case in
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
-will be used.}
+first case in \verb{$data_sim()} will be used.}
 
 \item{\code{all}}{If \code{TRUE}, extra columns are also included in the returned
 \code{\link[data.table:data.table]{data.table::data.table()}} describing the simulation case and
-datetime components. For details, please see
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+datetime components. For details, please see \verb{$data_sim()}.
 Default: \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
@@ -1253,11 +1223,9 @@ The specified \code{output} \code{\link[=data.frame]{data.frame()}} is validated
 below:
 \itemize{
 \item The column number should be the same as the number of output
-specified in
-\href{../../epluspar/html/BayesCalibJob.html#method-output}{\code{$output()}}.
+specified in \verb{$output()}.
 \item The row number should be the same as the number of simulated values
-for each case extracted using
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+for each case extracted using \verb{$data_sim()}.
 }
 
 For input parameters, the values of simulation data for the first
@@ -1266,24 +1234,15 @@ case are directly used as the measured values.
 Parameter \code{new_input} can be used to give a \code{\link[=data.frame]{data.frame()}} of newly
 measured value of input parameters. The column number of input
 \code{\link[=data.frame]{data.frame()}} should be the same as the number of input parameters
-specified in
-\href{../../epluspar/html/BayesCalibJob.html#method-input}{\code{$input()}}.
-If not specified, the measured values of
+specified in \verb{$input()}. If not specified, the measured values of
 input parameters will be used for predictions.
 
 All the data will be stored internally and used during Bayesian
 calibration using Stan.
 
-Note that as \verb{$data_field()} relies on the output of
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
-to
+Note that as \verb{$data_field()} relies on the output of \verb{$data_sim()} to
 perform validation on the specified data, \verb{$data_field()} cannot be
-called before
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
-and internally stored data will be
-removed whenever
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
-is called. This aims to make sure that
+called before \verb{$data_sim()} is called. This aims to make sure that
 simulated data and field data can be matched whenever the calibration
 is performed.
 }
@@ -1292,20 +1251,18 @@ is performed.
 A list of 3 elements:
 \itemize{
 \item \code{input}: a \code{\link[data.table:data.table]{data.table::data.table()}} which is basically the input
-variable values of the first case in
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+variable values of the first case in \verb{$data_sim()}.
 \item \code{output}: a \code{\link[data.table:data.table]{data.table::data.table()}} of output variable values.
 \item \code{new_output}: \code{NULL} or a \code{\link[data.table:data.table]{data.table::data.table()}} of newly
 measured input variable values.
 }
 
-For details on the meaning of each columns, see
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
+For details on the meaning of each columns, see \verb{$data_sim()}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-data_bc"></a>}}
-\if{latex}{\out{\hypertarget{method-data_bc}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-data_bc"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-data_bc}{}}}
 \subsection{Method \code{data_bc()}}{
 Combine simulation data and field measured data
 \subsection{Usage}{
@@ -1317,17 +1274,12 @@ Combine simulation data and field measured data
 \describe{
 \item{\code{data_field}}{A \code{\link[=data.frame]{data.frame()}} specifying field measured data.
 Should have the same structure as the output from
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}.
-If \code{NULL}, the output from
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+\verb{$data_field()}. If \code{NULL}, the output from \verb{$data_field()}
 will be used. Default: \code{NULL}.}
 
 \item{\code{data_sim}}{A \code{\link[=data.frame]{data.frame()}} specifying field measured data.
-Should have the same structure as the output from
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}.
-If \code{NULL}, the output from
-\href{../../epluspar/html/BayesCalibJob.html#method-data_sim}{\code{$data_sim()}}
-will be used. Default: \code{NULL}.}
+Should have the same structure as the output from \verb{$data_sim() }. If \code{NULL}, the output from \verb{$data_sim()} will be used.
+Default: \code{NULL}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1373,8 +1325,8 @@ bc$data_bc()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_run"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_run}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_run"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_run}{}}}
 \subsection{Method \code{eplus_run()}}{
 Run parametric simulations
 \subsection{Usage}{
@@ -1465,8 +1417,8 @@ bc$eplus_run(copy_external = TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_kill"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_kill}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_kill"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_kill}{}}}
 \subsection{Method \code{eplus_kill()}}{
 Kill current running EnergyPlus simulations
 \subsection{Usage}{
@@ -1495,8 +1447,8 @@ bc$eplus_kill()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_status"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_status}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_status"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_status}{}}}
 \subsection{Method \code{eplus_status()}}{
 Get the EnergyPlus simulation status
 \subsection{Usage}{
@@ -1517,7 +1469,7 @@ there is any simulation failed. \code{NA} if the job has not been run yet.
 \item \code{changed_after}: \code{TRUE} if the \emph{seed model} has been modified since last
 simulation. \code{FALSE} otherwise.
 \item \code{job_status}: A \code{\link[data.table:data.table]{data.table::data.table()}} contains meta data
-for each simulation job. For details, please see \code{\link[=run_multi]{run_multi()}}. If the
+for each simulation job. For details, please see \code{\link[eplusr:run_model]{eplusr::run_multi()}}. If the
 job has not been run before, a \code{\link[data.table:data.table]{data.table::data.table()}}
 with 4 columns is returned:
 \itemize{
@@ -1547,8 +1499,8 @@ bc$eplus_status()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_output_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_output_dir}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_output_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_output_dir}{}}}
 \subsection{Method \code{eplus_output_dir()}}{
 Get EnergyPlus simulation output directory
 \subsection{Usage}{
@@ -1589,8 +1541,8 @@ bc$eplus_output_dir(c(1, 4))
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_locate_output"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_locate_output}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_locate_output"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_locate_output}{}}}
 \subsection{Method \code{eplus_locate_output()}}{
 Get paths of EnergyPlus output file
 \subsection{Usage}{
@@ -1638,8 +1590,8 @@ bc$eplus_locate_output(c(1, 4), ".expidf", strict = TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_errors"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_errors}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_errors"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_errors}{}}}
 \subsection{Method \code{eplus_errors()}}{
 Read EnergyPlus simulation errors
 \subsection{Usage}{
@@ -1683,8 +1635,8 @@ bc$errors(info = TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_report_data_dict"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_report_data_dict}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_report_data_dict"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_report_data_dict}{}}}
 \subsection{Method \code{eplus_report_data_dict()}}{
 Read report data dictionary from EnergyPlus SQL outputs
 \subsection{Usage}{
@@ -1742,8 +1694,8 @@ bc$eplus_report_data_dict(c(1, 4))
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_report_data"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_report_data}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_report_data"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_report_data}{}}}
 \subsection{Method \code{eplus_report_data()}}{
 Read EnergyPlus report data
 \subsection{Usage}{
@@ -1780,15 +1732,13 @@ data. If \code{NULL}, all keys of that variable will be returned.
 and \code{name} columns. In this case, \code{name} argument in
 \verb{$eplus_report_data()} is ignored. All available \code{key_value} for
 current simulation output can be obtained using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
-Default: \code{NULL}.}
+\verb{$eplus_report_data_dict()}. Default: \code{NULL}.}
 
 \item{\code{name}}{A character vector to identify names of the data. If
 \code{NULL}, all names of that variable will be returned. If
 \code{key_value} is a data.frame, \code{name} is ignored. All available
 \code{name} for current simulation output can be obtained using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
-Default: \code{NULL}.}
+\verb{$eplus_report_data_dict()}. Default: \code{NULL}.}
 
 \item{\code{year}}{Year of the date time in column \code{datetime}. If \code{NULL}, it
 will calculate a year value that meets the start day of week
@@ -1814,8 +1764,7 @@ day, hour, minute subsetting of \code{datetime} column when
 querying on the SQL database. If \code{NULL}, no subsetting is
 performed on those components. All possible \code{month}, \code{day},
 \code{hour} and \code{minute} can be obtained using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
-Default: \code{NULL}.}
+\verb{$eplus_report_data_dict()}. Default: \code{NULL}.}
 
 \item{\code{interval}}{An integer vector used to specify which interval
 length of report to extract. If \code{NULL}, all interval will be
@@ -1825,23 +1774,24 @@ used. Default: \code{NULL}.}
 day data to extract. Note that this number resets after warmup
 and at the beginning of an environment period. All possible
 \code{simulation_days} can be obtained using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.
-If \code{NULL}, all simulation days will be used. Default: \code{NULL}.}
+\verb{$eplus_report_data_dict()}. If \code{NULL}, all simulation days
+will be used. Default: \code{NULL}.}
 
 \item{\code{day_type}}{A character vector to specify which day type of data
 to extract. All possible day types are: \code{Sunday}, \code{Monday},
 \code{Tuesday}, \code{Wednesday}, \code{Thursday}, \code{Friday}, \code{Saturday},
 \code{Holiday}, \code{SummerDesignDay}, \code{WinterDesignDay}, \code{CustomDay1},
 and \code{CustomDay2}. All possible values for current simulation
-output can be obtained using
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}.}
+output can be obtained using \verb{$eplus_report_data_dict()}.}
 
 \item{\code{environment_name}}{A character vector to specify which
 environment data to extract. If \code{NULL}, all environment data
 are returned. Default: \code{NULL}. All possible
 \code{environment_name} for current simulation output can be
-obtained using:\preformatted{$read_table(NULL, "EnvironmentPeriods")
-}}
+obtained using:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{$read_table(NULL, "EnvironmentPeriods")
+}\if{html}{\out{</div>}}}
 
 \item{\code{case}}{If not \code{NULL}, a character column will be added indicates
 the case of this simulation. If \code{"auto"}, the name of the IDF
@@ -1855,8 +1805,7 @@ file without extension is used.}
 specifications.
 
 \verb{$eplus_report_data()} can also directly take all or subset output from
-\href{../../epluspar/html/BayesCalibJob.html#method-eplus_report_data_dict}{\code{$eplus_report_data_dict()}}
-as input, and extract all data specified.
+\verb{$eplus_report_data_dict()} as input, and extract all data specified.
 
 The returned column numbers varies depending on \code{all} argument.
 \itemize{
@@ -1971,8 +1920,8 @@ bc$report_data(c(1, 4), dict[1], hour = 8:18, day_type = "monday", simulation_da
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_tabular_data"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_tabular_data}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_tabular_data"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_tabular_data}{}}}
 \subsection{Method \code{eplus_tabular_data()}}{
 Read EnergyPlus tabular data
 \subsection{Usage}{
@@ -2047,8 +1996,8 @@ str(bc$eplus_tabular_data(c(1, 4),
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-eplus_save"></a>}}
-\if{latex}{\out{\hypertarget{method-eplus_save}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-eplus_save"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-eplus_save}{}}}
 \subsection{Method \code{eplus_save()}}{
 Save EnergyPlus parametric models
 \subsection{Usage}{
@@ -2106,8 +2055,8 @@ bc$save(tempdir(), separate = FALSE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-stan_run"></a>}}
-\if{latex}{\out{\hypertarget{method-stan_run}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-stan_run"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-stan_run}{}}}
 \subsection{Method \code{stan_run()}}{
 Run Bayesian calibration using Stan
 \subsection{Usage}{
@@ -2141,10 +2090,8 @@ for each chain (including warmup). Default: \code{2000}.}
 \item{\code{chains}}{A positive integer specifying the number of Markov
 chains. Default: \code{4}.}
 
-\item{\code{echo}}{Only applicable when \code{file} is NULL. Whether to print the
-summary of Informational Messages to the screen after a chain
-is finished or a character string naming a path where the
-summary is stored. Default: \code{TRUE}.}
+\item{\code{echo}}{Whether to print the summary of informational messages to
+the screen after a chain is finished. Default: \code{TRUE}.}
 
 \item{\code{mc.cores}}{An integer specifying how many cores to be used for
 Stan. Default: \code{parallel::detectCores()}.}
@@ -2153,28 +2100,25 @@ Stan. Default: \code{parallel::detectCores()}.}
 \code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
 
 \item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
-and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
-all predicted values put in columns with a \verb{\\\[prediction\\\]}
-prefix. If \code{FALSE}, similar like above, but combine rows of
-field measured output and predicted output together, with a
-new column \code{type} added giving \code{field} indicating field
-measured output and \code{prediction} indicating predicted output.
-Default: \code{TRUE}.}
+\verb{$data_field()}, and predicted output into one
+\code{\link[data.table:data.table]{data.table::data.table()}} with all predicted values put in
+columns with a \verb{\\\[prediction\\\]} prefix. If \code{FALSE}, similar
+like above, but combine rows of field measured output and
+predicted output together, with a new column \code{type} added
+giving \code{field} indicating field measured output and
+\code{prediction} indicating predicted output. Default: \code{TRUE}.}
 
-\item{\code{...}}{Additional arguments to pass to \link[rstan:stanmodel-method-sampling]{rstan::sampling} (when
-\code{file} is \code{NULL}) or \link[rstan:stan]{rstan::stan} (when \code{file} is not
-\code{NULL}).}
+\item{\code{...}}{Additional arguments to pass to
+\link[cmdstanr:model-method-sample]{cmdstanr::sample()}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-\verb{$stan_run()} runs Bayesian calibration using \link[rstan:stan]{Stan} and
+\verb{$stan_run()} runs Bayesian calibration using \link[cmdstanr:cmdstanr-package]{cmdstanr} and
 returns a list of 2 elements:
 \itemize{
-\item \code{fit}: An object of S4 class \link[rstan:stanfit-class]{rstan::stanfit}.
-\item \code{y_pred}: The output of
-\href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
+\item \code{fit}: An object of class \link[cmdstanr:CmdStanMCMC]{CmdStanMCMC}.
+\item \code{y_pred}: The output of \verb{$prediction()}.
 }
 }
 
@@ -2194,8 +2138,8 @@ bc$stan_run()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-stan_file"></a>}}
-\if{latex}{\out{\hypertarget{method-stan_file}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-stan_file"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-stan_file}{}}}
 \subsection{Method \code{stan_file()}}{
 Extract Stan file for Bayesian calibration
 \subsection{Usage}{
@@ -2230,8 +2174,8 @@ bc$stan_file()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-post_dist"></a>}}
-\if{latex}{\out{\hypertarget{method-post_dist}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-post_dist"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-post_dist}{}}}
 \subsection{Method \code{post_dist()}}{
 Extract posterior distributions of calibrated parameters
 \subsection{Usage}{
@@ -2240,12 +2184,9 @@ Extract posterior distributions of calibrated parameters
 
 \subsection{Details}{
 \verb{$post_dist()} extracted calibrated parameter posterior distributions
-based on the results of
-\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
-and returns a \code{\link[data.table:data.table]{data.table::data.table()}} with each parameter values
-filling one column. The parameter names are defined by the \code{.names}
-arguments in the
-\href{../../epluspar/html/BayesCalibJob.html#method-param}{\code{$param()}}.
+based on the results of \verb{$stan_run()} and returns a \code{\link[data.table:data.table]{data.table::data.table()}}
+with each parameter values filling one column. The parameter names
+are defined by the \code{.names} arguments in the \verb{$param()}.
 }
 
 \subsection{Returns}{
@@ -2264,8 +2205,8 @@ bc$post_dist()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prediction"></a>}}
-\if{latex}{\out{\hypertarget{method-prediction}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-prediction"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-prediction}{}}}
 \subsection{Method \code{prediction()}}{
 Extract predictions of output variables
 \subsection{Usage}{
@@ -2279,29 +2220,26 @@ Extract predictions of output variables
 \code{type} and \code{Date/Time} will be returned. Default: \code{FALSE}.}
 
 \item{\code{merge}}{If \code{TRUE}, \code{y_pred} in returned list will merge all
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}},
-and predicted output into one \code{\link[data.table:data.table]{data.table::data.table()}} with
-all predicted values put in columns with a \verb{\\\[prediction\\\]}
-prefix. If \code{FALSE}, similar like above, but combine rows of
-field measured output and predicted output together, with a
-new column \code{type} added giving \code{field} indicating field
-measured output and \code{prediction} indicating predicted output.
-Default: \code{TRUE}.}
+\verb{$data_field()}, and predicted output into one
+\code{\link[data.table:data.table]{data.table::data.table()}} with all predicted values put in
+columns with a \verb{\\\[prediction\\\]} prefix. If \code{FALSE}, similar
+like above, but combine rows of field measured output and
+predicted output together, with a new column \code{type} added
+giving \code{field} indicating field measured output and
+\code{prediction} indicating predicted output. Default: \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
 \verb{$prediction()} calculates predicted output variable values based
-on the results of
-\href{../../epluspar/html/BayesCalibJob.html#method-stan_run}{\code{$stan_run()}}
+on the results of \verb{$stan_run()}
 and returns a \code{\link[data.table:data.table]{data.table::data.table()}} which combines the output of
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
-and predicted output values.
+\verb{$data_field()} and predicted output values.
 
 Possible returned meta data columns:
 \itemize{
 \item \code{index}: Integer type. Row indices of field input data in
-\href{../../epluspar/html/BayesCalibJob.html#method-data_field}{\code{$data_field()}}
+\verb{$data_field()}
 \item \code{sample}: Integer type. Sample indices of the MCMC.
 \item \code{type}: Character type. Only exists when \code{merge} is \code{FALSE}. The
 type of output values. \code{field} indicates field measured output
@@ -2342,8 +2280,8 @@ bc$prediction()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-evaluate"></a>}}
-\if{latex}{\out{\hypertarget{method-evaluate}{}}}
+\if{html}{\out{<a id="method-BayesCalibJob-evaluate"></a>}}
+\if{latex}{\out{\hypertarget{method-BayesCalibJob-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
 Calculate statistical indicators of output variable predictions
 \subsection{Usage}{
@@ -2361,9 +2299,8 @@ argument.  Default: \code{list(cvrmse, nmbe)}.}
 }
 \subsection{Details}{
 \verb{$evalute()} quantify the uncertainty of output variable predictions
-from each MCMC sample gathered from
-\href{../../epluspar/html/BayesCalibJob.html#method-prediction}{\code{$prediction()}}
-by calculating the statistical indicators.
+from each MCMC sample gathered from \verb{$prediction()} by calculating
+the statistical indicators.
 
 The default behavior is to evaluate the principal uncertainty indices
 used in ASHRAE Guideline 14 are Normalized Mean Bias Error (NMBE) and
