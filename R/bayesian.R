@@ -1796,6 +1796,7 @@ bc_param <- function(super, self, private, ..., .names = NULL, .num_sim = 30L, .
     private$log_new_uuid()
     private$log_idf_uuid()
     private$m_log$unsaved <- rep(TRUE, length(idfs))
+    private$m_log$simple <- TRUE
 
     self
 }
