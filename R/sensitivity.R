@@ -15,24 +15,16 @@ NULL
 #'
 #' The basic workflow is basically:
 #'
-#' 1. Adding parameters for sensitivity analysis  using
-#'    \href{../../epluspar/html/SensitivityJob#method-param}{\code{$param()}}
-#'    or
-#'    \href{../../epluspar/html/SensitivityJob#method-apply_measure}{\code{$apply_measure()}}.
+#' 1. Adding parameters for sensitivity analysis using
+#'    `$param()` or `$apply_measure()`.
 #' 1. Check parameter sampled values and generated parametric models using
-#'    \href{../../epluspar/html/SensitivityJob#method-samples}{\code{$samples()}}
-#'    and
-#'    \href{../../epluspar/html/SensitivityJob#method-models}{\code{$models()}},
-#'    respectively.
-#' 1. Run EnergyPlus simulations in parallel using
-#'    \href{../../epluspar/html/SensitivityJob#method-run}{\code{$run()}},
+#'    `$samples()` and `$models()`, respectively.
+#' 1. Run EnergyPlus simulations in parallel using `$run()`.
 #' 1. Gather EnergyPlus simulated data using
 #'    [$report_data()][eplusr::EplusGroupJob] or
 #'    [$tabular_data()][eplusr::EplusGroupJob].
-#' 1. Evaluate parameter sensitivity using
-#'    \href{../../epluspar/html/SensitivityJob#method-evaluate}{\code{$evaluate()}}.
+#' 1. Evaluate parameter sensitivity using `$evaluate()`.
 #'
-#' @docType class
 #' @name SensitivityJob
 #' @author Hongyuan Jia
 NULL
@@ -62,7 +54,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #'   valid object ID or name. Note object ID should be denoted with two
         #'   periods `..`, e.g. `..10` indicates the object with ID `10`, It
         #'   will set that specific field in that object as one parameter.
-        #' * `.(object, object) := list(field = c(min, max, levels))`: Simimar
+        #' * `.(object, object) := list(field = c(min, max, levels))`: Similar
         #'   like above, but note the use of `.()` in the left hand side. You
         #'   can put multiple object ID or names in `.()`. It will set the field
         #'   of all specified objects as one parameter.
@@ -89,7 +81,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' )
         #' ```
         #'
-        #' @param ... Lists of paramter definitions. Please see above on the
+        #' @param ... Lists of parameter definitions. Please see above on the
         #'        syntax.
         #' @param .names A character vector of the parameter names. If `NULL`,
         #'        the parameter will be named in format `theta + number`, where
@@ -116,8 +108,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' )
         #' }
         #'
-        param = function (..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
-            sen_param(self, private, ..., .r = .r, .grid_jump = .grid_jump, .names = .names),
+        param = function(..., .names = NULL, .r = 12L, .grid_jump = 4L, .scale = TRUE)
+            sen__param(self, private, ..., .r = .r, .grid_jump = .grid_jump, .names = .names),
         # }}}
 
         # apply_measure {{{
@@ -138,7 +130,7 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' The names of function parameter will be used as the names of
         #' sensitivity parameter. For example, the equivalent version of
         #' specifying parameters described in
-        #' \href{../../epluspar/html/SensitivityJob.html#method-param}{\code{$param()}}
+        #' `$param()`
         #' using `$apply_measure()` can be:
         #'
         #' ```
@@ -198,8 +190,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' )
         #' }
         #'
-        apply_measure = function (measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
-            sen_apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump),
+        apply_measure = function(measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE)
+            sen__apply_measure(self, private, measure, ..., .r = .r, .grid_jump = .grid_jump),
         # }}}
 
         # samples {{{
@@ -220,8 +212,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' sensi$samples()
         #' }
         #'
-        samples = function ()
-            sen_samples(self, private),
+        samples = function()
+            sen__samples(self, private),
         # }}}
 
         # evaluate {{{
@@ -268,8 +260,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' plot(result)
         #' }
         #'
-        evaluate = function (results)
-            sen_evaluate(self, private, results),
+        evaluate = function(results)
+            sen__evaluate(self, private, results),
         # }}}
 
         # print {{{
@@ -292,8 +284,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
         #' sen$print()
         #' }
         #'
-        print = function ()
-            sen_print(self, private)
+        print = function()
+            sen__print(self, private)
         # }}}
         # }}}
     ),
@@ -323,8 +315,8 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
 #'     idf_name <- "1ZoneUncontrolled.idf"
 #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 #'
-#'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
-#'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+#'     idf_path <- eplusr::path_eplus_example(8.8, idf_name)
+#'     epw_path <- eplusr::path_eplus_weather(8.8, epw_name)
 #'
 #'     # create from local files
 #'     sensi_job(idf_path, epw_path)
@@ -337,13 +329,13 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
 #' @author Hongyuan Jia
 #' @export
 # sensi_job{{{
-sensi_job <- function (idf, epw) {
+sensi_job <- function(idf, epw) {
     SensitivityJob$new(idf, epw)
 }
 # }}}
 
-# sen_param {{{
-sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump = 4L,
+# sen__param {{{
+sen__param <- function(self, private, ..., .names = NULL, .r = 12L, .grid_jump = 4L,
                        .scale = TRUE, .env = parent.frame()) {
     checkmate::assert_count(.r, positive = TRUE)
     checkmate::assert_count(.grid_jump, positive = TRUE)
@@ -380,8 +372,8 @@ sen_param <- function (self, private, ..., .names = NULL, .r = 12L, .grid_jump =
     self
 }
 # }}}
-# sen_apply_measure {{{
-sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE) {
+# sen__apply_measure {{{
+sen__apply_measure <- function(self, private, measure, ..., .r = 12L, .grid_jump = 4L, .scale = TRUE) {
     l <- match_param_measure(measure, ..., .specs_len = 3L, .env = parent.frame())
 
     # use sensitivity::morris to generate input
@@ -413,14 +405,14 @@ sen_apply_measure <- function (self, private, measure, ..., .r = 12L, .grid_jump
     self
 }
 # }}}
-# sen_samples {{{
-sen_samples <- function (self, private) {
+# sen__samples {{{
+sen__samples <- function(self, private) {
     sen_assert_has_sampled(self, private)
     private$m_sample
 }
 # }}}
-# sen_evaluate {{{
-sen_evaluate <- function (self, private, results) {
+# sen__evaluate {{{
+sen__evaluate <- function(self, private, results) {
     sen_assert_can_evaluate(self, private)
 
     if (!is.data.frame(results)) {
@@ -443,9 +435,9 @@ sen_evaluate <- function (self, private, results) {
     private$m_morris
 }
 # }}}
-# sen_print {{{
+# sen__print {{{
 #' @importFrom cli cat_line
-sen_print <- function (self, private) {
+sen__print <- function(self, private) {
     eplusr:::print_job_header(title = "EnergPlus Sensitivity Analysis Job",
         path_idf = private$m_seed$path(),
         path_epw = private$m_epws_path,
@@ -472,7 +464,7 @@ sen_print <- function (self, private) {
 # }}}
 
 # sen_assert_has_sampled {{{
-sen_assert_has_sampled <- function (self, private, stop = FALSE) {
+sen_assert_has_sampled <- function(self, private, stop = FALSE) {
     if (is.null(private$m_morris)) {
         if (stop) {
             abort(paste0("No sensitivity samples are generated. ",
@@ -491,9 +483,9 @@ sen_assert_has_sampled <- function (self, private, stop = FALSE) {
 }
 # }}}
 # sen_assert_can_evaluate {{{
-sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
+sen_assert_can_evaluate <- function(self, private, stop = FALSE) {
     if (stop) {
-        fun <- function (...) abort(paste0(...), "sa_not_ready")
+        fun <- function(...) abort(paste0(...), "sa_not_ready")
     } else {
         fun <- message
     }
@@ -513,11 +505,11 @@ sen_assert_can_evaluate <- function (self, private, stop = FALSE) {
 # }}}
 
 # morris_data {{{
-morris_data <- function (morris) {
+morris_data <- function(morris) {
     stopifnot(inherits(morris, "morris"))
 
     mu <- apply(morris$ee, 2, mean)
-    mu.star <- apply(morris$ee, 2, function(x) mean(abs(x)))
+    mu.star <- apply(morris$ee, 2, function(x)mean(abs(x)))
     sigma <- apply(morris$ee, 2, sd)
 
     data.table::data.table(
@@ -527,7 +519,7 @@ morris_data <- function (morris) {
 }
 # }}}
 # expand_param_specs {{{
-expand_param_specs <- function (idf, ..., .env = parent.frame(), .names = NULL, .specs_len = 2L) {
+expand_param_specs <- function(idf, ..., .env = parent.frame(), .names = NULL, .specs_len = 2L) {
     l <- eplusr::expand_idf_dots_value(
         get_priv_env(idf)$idd_env(), get_priv_env(idf)$idf_env(), ...,
         .type = "object", .complete = FALSE, .unique = TRUE, .empty = FALSE,
@@ -585,7 +577,7 @@ expand_param_specs <- function (idf, ..., .env = parent.frame(), .names = NULL, 
 }
 # }}}
 # sen_param_specs {{{
-sen_param_specs <- function (value_num, index) {
+sen_param_specs <- function(value_num, index) {
     if (!is.null(nm <- names(value_num))) {
         nm_valid <- nm[nm != ""]
 
@@ -622,7 +614,7 @@ sen_param_specs <- function (value_num, index) {
 }
 # }}}
 # match_param_measure {{{
-match_param_measure <- function (measure, ..., .specs_len = 2L, .env = parent.frame()) {
+match_param_measure <- function(measure, ..., .specs_len = 2L, .env = parent.frame()) {
     checkmate::assert_function(measure)
     # measure name
     mea_nm <- deparse(substitute(measure, .env))
@@ -659,7 +651,7 @@ match_param_measure <- function (measure, ..., .specs_len = 2L, .env = parent.fr
 }
 # }}}
 # create_par_models {{{
-create_par_models <- function (idf, param, samples, matched = NULL, measure = NULL, name = TRUE) {
+create_par_models <- function(idf, param, samples, matched = NULL, measure = NULL, name = TRUE) {
     if (is.null(measure)) {
         # create param models
         m <- melt.data.table(samples, id.vars = "case", variable.name = "param_name", variable.factor = FALSE)
@@ -671,13 +663,13 @@ create_par_models <- function (idf, param, samples, matched = NULL, measure = NU
             case, id = object_id, class = class_name, index = field_index, value = as.character(value)
         )]
 
-        idfs <- lapply(split(val, by = "case", keep.by = FALSE), function (d) {
+        idfs <- lapply(split(val, by = "case", keep.by = FALSE), function(d) {
             idf <- idf$clone()
             eplusr::with_silent(idf$update(d))
             idf
         })
     } else {
-        measure_wrapper <- function (idf, ...) {
+        measure_wrapper <- function(idf, ...) {
             if (!eplusr::is_idf(idf)) {
                 abort(paste0("Measure should take an 'Idf' object as input, not '", class(idf)[[1]], "'."))
             }
@@ -704,7 +696,9 @@ create_par_models <- function (idf, param, samples, matched = NULL, measure = NU
 }
 # }}}
 # case_names {{{
-case_names <- function (sample) {
+case_names <- function(sample) {
     paste0("Case", lpad(seq_len(nrow(sample)), "0"))
 }
 # }}}
+
+# vim: fdm=marker
