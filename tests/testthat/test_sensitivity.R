@@ -36,7 +36,7 @@ test_that("Sensitivity", {
             .r = 1, .grid_jump = 1
         )
     )
-    expect_is(sen$samples(), "data.table")
+    expect_s3_class(sen$samples(), "data.table")
     expect_equal(nrow(sen$samples()), 3)
 })
 # }}}

@@ -124,7 +124,7 @@ test_that("BayesCalib Class", {
     expect_error(
         bc$input(rbindlist(list(
             eplusr::rdd_to_load(bc$read_rdd()[1:2]),
-            mdd_to_load(bc$read_mdd()[1:2])
+            eplusr::mdd_to_load(bc$read_mdd()[1:2])
         ))),
         class = "epluspar_error_bc_invalid_input"
     )
