@@ -2069,6 +2069,7 @@ Run Bayesian calibration using Stan
   mc.cores = parallel::detectCores(),
   all = FALSE,
   merge = TRUE,
+  dir = tempdir(),
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -2107,6 +2108,8 @@ like above, but combine rows of field measured output and
 predicted output together, with a new column \code{type} added
 giving \code{field} indicating field measured output and
 \code{prediction} indicating predicted output. Default: \code{TRUE}.}
+
+\item{\code{dir}}{The directory to store the Stan model. Default: \code{tempdir()}.}
 
 \item{\code{...}}{Additional arguments to pass to
 \link[cmdstanr:model-method-sample]{cmdstanr::sample()}.}

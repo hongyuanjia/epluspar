@@ -1,11 +1,12 @@
-copy_example <- function () {
-    if (!eplusr::is_avail_eplus(8.8)) return()
+copy_example <- function() {
+    if (!eplusr::is_avail_eplus(23.1)) {
+        return()
+    }
 
-    cfg <- eplusr::eplus_config(8.8)
+    cfg <- eplusr::eplus_config(23.1)
 
     example_name <- "5Zone_Transformer.idf"
     weather_name <- "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
-    ddy_name <- "USA_CA_San.Francisco.Intl.AP.724940_TMY3.ddy"
 
     path_example <- file.path(cfg$dir, "ExampleFiles", example_name)
     path_idf <- normalizePath(file.path(tempdir(), example_name), mustWork = FALSE)
@@ -18,6 +19,6 @@ copy_example <- function () {
     list(idf = path_idf, epw = path_epw)
 }
 
-clean_tempdir <- function () {
+clean_tempdir <- function() {
     unlink(list.files(tempdir(), full.names = TRUE), force = TRUE)
 }

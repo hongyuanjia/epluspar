@@ -1385,6 +1385,7 @@ BayesCalibJob <- R6::R6Class(
         #'        predicted output together, with a new column `type` added
         #'        giving `field` indicating field measured output and
         #'        `prediction` indicating predicted output. Default: `TRUE`.
+        #' @param dir The directory to store the Stan model. Default: `tempdir()`.
         #' @param ... Additional arguments to pass to
         #'        [cmdstanr::sample()][cmdstanr::model-method-sample].
         #'
@@ -1404,6 +1405,7 @@ BayesCalibJob <- R6::R6Class(
             mc.cores = parallel::detectCores(),
             all = FALSE,
             merge = TRUE,
+            dir = tempdir(),
             ...
         ) {
             bc_stan_run(
@@ -1418,6 +1420,7 @@ BayesCalibJob <- R6::R6Class(
                 mc.cores = mc.cores,
                 all = all,
                 merge = merge,
+                dir = dir,
                 ...
             )
         },
@@ -2249,7 +2252,6 @@ bc_evaluate <- function(super, self, private, funs = list(nmbe, cvrmse), sub_fun
 }
 # }}}
 # bc_stan_run {{{
-#' @importFrom stats sd
 bc_stan_run <- function(
     super,
     self,
@@ -2262,6 +2264,7 @@ bc_stan_run <- function(
     mc.cores = parallel::detectCores(),
     all = FALSE,
     merge = TRUE,
+    dir = tempdir(),
     ...
 ) {
     opts <- options(mc.cores = mc.cores)
@@ -2287,7 +2290,7 @@ bc_stan_run <- function(
         }
     }
 
-    private$m_log$stan$model <- cmdstanr::cmdstan_model(stan_file = file)
+    private$m_log$stan$model <- cmdstanr::cmdstan_model(stan_file = file, dir = dir)
 
     if (is.null(data)) {
         data <- data_bc
@@ -2454,7 +2457,7 @@ bc_match_input_output <- function(
 
     dt[, index := .I]
     # now it's save to load it
-    dt_var <- rdd_to_load(setattr(dt[report_type != "Meter"], "class", c("RddFile", class(dt))))
+    dt_var <- eplusr::rdd_to_load(setattr(dt[report_type != "Meter"], "class", c("RddFile", class(dt))))
     if (nrow(dt_var)) {
         obj_var <- private$m_seed$load(dt_var, .unique = FALSE)
         dt_var <- private$m_seed$to_table(vapply(obj_var, function(x) x$id(), 1L), wide = TRUE)[, name := NULL]
@@ -2462,7 +2465,7 @@ bc_match_input_output <- function(
     } else {
         dt_var <- data.table()
     }
-    dt_mtr <- mdd_to_load(setattr(dt[report_type == "Meter"], "class", c("MddFile", class(dt))))
+    dt_mtr <- eplusr::mdd_to_load(setattr(dt[report_type == "Meter"], "class", c("MddFile", class(dt))))
     if (nrow(dt_mtr)) {
         obj_mtr <- private$m_seed$load(dt_mtr, .unique = FALSE)
         dt_mtr <- private$m_seed$to_table(vapply(obj_mtr, function(x) x$id(), 1L), wide = TRUE)[, name := NULL]
@@ -2829,7 +2832,7 @@ bc_combine_input_output <- function(super, self, private, type, append, dt) {
         idx <- duplicated(all, by = c("key_value", "variable_name"), fromLast = TRUE)
 
         if (any(idx)) {
-            invld <- dt[idx[1:nrow(dt)]]
+            invld <- dt[idx[seq_len(nrow(dt))]]
             private$m_seed$del(invld$id)
             abort(
                 paste0(
@@ -2916,11 +2919,15 @@ bc_report_freq <- function(super, self, private) {
     res <- list(input = NULL, output = NULL)
 
     if (NROW(private$m_input)) {
-        res$input <- eplusr:::validate_report_freq(unique(private$m_input$reporting_frequency))
+        res$input <- utils::getFromNamespace("validate_report_freq", "eplusr")(
+            unique(private$m_input$reporting_frequency)
+        )
     }
 
     if (NROW(private$m_output)) {
-        res$output <- eplusr:::validate_report_freq(unique(private$m_output$reporting_frequency))
+        res$output <- utils::getFromNamespace("validate_report_freq", "eplusr")(
+            unique(private$m_output$reporting_frequency)
+        )
     }
 
     res
@@ -2960,7 +2967,7 @@ check_same_report_freq <- function(type, freq, old, append) {
             paste0("bc_invalid_", type)
         )
     }
-    eplusr:::validate_report_freq(freq)
+    utils::getFromNamespace("validate_report_freq", "eplusr")(freq)
 }
 # }}}
 # report_dt_to_wide {{{
@@ -3025,7 +3032,7 @@ report_dt_to_wide <- function(dt, date_components = FALSE) {
     ]
 
     # handle special cases
-    if (nrow(dt) & all(is.na(dt$datetime))) {
+    if (nrow(dt) && all(is.na(dt$datetime))) {
         dt[, `Date/Time` := paste0("simdays=", simulation_days)]
     }
 
@@ -3756,7 +3763,7 @@ init_data_bc <- function(yf, xf, x_pred, yc, xc, tc) {
     yf_std <- copy(yf)
     yc_std <- copy(yc)
     yc_mean <- yc[, lapply(.SD, mean)]
-    yc_sd <- yc[, lapply(.SD, sd)]
+    yc_sd <- yc[, lapply(.SD, stats::sd)]
     for (i in seq.int(d)) {
         set(yf_std, NULL, i, zscore_norm(yf_std[[i]], yc_mean[[i]], yc_sd[[i]]))
         set(yc_std, NULL, i, zscore_norm(yc_std[[i]], yc_mean[[i]], yc_sd[[i]]))

@@ -436,9 +436,9 @@ sen__evaluate <- function(self, private, results) {
 }
 # }}}
 # sen__print {{{
-#' @importFrom cli cat_line
 sen__print <- function(self, private) {
-    eplusr:::print_job_header(title = "EnergPlus Sensitivity Analysis Job",
+    utils::getFromNamespace("print_job_header", "eplusr")(
+        title = "EnergPlus Sensitivity Analysis Job",
         path_idf = private$m_seed$path(),
         path_epw = private$m_epws_path,
         eplus_ver = private$m_seed$version(),
@@ -459,7 +459,7 @@ sen__print <- function(self, private) {
         paste0("Parametric Models [", length(private$m_idfs), "]: ")
     ))
 
-    eplusr:::epgroup_print_status(self, private, epw = FALSE)
+    utils::getFromNamespace("epgroup_print_status", "eplusr")(self, private, epw = FALSE)
 }
 # }}}
 
@@ -510,7 +510,7 @@ morris_data <- function(morris) {
 
     mu <- apply(morris$ee, 2, mean)
     mu.star <- apply(morris$ee, 2, function(x)mean(abs(x)))
-    sigma <- apply(morris$ee, 2, sd)
+    sigma <- apply(morris$ee, 2, stats::sd)
 
     data.table::data.table(
         index = seq_along(mu), name = morris$factors,
@@ -526,7 +526,9 @@ expand_param_specs <- function(idf, ..., .env = parent.frame(), .names = NULL, .
         .default = FALSE, .scalar = FALSE, .pair = FALSE, .env = .env)
 
     # check type
-    eplusr:::add_field_property(get_priv_env(idf)$idd_env(), l$value, "type")
+    utils::getFromNamespace("add_field_property", "eplusr")(
+        get_priv_env(idf)$idd_env(), l$value, "type"
+    )
     # handle schedule:compact fields
     if (nrow(invld <- l$value[type != "real" & class_name != "Schedule:Compact"])) {
         abort(paste0("Currently only numeric fields are supported. Non-numeric fields found:\n",

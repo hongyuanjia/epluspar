@@ -5,8 +5,7 @@
 #'
 #' @name epluspar-package
 #' @aliases epluspar
-#' @import methods
-#' @import eplusr
+#' @importFrom eplusr read_idf
 #'
 #' @references
 #' A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building

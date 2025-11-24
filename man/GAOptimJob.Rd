@@ -5,11 +5,60 @@
 \alias{GAOptimJob}
 \title{Conduct Multi-Objective Optimization on An EnergyPlus Model}
 \description{
-\code{GAOptimJob} class provides a prototype of conducting single- or multi-
-objective(s) optimizations on an EnergyPlus model using Genetic Algorithm
+\code{GAOptimJob} class provides a framework for conducting single- or multi-
+objective optimization on EnergyPlus models using Genetic Algorithms (GA).
+It implements the NSGA-II algorithm for multi-objective optimization and
+supports various genetic operators for mutation, recombination, and selection.
 }
 \details{
-The basic workflow is basically:
+\subsection{Basic Workflow}{
+
+The typical workflow for using \code{GAOptimJob} is:
+\enumerate{
+\item \strong{Create a job}: Initialize with an IDF and EPW file using \code{\link[=gaoptim_job]{gaoptim_job()}}
+or \code{GAOptimJob$new()}
+\item \strong{Define parameters}: Set optimization parameters using \verb{$apply_measure()}
+with a measure function and parameter spaces
+\item \strong{Set objectives}: Define objective function(s) using \verb{$objective()}
+\item \strong{Configure GA operators} (optional): Customize genetic algorithm behavior:
+\itemize{
+\item \verb{$mutator()}: Configure mutation operators
+\item \verb{$recombinator()}: Configure recombination (crossover) operators
+\item \verb{$selector()}: Configure selection operators
+\item \verb{$terminator()}: Set termination conditions
+}
+\item \strong{Run optimization}: Execute the optimization using \verb{$run()}
+\item \strong{Extract results}: Get optimal solutions using:
+\itemize{
+\item \verb{$best_set()} for single-objective optimization
+\item \verb{$pareto_set()} for multi-objective optimization
+\item \verb{$population()} for complete population history
+}
+}
+}
+
+\subsection{Genetic Algorithm Implementation}{
+
+The class uses the \href{https://CRAN.R-project.org/package=miesmuschel}{miesmuschel}
+package for genetic algorithm operators and
+\href{https://CRAN.R-project.org/package=bbotk}{bbotk} for optimization infrastructure.
+Parameter spaces are defined using \href{https://CRAN.R-project.org/package=paradox}{paradox}.
+
+For multi-objective optimization, the implementation follows the NSGA-II
+algorithm (Deb et al., 2002), which uses:
+\itemize{
+\item Non-dominated sorting for ranking solutions
+\item Crowding distance for diversity preservation
+\item Elitism through (mu + lambda) survival strategy
+}
+}
+
+\subsection{Parallel Execution}{
+
+The optimization supports parallel execution of EnergyPlus simulations using
+the \href{https://CRAN.R-project.org/package=mirai}{mirai} package. This can
+significantly reduce optimization time when multiple CPU cores are available.
+}
 }
 \examples{
 
@@ -33,6 +82,347 @@ if (eplusr::is_avail_eplus(8.8)) {
 }
 }
 
+
+## ------------------------------------------------
+## Method `GAOptimJob$param`
+## ------------------------------------------------
+
+\dontrun{
+opt$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = paradox::p_dbl(0.1, 1.0)),
+    Material := list(Thickness = paradox::p_dbl(0.01, 1), Conductivity = paradox::p_dbl(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = paradox::p_dbl(10, 30))
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$apply_measure`
+## ------------------------------------------------
+
+\dontrun{
+# define a measure function
+my_measure <- function(idf, wall_thickness, roof_insulation) {
+    # modify wall construction
+    # ...
+    # modify roof insulation
+    # ...
+
+    # return modified IDF
+    idf
+}
+
+# apply the measure with parameter spaces
+opt$apply_measure(my_measure,
+    wall_thickness = paradox::p_dbl(0.1, 0.5),
+    roof_insulation = paradox::p_dbl(20, 50),
+    .names = function(wall_thickness, roof_insulation) {
+        sprintf("wall_\%.2f_roof_\%.0f", wall_thickness, roof_insulation)
+    }
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$objective`
+## ------------------------------------------------
+
+\dontrun{
+# Define objective functions
+total_energy <- function(job) {
+    as.numeric(
+        job$tabular_data(
+            table_name = "Site and Source Energy",
+            column_name = "Total Energy",
+            row_name = "Total Site Energy"
+        )$value
+    )
+}
+
+comfort_hours <- function(job) {
+    8760 - as.numeric(
+        job$tabular_data(
+            table_name = "Comfort and Setpoint Not Met Summary",
+            column_name = "Facility",
+            row_name = "Time Not Comfortable Based on Simple ASHRAE 55-2004"
+        )$value
+    )
+}
+
+# Function returning multiple objectives
+get_zone_comfort <- function(job) {
+    temp <- job$report_data(
+        key_value = c("Core_top", "Core_bottom"),
+        name = "Zone Mean Air Temperature"
+    )
+    temp[, list(
+        hot = sum(value > 28) / .N,
+        cold = sum(value < 18) / .N,
+        comfort = sum(value >= 20 & value <= 26) / .N
+    )]
+}
+
+# ---- Named syntax (= syntax, no prefix support) ----
+# Maximize total_energy (default behavior)
+opt$objective(energy = total_energy)
+
+# Maximize comfort_hours
+opt$objective(comfort = comfort_hours)
+
+# Multi-objective: both maximized by default
+opt$objective(
+    energy = total_energy,
+    comfort = comfort_hours
+)
+
+# ---- Assignment syntax (:= syntax, supports prefixes) ----
+# Minimize total_energy using - prefix
+opt$objective(-"energy" := total_energy)
+
+# Explicitly maximize using + prefix
+opt$objective(+"comfort" := comfort_hours)
+
+# Multi-objective with different directions
+opt$objective(
+    -"energy" := total_energy,
+    +"comfort" := comfort_hours
+)
+
+# ---- One function returning multiple objectives ----
+# Minimize hot and cold, maximize comfort
+opt$objective(
+    c(-"hot", -"cold", +"comfort") := get_zone_comfort
+)
+
+# ---- Combined example (mixing = and := syntax) ----
+opt$objective(
+    energy = total_energy,              # = syntax: maximize (use .dir to change)
+    comfort = comfort_hours,            # = syntax: maximize (use .dir to change)
+    c(-"hot", -"cold") := get_zone_comfort  # := syntax: minimize both
+)
+
+# ---- Using .dir parameter ----
+# Default behavior (.dir = NULL): follow prefix or default to maximize
+opt$objective(energy = total_energy)  # maximizes energy
+opt$objective(-"energy" := total_energy)  # minimizes energy
+
+# Using .dir to set direction (works with both = and := syntax)
+opt$objective(energy = total_energy, .dir = "min")  # minimizes energy
+
+# .dir OVERRIDES prefix directions
+opt$objective(-"energy" := total_energy, .dir = "max")  # maximizes (overridden!)
+opt$objective(+"comfort" := comfort_hours, .dir = "min")  # minimizes (overridden!)
+
+# Using .dir with multiple objectives
+opt$objective(
+    energy = total_energy,
+    comfort = comfort_hours,
+    .dir = c("min", "max")  # minimize energy, maximize comfort
+)
+
+# Useful for quickly reversing all directions
+opt$objective(
+    -"energy" := total_energy,
+    -"cost" := total_cost,
+    +"comfort" := comfort_hours,
+    .dir = "max"  # All become maximize (overrides all prefixes)
+)
+}
+
+
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$recombinator`
+## ------------------------------------------------
+
+\dontrun{
+# Use default recombinators for all parameters
+opt$recombinator()
+
+# Set type-wide recombinator: all double parameters use SBX with n = 20
+opt$recombinator(.double = miesmuschel::rec("sbx", n = 20, p = 0.9))
+
+# Set parameter-specific recombinator: only "wall_thickness" uses SBX with n = 30
+opt$recombinator(wall_thickness = miesmuschel::rec("sbx", n = 30))
+
+# Combine both: set type-wide default, then override specific parameters
+opt$recombinator(
+    .double = miesmuschel::rec("sbx", n = 20),  # All doubles use this
+    wall_thickness = miesmuschel::rec("sbx", n = 30),  # Except this one
+    window_ratio = miesmuschel::rec("xounif", p = 0.5)  # And this one
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$mutator`
+## ------------------------------------------------
+
+\dontrun{
+# Use default mutators for all parameters
+opt$mutator()
+
+# Set type-wide mutator: all double parameters use polynomial mutation
+opt$mutator(.double = miesmuschel::mut("poly", eta = 30, p = 0.2))
+
+# Set parameter-specific mutator: only "wall_thickness" uses polynomial mutation
+opt$mutator(wall_thickness = miesmuschel::mut("poly", eta = 30, p = 0.2))
+
+# Combine both: set type-wide default, then override specific parameters
+opt$mutator(
+    .double = miesmuschel::mut("gauss", sdev = 0.1),  # All doubles use this
+    wall_thickness = miesmuschel::mut("poly", eta = 30),  # Except this one
+    window_ratio = miesmuschel::mut("poly", eta = 20)    # And this one
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$selector`
+## ------------------------------------------------
+
+\dontrun{
+# Use default selectors (random parent, non-dominated survival, plus strategy)
+opt$selector()
+
+# Use tournament selection for parents
+opt$selector(parent = miesmuschel::sel("tournament", k = 3))
+
+# Use comma strategy (only offspring survive)
+opt$selector(strategy = "comma")
+
+# Customize both parent and survival selection
+opt$selector(
+    parent = miesmuschel::sel("tournament", k = 5),
+    survival = miesmuschel::sel("best"),
+    strategy = "plus"
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$terminator`
+## ------------------------------------------------
+
+\dontrun{
+# terminate after 100 generations
+opt$terminator(max_gen = 100)
+
+# terminate after 1000 evaluations or 1 hour
+opt$terminator(max_eval = 1000, max_time = 3600)
+
+# use custom terminator from bbotk
+opt$terminator(bbotk::trm("stagnation", iters = 10))
+
+# combine multiple terminators
+opt$terminator(
+    bbotk::trm("stagnation", iters = 10),
+    max_gen = 100,
+    max_time = 3600
+)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$run`
+## ------------------------------------------------
+
+\dontrun{
+# run with default settings (mu = 20, lambda = 20, auto parallel)
+opt$run()
+
+# run with larger population
+opt$run(mu = 50)
+
+# run with different offspring size (more exploration)
+opt$run(mu = 20, lambda = 40)
+
+# run with custom output directory
+opt$run(mu = 30, dir = "~/optimization_results")
+
+# run with specific number of CPU cores
+opt$run(parallel = 4)
+
+# run without modifying existing daemon settings
+# (useful if you've already set up daemons manually)
+opt$run(parallel = FALSE)
+
+# advanced: custom daemon configuration
+opt$run(parallel = list(n = 8, dispatcher = TRUE))
+
+# combine multiple parameters
+opt$run(mu = 50, lambda = 100, dir = tempdir(), parallel = 6)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$best_set`
+## ------------------------------------------------
+
+\dontrun{
+# get best solution
+best <- opt$best_set()
+
+# get all occurrences of best solution
+best_all <- opt$best_set(unique = FALSE)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$pareto_set`
+## ------------------------------------------------
+
+\dontrun{
+# get Pareto-optimal solutions
+pareto <- opt$pareto_set()
+
+# get all non-dominated solutions from all generations
+pareto_all <- opt$pareto_set(unique = FALSE)
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$population`
+## ------------------------------------------------
+
+\dontrun{
+# get complete population history
+pop <- opt$population()
+
+# analyze optimization progress
+library(ggplot2)
+ggplot(pop, aes(x = index_gen, y = objective_value)) +
+    geom_point() +
+    geom_smooth()
+}
+
+
+## ------------------------------------------------
+## Method `GAOptimJob$print`
+## ------------------------------------------------
+
+\dontrun{
+# print object summary
+opt$print()
+
+# or simply
+opt
+}
+
+}
+\references{
+Deb, K., Pratap, A., Agarwal, S., & Meyarivan, T. (2002). A fast and elitist
+multiobjective genetic algorithm: NSGA-II. IEEE Transactions on Evolutionary
+Computation, 6(2), 182-197. DOI: 10.1109/4235.996017
+}
+\seealso{
+\itemize{
+\item \code{\link[=gaoptim_job]{gaoptim_job()}} for creating a \code{GAOptimJob} object
+\item \code{\link[paradox:Domain]{paradox::p_dbl()}}, \code{\link[paradox:Domain]{paradox::p_int()}}, \code{\link[paradox:Domain]{paradox::p_fct()}} for defining parameter spaces
+\item \code{\link[miesmuschel:mut]{miesmuschel::mut()}}, \code{\link[miesmuschel:mut]{miesmuschel::rec()}}, \code{\link[miesmuschel:mut]{miesmuschel::sel()}} for genetic operators
+\item \code{\link[bbotk:trm]{bbotk::trm()}} for custom termination conditions
+}
 }
 \author{
 Hongyuan Jia
@@ -51,7 +441,6 @@ Hongyuan Jia
 \item \href{#method-GAOptimJob-mutator}{\code{GAOptimJob$mutator()}}
 \item \href{#method-GAOptimJob-selector}{\code{GAOptimJob$selector()}}
 \item \href{#method-GAOptimJob-terminator}{\code{GAOptimJob$terminator()}}
-\item \href{#method-GAOptimJob-validate}{\code{GAOptimJob$validate()}}
 \item \href{#method-GAOptimJob-run}{\code{GAOptimJob$run()}}
 \item \href{#method-GAOptimJob-best_set}{\code{GAOptimJob$best_set()}}
 \item \href{#method-GAOptimJob-pareto_set}{\code{GAOptimJob$pareto_set()}}
@@ -133,8 +522,86 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-param"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-param}{}}}
 \subsection{Method \code{param()}}{
+Set parameters for genetic algorithm optimization
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$param(..., .names = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Lists of parameter definitions. Please see above on the
+syntax.}
+
+\item{\code{.names}}{A character vector of the parameter names. If \code{NULL},
+the parameter will be named in format \code{p + number}, where
+\code{number} is the index of parameter. Default: \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$param()} takes parameter definitions in list format, which is
+similar to \verb{$set()} in \link[eplusr:Idf]{eplusr::Idf} class except that each field is
+not assigned with a single value, but a parameter domain object
+created using paradox functions such as \code{\link[paradox:Domain]{paradox::p_dbl()}},
+\code{\link[paradox:Domain]{paradox::p_int()}}, or \code{\link[paradox:Domain]{paradox::p_fct()}}, indicating the search
+space of each parameter.
+
+Similar like the way of modifying object field values in
+\link[eplusr:Idf]{eplusr::Idf$set()}, there are 3 different ways of
+defining a parameter in epluspar:
+\itemize{
+\item \code{object = list(field = param_space)}: Where \code{object} is a
+valid object ID or name. Note object ID should be denoted with two
+periods \code{..}, e.g. \code{..10} indicates the object with ID \code{10}. It
+will set that specific field in that object as one parameter.
+\item \code{.(object, object) := list(field = param_space)}: Similar like
+above, but note the use of \code{.()} in the left hand side. You can put
+multiple object ID or names in \code{.()}. It will set the field of all
+specified objects as one parameter.
+\item \code{class := list(field = param_space)}: Note the use of \verb{:=}
+instead of \code{=}. The main difference is that, unlike \code{=}, the left
+hand side of \verb{:=} should be a valid class name in current
+\link[eplusr:Idf]{eplusr::Idf}. It will set that field of all objects in specified
+class as one parameter.
+}
+
+For example, the code block below defines 4 optimization parameters:
+\itemize{
+\item Field \verb{Fan Total Efficiency} in object named \verb{Supply Fan 1} in
+class \code{Fan:VariableVolume}, with search space being [0.1, 1.0].
+\item Field \code{Thickness} in all objects in class \code{Material}, with search
+space being [0.01, 1.0].
+\item Field \code{Conductivity} in all objects in class \code{Material}, with
+search space being [0.1, 0.6].
+\item Field \verb{Watts per Zone Floor Area} in objects \code{Light1} and \code{Light2}
+in class \code{Lights}, with search space being [10, 30].
+}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = paradox::p_dbl(0.1, 1.0)),
+    Material := list(Thickness = paradox::p_dbl(0.01, 1), Conductivity = paradox::p_dbl(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = paradox::p_dbl(10, 30))
+)
+}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+opt$param(
+    `Supply Fan 1` = list(Fan_Total_Efficiency = paradox::p_dbl(0.1, 1.0)),
+    Material := list(Thickness = paradox::p_dbl(0.01, 1), Conductivity = paradox::p_dbl(0.1, 0.6)),
+   .("Light1", "Light2") := list(Watts_per_Zone_Floor_Area = paradox::p_dbl(10, 30))
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -142,8 +609,83 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-apply_measure"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-apply_measure}{}}}
 \subsection{Method \code{apply_measure()}}{
+Set optimization parameters using a measure function
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$apply_measure(measure, ..., .names = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{measure}}{A function that takes an \link[eplusr:Idf]{eplusr::Idf} object as the
+first argument and returns a modified \link[eplusr:Idf]{eplusr::Idf} object.
+The function should have at least two arguments: the first for
+the IDF object and the rest for optimization parameters.}
+
+\item{\code{...}}{Named arguments specifying parameter spaces. Each argument
+should be a parameter domain object created using paradox
+functions such as \code{\link[paradox:Domain]{paradox::p_dbl()}} (continuous numeric),
+\code{\link[paradox:Domain]{paradox::p_int()}} (integer), \code{\link[paradox:Domain]{paradox::p_fct()}} (categorical),
+\code{\link[paradox:Domain]{paradox::p_lgl()}} (logical), or \code{\link[paradox:Domain]{paradox::p_uty()}} (untyped).}
+
+\item{\code{.names}}{A function or lambda function that takes parameter values
+as arguments and returns a character string for naming the
+generated model variant. If \code{NULL}, models will be named
+automatically in format \code{Gen[gen]-Ind[ind]}, where \code{gen} is the
+generation number and \code{ind} is the index of parameter combination.
+Default: \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$apply_measure()} takes a measure function and its parameter
+specifications to define the optimization parameters. The measure
+function should take an \link[eplusr:Idf]{eplusr::Idf} object as the first argument
+and return a modified \link[eplusr:Idf]{eplusr::Idf} object.
+
+Each parameter should be specified using paradox domain functions:
+\itemize{
+\item \code{\link[paradox:Domain]{paradox::p_dbl()}}: For continuous numeric parameters within a range
+\item \code{\link[paradox:Domain]{paradox::p_int()}}: For discrete integer parameters
+\item \code{\link[paradox:Domain]{paradox::p_fct()}}: For categorical parameters with predefined choices
+\item \code{\link[paradox:Domain]{paradox::p_lgl()}}: For logical (TRUE/FALSE) parameters
+\item \code{\link[paradox:Domain]{paradox::p_uty()}}: For untyped parameters (advanced usage)
+}
+
+The measure function will be called during optimization with the seed
+IDF and the sampled parameter values to generate variant models.
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# define a measure function
+my_measure <- function(idf, wall_thickness, roof_insulation) {
+    # modify wall construction
+    # ...
+    # modify roof insulation
+    # ...
+
+    # return modified IDF
+    idf
+}
+
+# apply the measure with parameter spaces
+opt$apply_measure(my_measure,
+    wall_thickness = paradox::p_dbl(0.1, 0.5),
+    roof_insulation = paradox::p_dbl(20, 50),
+    .names = function(wall_thickness, roof_insulation) {
+        sprintf("wall_\%.2f_roof_\%.0f", wall_thickness, roof_insulation)
+    }
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -151,8 +693,243 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-objective"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-objective}{}}}
 \subsection{Method \code{objective()}}{
+Set objective function(s) for optimization
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$objective(..., .n = NULL, .dir = "min")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$objective(..., .dir = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{One or more \strong{named} objective functions. All objectives must
+be named using one of two syntax forms:
+- Named: \code{name = my_function} (maximized by default, no prefix support)
+- Assignment: \code{"name" := my_function} or \code{c("name1", "name2") := my_function}
+(for functions returning multiple values)
+\strong{Prefixes (\code{-}/\code{+}) are only supported with \verb{:=} syntax}:
+prefix objective names with \code{-} to minimize or \code{+} to explicitly
+maximize (e.g., \code{-"energy" := my_function} or \code{c(-"hot", +"comfort") := my_function}).}
+
+\item{\code{.dir}}{Direction of optimization. Can be:
+- \code{NULL} (default): All objectives follow their prefix direction
+(maximize by default, or as specified by \code{-}/\code{+} prefixes)
+- \code{"min"} or \code{"max"}: A single direction that \strong{overrides} all
+prefix directions
+- A character vector with one element per objective: Individual
+directions that \strong{override} each objective's prefix direction
+When specified, \code{.dir} takes precedence over any prefix (\code{-}/\code{+})
+settings.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$objective()} takes one or more \strong{named} objective functions to be
+optimized. Each objective function should take an \link[eplusr:EplusJob]{eplusr::EplusJob}
+object as the first argument and return either:
+\itemize{
+\item A single numeric value
+\item A named numeric vector
+\item A named list with numeric values
+\item A single-row data.table with numeric columns
+}
+\subsection{Syntax Options}{
+
+\strong{All objectives must be named.} There are two ways to specify
+objectives:
+
+\strong{1. Named syntax} (using \code{=}):
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$objective(energy = my_energy_function)
+}\if{html}{\out{</div>}}
+
+The objective will use the specified name and be \strong{maximized} by
+default. This syntax does \strong{not} support prefixes (\code{-}/\code{+}).
+
+\strong{2. Assignment syntax} (using \verb{:=}):
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$objective("obj1" := my_function)
+opt$objective(c("obj1", "obj2") := my_multi_objective_function)
+}\if{html}{\out{</div>}}
+
+Use this when you want to:
+\itemize{
+\item Specify optimization direction using prefixes (\code{-}/\code{+})
+\item Have a single function return multiple objective values
+}
+
+The function should return a named vector, list, or data.table. Each
+objective will be \strong{maximized} by default.
+}
+
+\subsection{Optimization Direction}{
+
+\strong{By default, all objectives are MAXIMIZED.} To change the
+optimization direction, use prefixes \strong{only with the \verb{:=} syntax}:
+\itemize{
+\item Prefix the \strong{objective name} with \code{-} to \strong{minimize}:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$objective(-"energy" := my_function)
+}\if{html}{\out{</div>}}
+\item Prefix the \strong{objective name} with \code{+} to \strong{maximize} (explicit):
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$objective(+"comfort" := my_function)
+}\if{html}{\out{</div>}}
+\item For multiple objectives from one function:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{opt$objective(c(-"hot", -"cold", +"comfort") := get_zone_comfort)
+}\if{html}{\out{</div>}}
+
+This minimizes "hot" and "cold" while maximizing "comfort".
+}
+
+\strong{Note}: The \code{=} syntax does \strong{not} support prefixes. To control
+direction with \code{=} syntax, use the \code{.dir} parameter.
+}
+
+\subsection{The \code{.dir} Parameter}{
+
+The \code{.dir} parameter provides a way to \strong{override} optimization
+directions specified by prefixes or defaults.
+
+\strong{When \code{.dir = NULL} (default)}:
+\itemize{
+\item Objectives follow their prefix direction (\code{-} for minimize, \code{+} for maximize)
+\item Objectives without prefix are maximized by default
+}
+
+\strong{When \code{.dir} is specified} (\code{"min"} or \code{"max"}):
+\itemize{
+\item \code{.dir} \strong{overrides all prefix directions}
+\item All objectives use the direction specified by \code{.dir}
+}
+
+For example:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{# Without .dir: follows prefix
+opt$objective(-"energy" := total_energy)  # minimizes
+
+# With .dir: overrides prefix
+opt$objective(-"energy" := total_energy, .dir = "max")  # maximizes (overridden)
+opt$objective(+"comfort" := comfort_hours, .dir = "min")  # minimizes (overridden)
+}\if{html}{\out{</div>}}
+
+This is useful when you want to quickly reverse all optimization
+directions without changing the code.
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Define objective functions
+total_energy <- function(job) {
+    as.numeric(
+        job$tabular_data(
+            table_name = "Site and Source Energy",
+            column_name = "Total Energy",
+            row_name = "Total Site Energy"
+        )$value
+    )
+}
+
+comfort_hours <- function(job) {
+    8760 - as.numeric(
+        job$tabular_data(
+            table_name = "Comfort and Setpoint Not Met Summary",
+            column_name = "Facility",
+            row_name = "Time Not Comfortable Based on Simple ASHRAE 55-2004"
+        )$value
+    )
+}
+
+# Function returning multiple objectives
+get_zone_comfort <- function(job) {
+    temp <- job$report_data(
+        key_value = c("Core_top", "Core_bottom"),
+        name = "Zone Mean Air Temperature"
+    )
+    temp[, list(
+        hot = sum(value > 28) / .N,
+        cold = sum(value < 18) / .N,
+        comfort = sum(value >= 20 & value <= 26) / .N
+    )]
+}
+
+# ---- Named syntax (= syntax, no prefix support) ----
+# Maximize total_energy (default behavior)
+opt$objective(energy = total_energy)
+
+# Maximize comfort_hours
+opt$objective(comfort = comfort_hours)
+
+# Multi-objective: both maximized by default
+opt$objective(
+    energy = total_energy,
+    comfort = comfort_hours
+)
+
+# ---- Assignment syntax (:= syntax, supports prefixes) ----
+# Minimize total_energy using - prefix
+opt$objective(-"energy" := total_energy)
+
+# Explicitly maximize using + prefix
+opt$objective(+"comfort" := comfort_hours)
+
+# Multi-objective with different directions
+opt$objective(
+    -"energy" := total_energy,
+    +"comfort" := comfort_hours
+)
+
+# ---- One function returning multiple objectives ----
+# Minimize hot and cold, maximize comfort
+opt$objective(
+    c(-"hot", -"cold", +"comfort") := get_zone_comfort
+)
+
+# ---- Combined example (mixing = and := syntax) ----
+opt$objective(
+    energy = total_energy,              # = syntax: maximize (use .dir to change)
+    comfort = comfort_hours,            # = syntax: maximize (use .dir to change)
+    c(-"hot", -"cold") := get_zone_comfort  # := syntax: minimize both
+)
+
+# ---- Using .dir parameter ----
+# Default behavior (.dir = NULL): follow prefix or default to maximize
+opt$objective(energy = total_energy)  # maximizes energy
+opt$objective(-"energy" := total_energy)  # minimizes energy
+
+# Using .dir to set direction (works with both = and := syntax)
+opt$objective(energy = total_energy, .dir = "min")  # minimizes energy
+
+# .dir OVERRIDES prefix directions
+opt$objective(-"energy" := total_energy, .dir = "max")  # maximizes (overridden!)
+opt$objective(+"comfort" := comfort_hours, .dir = "min")  # minimizes (overridden!)
+
+# Using .dir with multiple objectives
+opt$objective(
+    energy = total_energy,
+    comfort = comfort_hours,
+    .dir = c("min", "max")  # minimize energy, maximize comfort
+)
+
+# Useful for quickly reversing all directions
+opt$objective(
+    -"energy" := total_energy,
+    -"cost" := total_cost,
+    +"comfort" := comfort_hours,
+    .dir = "max"  # All become maximize (overrides all prefixes)
+)
+}
+
+
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -160,13 +937,108 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-recombinator"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-recombinator}{}}}
 \subsection{Method \code{recombinator()}}{
+Configure recombination operators for genetic algorithm
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$recombinator(
   ...,
-  .float = setwith(ecr::recSBX, eta = 15, p = 0.7),
-  .integer = setwith(recPCrossover, p = 0.7),
-  .choice = setwith(recPCrossover, p = 0.7)
+  .double = miesmuschel::rec("sbx", n = 15),
+  .integer = miesmuschel::rec("xounif", p = 0.7),
+  .choice = miesmuschel::rec("xounif", p = 0.7),
+  .logical = miesmuschel::rec("xounif", p = 0.7),
+  .untyped = miesmuschel::rec("xounif", p = 0.7)
 )}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Named recombination operators for specific parameters. Use
+the syntax \code{parameter_name = rec(...)} to assign a recombination
+operator to a specific parameter. These override the type-wide
+operators (\code{.double}, \code{.integer}, etc.) for the specified
+parameters.}
+
+\item{\code{.double}}{Recombination operator for all double-type parameters.
+Default: \code{miesmuschel::rec("sbx", n = 15)}.}
+
+\item{\code{.integer}}{Recombination operator for all integer-type parameters.
+Default: \code{miesmuschel::rec("xounif", p = 0.7)}.}
+
+\item{\code{.choice}}{Recombination operator for all choice-type parameters.
+Default: \code{miesmuschel::rec("xounif", p = 0.7)}.}
+
+\item{\code{.logical}}{Recombination operator for all logical-type parameters.
+Default: \code{miesmuschel::rec("xounif", p = 0.7)}.}
+
+\item{\code{.untyped}}{Recombination operator for all untyped parameters.
+Default: \code{miesmuschel::rec("xounif", p = 0.7)}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$recombinator()} sets the recombination (crossover) operators used
+in the genetic algorithm. Different operators can be specified for
+different parameter types.
+\subsection{Default Operators}{
+
+The following default recombination operators are used for each
+parameter type:
+\itemize{
+\item \code{.double}: \code{miesmuschel::rec("sbx", n = 15)} - Simulated Binary
+Crossover with distribution index 15
+\item \code{.integer}: \code{miesmuschel::rec("xounif", p = 0.7)} - Uniform
+crossover with probability 0.7
+\item \code{.choice}: \code{miesmuschel::rec("xounif", p = 0.7)} - Uniform
+crossover with probability 0.7
+\item \code{.logical}: \code{miesmuschel::rec("xounif", p = 0.7)} - Uniform
+crossover with probability 0.7
+\item \code{.untyped}: \code{miesmuschel::rec("xounif", p = 0.7)} - Uniform
+crossover with probability 0.7
+}
+}
+
+\subsection{Parameter-Specific vs Type-Wide Operators}{
+
+There are two ways to configure recombination operators:
+
+\strong{1. Type-wide operators} (using \code{.double}, \code{.integer}, etc.):
+These set the default operator for \strong{all parameters} of a given
+type. For example, \code{.double} applies to all double-type parameters.
+
+\strong{2. Parameter-specific operators} (using \code{...}):
+These set operators for \strong{individual parameters} by name, overriding
+the type-wide defaults. Use the syntax \code{parameter_name = rec(...)}.
+
+Parameter-specific operators take precedence over type-wide operators.
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Use default recombinators for all parameters
+opt$recombinator()
+
+# Set type-wide recombinator: all double parameters use SBX with n = 20
+opt$recombinator(.double = miesmuschel::rec("sbx", n = 20, p = 0.9))
+
+# Set parameter-specific recombinator: only "wall_thickness" uses SBX with n = 30
+opt$recombinator(wall_thickness = miesmuschel::rec("sbx", n = 30))
+
+# Combine both: set type-wide default, then override specific parameters
+opt$recombinator(
+    .double = miesmuschel::rec("sbx", n = 20),  # All doubles use this
+    wall_thickness = miesmuschel::rec("sbx", n = 30),  # Except this one
+    window_ratio = miesmuschel::rec("xounif", p = 0.5)  # And this one
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -174,13 +1046,104 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-mutator"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-mutator}{}}}
 \subsection{Method \code{mutator()}}{
+Configure mutation operators for genetic algorithm
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$mutator(
   ...,
-  .float = setwith(ecr::mutPolynomial, eta = 25, p = 0.1),
-  .integer = mutRandomChoice,
-  .choice = mutRandomChoice
+  .double = miesmuschel::mut("gauss", sdev = 0.05),
+  .integer = miesmuschel::mut("gauss", sdev = 0.05),
+  .choice = miesmuschel::mut("unif"),
+  .logical = miesmuschel::mut("unif"),
+  .untyped = miesmuschel::mut("unif")
 )}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Named mutation operators for specific parameters. Use the
+syntax \code{parameter_name = mut(...)} to assign a mutation operator
+to a specific parameter. These override the type-wide operators
+(\code{.double}, \code{.integer}, etc.) for the specified parameters.}
+
+\item{\code{.double}}{Mutation operator for all double-type parameters.
+Default: \code{miesmuschel::mut("gauss", sdev = 0.05)}.}
+
+\item{\code{.integer}}{Mutation operator for all integer-type parameters.
+Default: \code{miesmuschel::mut("gauss", sdev = 0.05)}.}
+
+\item{\code{.choice}}{Mutation operator for all choice-type parameters.
+Default: \code{miesmuschel::mut("unif")}.}
+
+\item{\code{.logical}}{Mutation operator for all logical-type parameters.
+Default: \code{miesmuschel::mut("unif")}.}
+
+\item{\code{.untyped}}{Mutation operator for all untyped parameters.
+Default: \code{miesmuschel::mut("unif")}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$mutator()} sets the mutation operators used in the genetic
+algorithm. Different operators can be specified for different
+parameter types.
+\subsection{Default Operators}{
+
+The following default mutation operators are used for each parameter
+type:
+\itemize{
+\item \code{.double}: \code{miesmuschel::mut("gauss", sdev = 0.05)} - Gaussian
+mutation with standard deviation 0.05
+\item \code{.integer}: \code{miesmuschel::mut("gauss", sdev = 0.05)} - Gaussian
+mutation with standard deviation 0.05
+\item \code{.choice}: \code{miesmuschel::mut("unif")} - Uniform mutation
+\item \code{.logical}: \code{miesmuschel::mut("unif")} - Uniform mutation
+\item \code{.untyped}: \code{miesmuschel::mut("unif")} - Uniform mutation
+}
+}
+
+\subsection{Parameter-Specific vs Type-Wide Operators}{
+
+There are two ways to configure mutation operators:
+
+\strong{1. Type-wide operators} (using \code{.double}, \code{.integer}, etc.):
+These set the default operator for \strong{all parameters} of a given
+type. For example, \code{.double} applies to all double-type parameters.
+
+\strong{2. Parameter-specific operators} (using \code{...}):
+These set operators for \strong{individual parameters} by name, overriding
+the type-wide defaults. Use the syntax \code{parameter_name = mut(...)}.
+
+Parameter-specific operators take precedence over type-wide operators.
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Use default mutators for all parameters
+opt$mutator()
+
+# Set type-wide mutator: all double parameters use polynomial mutation
+opt$mutator(.double = miesmuschel::mut("poly", eta = 30, p = 0.2))
+
+# Set parameter-specific mutator: only "wall_thickness" uses polynomial mutation
+opt$mutator(wall_thickness = miesmuschel::mut("poly", eta = 30, p = 0.2))
+
+# Combine both: set type-wide default, then override specific parameters
+opt$mutator(
+    .double = miesmuschel::mut("gauss", sdev = 0.1),  # All doubles use this
+    wall_thickness = miesmuschel::mut("poly", eta = 30),  # Except this one
+    window_ratio = miesmuschel::mut("poly", eta = 20)    # And this one
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -188,12 +1151,96 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-selector"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-selector}{}}}
 \subsection{Method \code{selector()}}{
+Configure selection operators for genetic algorithm
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$selector(
-  parent = ecr::selSimple,
-  survival = ecr::selNondom,
+  parent = miesmuschel::sel("random"),
+  survival = miesmuschel::sel("best", miesmuschel::scl("nondom", tiebreak =
+    "crowdingdist")),
   strategy = "plus"
 )}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{parent}}{Parent selection operator. Default:
+\code{miesmuschel::sel("random")}.}
+
+\item{\code{survival}}{Survival selection operator. Default:
+\code{miesmuschel::sel("best", miesmuschel::scl("nondom", tiebreak = "crowdingdist"))}.}
+
+\item{\code{strategy}}{Survival strategy, either \code{"plus"} or \code{"comma"}.
+Default: \code{"plus"}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$selector()} sets the selection operators and survival strategy
+used in the genetic algorithm.
+\subsection{Selection Operators}{
+
+\strong{Parent selection} (\code{parent}): Determines how individuals are
+selected from the current population for mating (recombination).
+Common strategies include random selection, tournament selection, etc.
+
+\strong{Survival selection} (\code{survival}): Determines which individuals
+survive to the next generation after offspring are created. The
+default uses non-dominated sorting with crowding distance as a
+tiebreaker, which is suitable for multi-objective optimization.
+}
+
+\subsection{Survival Strategy}{
+
+The \code{strategy} parameter controls how parents and offspring compete:
+\itemize{
+\item \code{"plus"}: (mu + lambda) strategy - Both parents and offspring
+compete for survival. The best \code{mu} individuals from the combined
+pool of parents and offspring are selected.
+\item \code{"comma"}: (mu, lambda) strategy - Only offspring are considered
+for survival. Parents are discarded. Requires \code{lambda >= mu}.
+}
+}
+
+\subsection{Default Values}{
+\itemize{
+\item \code{parent}: \code{miesmuschel::sel("random")} - Random parent selection
+\item \code{survival}: \code{miesmuschel::sel("best", miesmuschel::scl("nondom", tiebreak = "crowdingdist"))}
+\itemize{
+\item Non-dominated sorting with crowding distance tiebreaker (for
+multi-objective optimization)
+}
+\item \code{strategy}: \code{"plus"} - (mu + lambda) strategy
+}
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Use default selectors (random parent, non-dominated survival, plus strategy)
+opt$selector()
+
+# Use tournament selection for parents
+opt$selector(parent = miesmuschel::sel("tournament", k = 3))
+
+# Use comma strategy (only offspring survive)
+opt$selector(strategy = "comma")
+
+# Customize both parent and survival selection
+opt$selector(
+    parent = miesmuschel::sel("tournament", k = 5),
+    survival = miesmuschel::sel("best"),
+    strategy = "plus"
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -201,24 +1248,67 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-terminator"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-terminator}{}}}
 \subsection{Method \code{terminator()}}{
+Configure termination conditions for genetic algorithm
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$terminator(
-  fun = NULL,
-  name,
-  message,
-  max_gen = NULL,
-  max_eval = NULL,
-  max_time = NULL
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$terminator(..., max_gen = NULL, max_eval = NULL, max_time = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{One or more custom terminator objects created using
+\code{\link[bbotk:trm]{bbotk::trm()}} or other bbotk terminator constructors.}
+
+\item{\code{max_gen}}{Maximum number of generations. Default: \code{NULL} (no
+limit).}
+
+\item{\code{max_eval}}{Maximum number of evaluations. Default: \code{NULL} (no
+limit).}
+
+\item{\code{max_time}}{Maximum time in seconds. Default: \code{NULL} (no limit).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$terminator()} sets the conditions under which the optimization
+will stop. Multiple conditions can be specified, and the algorithm
+will terminate when any condition is met.
+
+Available termination conditions:
+\itemize{
+\item \code{max_gen}: Maximum number of generations
+\item \code{max_eval}: Maximum number of function evaluations
+\item \code{max_time}: Maximum time in seconds
+\item Custom terminators: Pass \link[bbotk:Terminator]{bbotk::Terminator} objects via \code{...}
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# terminate after 100 generations
+opt$terminator(max_gen = 100)
+
+# terminate after 1000 evaluations or 1 hour
+opt$terminator(max_eval = 1000, max_time = 3600)
+
+# use custom terminator from bbotk
+opt$terminator(bbotk::trm("stagnation", iters = 10))
+
+# combine multiple terminators
+opt$terminator(
+    bbotk::trm("stagnation", iters = 10),
+    max_gen = 100,
+    max_time = 3600
+)
 }
 
 }
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-GAOptimJob-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-GAOptimJob-validate}{}}}
-\subsection{Method \code{validate()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$validate(param = NULL, ddy_only = TRUE, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -226,15 +1316,147 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-run"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-run}{}}}
 \subsection{Method \code{run()}}{
+Run genetic algorithm optimization
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$run(
   mu = 20L,
-  p_recomb = 0.7,
-  p_mut = 0.1,
+  lambda = mu,
   dir = NULL,
-  wait = TRUE,
+  separate = TRUE,
   parallel = TRUE
 )}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mu}}{Population size (number of individuals in each
+generation). Default: \code{20L}.}
+
+\item{\code{lambda}}{Offspring size (number of new individuals generated
+per generation). Default: \code{mu} (same as population size).}
+
+\item{\code{dir}}{Output directory for simulation results. If \code{NULL}, uses
+the directory of the seed IDF file. Default: \code{NULL}.}
+
+\item{\code{separate}}{If \code{TRUE}, each individual's simulation results are
+saved in a separate folder. If \code{FALSE}, all results are saved
+in the same folder. Default: \code{TRUE}.}
+
+\item{\code{parallel}}{Controls parallel execution of EnergyPlus simulations
+via the \code{mirai} package. Accepts three types of values:
+- \strong{Logical} (\code{TRUE}/\code{FALSE}): If \code{TRUE} and no daemons are
+currently running, automatically starts daemons using 80\% of
+available CPU cores. If \code{FALSE}, does not modify daemon
+settings (uses existing daemons if available, or runs
+sequentially if none are set).
+- \strong{Positive integer}: Specifies the exact number of CPU cores
+(daemons) to use for parallel execution.
+- \strong{List}: Advanced configuration passed directly to
+\code{mirai::daemons()} for custom daemon setup.
+Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$run()} executes the genetic algorithm optimization process. The
+algorithm follows these steps in each generation:
+\enumerate{
+\item Select parents from the current population
+\item Generate offspring through recombination (crossover)
+\item Apply mutation to offspring
+\item Evaluate fitness of offspring by running EnergyPlus simulations
+\item Select survivors for the next generation
+\item Check termination conditions
+}
+
+The optimization continues until one of the termination conditions
+set by \verb{$terminator()} is met.
+\subsection{Prerequisites}{
+
+Before calling \verb{$run()}, you must configure the following components:
+\itemize{
+\item \strong{Measure}: At least one parametric measure must be set via
+\verb{$apply_measure()}. This defines which IDF parameters will be
+optimized.
+\item \strong{Objective}: At least one objective function must be set via
+\verb{$objective()}. This defines what to optimize (minimize or
+maximize).
+\item \strong{Genetic operators}: The following operators must be configured:
+\itemize{
+\item Mutator via \verb{$mutator()}
+\item Recombinator via \verb{$recombinator()}
+\item Selector via \verb{$selector()}
+}
+\item \strong{Terminator}: At least one termination condition must be set via
+\verb{$terminator()}. This determines when the optimization stops.
+}
+
+If any of these prerequisites are missing, \verb{$run()} will throw an
+error indicating which configuration is missing.
+}
+
+\subsection{Population and Offspring Size}{
+
+The \code{mu} parameter controls the population size (number of
+individuals maintained in each generation), while \code{lambda} controls
+the offspring size (number of new individuals generated per
+generation).
+
+The current implementation uses the \strong{(mu + lambda)} survival
+strategy by default, where survivors are selected from the combined
+pool of \code{mu} parents and \code{lambda} offspring. This allows offspring
+to compete directly with their parents, which can help preserve good
+solutions.
+
+Common configurations:
+\itemize{
+\item \code{lambda = mu} (default): Balanced exploration and exploitation
+\item \code{lambda > mu}: More exploration, higher diversity
+\item \code{lambda < mu}: More exploitation, faster convergence
+}
+
+Use \verb{$best_set()} for single-objective or
+\verb{$pareto_set()} for multi-objective optimization to extract the
+final results.
+}
+}
+
+\subsection{Returns}{
+The modified \code{GAOptimJob} object itself.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# run with default settings (mu = 20, lambda = 20, auto parallel)
+opt$run()
+
+# run with larger population
+opt$run(mu = 50)
+
+# run with different offspring size (more exploration)
+opt$run(mu = 20, lambda = 40)
+
+# run with custom output directory
+opt$run(mu = 30, dir = "~/optimization_results")
+
+# run with specific number of CPU cores
+opt$run(parallel = 4)
+
+# run without modifying existing daemon settings
+# (useful if you've already set up daemons manually)
+opt$run(parallel = FALSE)
+
+# advanced: custom daemon configuration
+opt$run(parallel = list(n = 8, dispatcher = TRUE))
+
+# combine multiple parameters
+opt$run(mu = 50, lambda = 100, dir = tempdir(), parallel = 6)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -242,8 +1464,53 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-best_set"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-best_set}{}}}
 \subsection{Method \code{best_set()}}{
+Extract best solution for single-objective optimization
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$best_set(unique = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{unique}}{If \code{TRUE}, return only unique best parameter
+combinations. If \code{FALSE}, return all occurrences of the best
+solution across generations. Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$best_set()} returns the best solution(s) found during
+single-objective optimization. This method only works when a single
+objective function has been set.
+
+The returned \code{\link[data.table:data.table]{data.table::data.table()}} contains:
+\itemize{
+\item Parameter values for the best solution(s)
+\item Objective function value(s)
+\item Generation and individual indices (if \code{unique = FALSE})
+}
+
+When \code{unique = TRUE}, only the best parameter combination is
+returned. When \code{unique = FALSE}, all occurrences of the best
+solution across generations are returned.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} containing the best solution(s).
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# get best solution
+best <- opt$best_set()
+
+# get all occurrences of best solution
+best_all <- opt$best_set(unique = FALSE)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -251,8 +1518,56 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-pareto_set"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-pareto_set}{}}}
 \subsection{Method \code{pareto_set()}}{
+Extract Pareto-optimal solutions for multi-objective optimization
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$pareto_set(unique = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{unique}}{If \code{TRUE}, return only unique Pareto-optimal parameter
+combinations. If \code{FALSE}, return all non-dominated solutions
+from all generations. Default: \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+\verb{$pareto_set()} returns the Pareto-optimal (non-dominated)
+solutions found during multi-objective optimization. This method
+only works when multiple objective functions have been set.
+
+A solution is Pareto-optimal if no other solution is better in all
+objectives simultaneously. The returned \code{\link[data.table:data.table]{data.table::data.table()}}
+contains:
+\itemize{
+\item Parameter values for each Pareto-optimal solution
+\item Objective function values for each solution
+\item Generation and individual indices (if \code{unique = FALSE})
+}
+
+When \code{unique = TRUE}, only unique Pareto-optimal parameter
+combinations are returned. When \code{unique = FALSE}, all non-dominated
+solutions from all generations are returned.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} containing Pareto-optimal
+solutions.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# get Pareto-optimal solutions
+pareto <- opt$pareto_set()
+
+# get all non-dominated solutions from all generations
+pareto_all <- opt$pareto_set(unique = FALSE)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -260,8 +1575,47 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-population"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-population}{}}}
 \subsection{Method \code{population()}}{
+Extract complete population history
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$population()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$population()} returns the complete history of all individuals
+evaluated during the optimization process across all generations.
+
+The returned \code{\link[data.table:data.table]{data.table::data.table()}} contains:
+\itemize{
+\item \code{index_gen}: Generation number
+\item \code{index_ind}: Individual number within generation
+\item Parameter values for each individual
+\item Objective function values for each individual
+}
+
+This is useful for analyzing the optimization progress and
+understanding how the population evolved over generations.
+}
+
+\subsection{Returns}{
+A \code{\link[data.table:data.table]{data.table::data.table()}} containing all evaluated
+individuals.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# get complete population history
+pop <- opt$population()
+
+# analyze optimization progress
+library(ggplot2)
+ggplot(pop, aes(x = index_gen, y = objective_value)) +
+    geom_point() +
+    geom_smooth()
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -269,8 +1623,41 @@ if (eplusr::is_avail_eplus(8.8)) {
 \if{html}{\out{<a id="method-GAOptimJob-print"></a>}}
 \if{latex}{\out{\hypertarget{method-GAOptimJob-print}{}}}
 \subsection{Method \code{print()}}{
+Print GAOptimJob object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GAOptimJob$print()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+\verb{$print()} prints a summary of the \code{GAOptimJob} object, including:
+\itemize{
+\item Seed IDF and EPW file information
+\item Optimization parameters and their ranges
+\item Objective function(s)
+\item Genetic algorithm configuration (operators, termination conditions)
+\item Optimization status and progress (if optimization has been run)
+}
+
+This method is automatically called when you type the object name in
+the console.
+}
+
+\subsection{Returns}{
+The \code{GAOptimJob} object itself, invisibly.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# print object summary
+opt$print()
+
+# or simply
+opt
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
