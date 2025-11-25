@@ -1745,7 +1745,7 @@ gaopt__run <- function(
     optinst$objective$constants$values$sep_dir <- separate
 
     # only include active parameters
-    cls_params <- unname(private$m_log$parameter$class)
+    cls_params <- unique(unname(private$m_log$parameter$class))
     mutators <- miesmuschel::mut(
         "combine",
         operators = c(
