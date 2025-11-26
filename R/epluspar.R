@@ -3,21 +3,15 @@
 #' @description Conduct sensitivity analysis and Bayesian calibration of
 #' EnergyPlus models.
 #'
-#' @docType package
 #' @name epluspar-package
 #' @aliases epluspar
-#' @useDynLib epluspar, .registration = TRUE
-#' @import methods
-#' @import Rcpp
-#' @import eplusr
-#' @import rstantools
-#' @importFrom rstan sampling
+#' @importFrom eplusr read_idf
 #'
 #' @references
 #' A. Chong and K. Menberg, "Guidelines for the Bayesian calibration of building
 #' energy models", Energy and Buildings, vol. 174, pp. 527–547. DOI:
 #' 10.1016/j.enbuild.2018.06.028
-NULL
+"_PACKAGE"
 
 # init var {{{
 `.GRP` <- `.I` <- `.N` <- `.SD` <- `J` <- NULL

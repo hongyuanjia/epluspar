@@ -22,47 +22,31 @@ URL: https://github.com/ideas-lab-nus/epluspar
 BugReports: https://github.com/ideas-lab-nus/epluspar
 License: MIT + file LICENSE
 Depends:
-    R (>= 3.4.0)
+    R (>= 4.0.0)
 Imports:
-    cli,
     checkmate,
+    cli,
     data.table,
-    ecr (>= 2.1.0),
-    eplusr (>= 0.12.0),
-    future,
-    future.apply,
+    eplusr (>= 0.16.0),
     globals,
-    lhs,
     lubridate,
-    methods,
-    Rcpp (>= 0.12.0),
-    rstan (>= 2.18.1),
-    rstantools (>= 1.4.0),
-    sensitivity
-LinkingTo:
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
+    mirai
 Suggests:
-    testthat,
-    covr,
-    pkgdown,
-    pkgload,
-    knitr,
-    rmarkdown
+    testthat (>= 3.0.0),
+    bbotk,
+    cmdstanr,
+    lhs,
+    miesmuschel,
+    paradox,
+    sensitivity
 SystemRequirements: EnergyPlus (>= 8.3, optional) (<https://energyplus.net>); GNU make
 Encoding: UTF-8
-LazyData: true
-Biarch: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
-RoxygenNote: 7.3.1
-Remotes: hongyuanjia/eplusr
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
 Collate:
     'bayesian.R'
     'epluspar.R'
     'utils.R'
     'gaoptim.R'
     'sensitivity.R'
-    'stanmodels.R'

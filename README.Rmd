@@ -451,11 +451,13 @@ You can also use custom data set
 res <- bc$stan_run(data = bc$data_bc(), iter = 300, chains = 3)
 ```
 
-The stan model is store in `fit`
+The cmdstanr model fit object is stored in `fit`
 
 ```{r stan, fig.path = "man/figures/"}
-rstan::stan_trace(res$fit)
-rstan::stan_hist(res$fit)
+# Extract draws and create diagnostic plots using bayesplot
+library(bayesplot)
+mcmc_trace(res$fit$draws())
+mcmc_hist(res$fit$draws())
 ```
 
 The predicted values is stored in `y_pred`.

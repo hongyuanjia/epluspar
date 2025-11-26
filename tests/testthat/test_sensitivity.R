@@ -1,8 +1,6 @@
-context("Sensitivity")
-
 # Sensitivity {{{
 test_that("Sensitivity", {
-    skip_if_not(eplusr::is_avail_eplus(8.8))
+    skip_if_not(eplusr::is_avail_eplus(23.1))
 
     # read idf
     example <- copy_example()
@@ -38,7 +36,7 @@ test_that("Sensitivity", {
             .r = 1, .grid_jump = 1
         )
     )
-    expect_is(sen$samples(), "data.table")
+    expect_s3_class(sen$samples(), "data.table")
     expect_equal(nrow(sen$samples()), 3)
 })
 # }}}

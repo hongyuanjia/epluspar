@@ -1,3 +1,27 @@
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2019-2025 Hongyuan Jia and Adrian Chong
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
+
 data {
   int<lower=1> n; // number of field data
   int<lower=1> m; // number of computer simulation
@@ -6,11 +30,11 @@ data {
   int<lower=1> q; // number of calibration parameters t
   vector[n] yf; // field observations
   vector[m] yc; // output of computer simulations
-  row_vector[p] xf[n]; // observable inputs corresponding to y
+  array[n] row_vector[p] xf; // observable inputs corresponding to y
   // (xc, tc): design points corresponding to eta
-  row_vector[p] xc[m];
-  row_vector[q] tc[m];
-  row_vector[p] x_pred[n_pred];
+  array[m] row_vector[p] xc;
+  array[m] row_vector[q] tc;
+  array[n_pred] row_vector[p] x_pred;
 }
 
 transformed data {
@@ -19,7 +43,7 @@ transformed data {
   int<lower = 1> N;
   vector[n+m] y;
   vector[n+m+n_pred] mu; // mean vector
-  row_vector[p] X[n+n_pred]; // X=[xf, x_pred]
+  array[n + n_pred] row_vector[p] X; // X=[xf, x_pred]
 
   N = n + m + n_pred;
   // set mean vector to zero
@@ -47,7 +71,7 @@ transformed parameters {
   // beta_delta: correlation parameter for bias term
   // beta_e: correlation parameter of observation error
   row_vector[p+q] beta_eta;
-  row_vector[p+q] xt[N];
+  array[N] row_vector[p+q] xt;
   beta_eta = -4.0 * log(rho_eta);
   // xt = [[xf,tf],[xc,tc],[x_pred,tf]]
   for (i in 1:n) {
