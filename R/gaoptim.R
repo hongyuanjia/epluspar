@@ -65,7 +65,6 @@ NULL
 #' Computation, 6(2), 182-197. DOI: 10.1109/4235.996017
 NULL
 
-#' @export
 # GAOptimJob {{{
 GAOptimJob <- R6::R6Class(
     classname = "GAOptimJob",

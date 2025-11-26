@@ -33,7 +33,6 @@ NULL
 #' 10.1016/j.enbuild.2018.06.028
 NULL
 
-#' @export
 # BayesCalibJob {{{
 BayesCalibJob <- R6::R6Class(
     classname = "BayesCalibJob",

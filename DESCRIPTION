@@ -50,4 +50,3 @@ Collate:
     'utils.R'
     'gaoptim.R'
     'sensitivity.R'
-    'zzz.R'

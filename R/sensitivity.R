@@ -29,7 +29,6 @@ NULL
 #' @author Hongyuan Jia
 NULL
 
-#' @export
 # SensitivityJob {{{
 SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
     inherit = eplusr::ParametricJob, cloneable = FALSE, lock_class = FALSE,
