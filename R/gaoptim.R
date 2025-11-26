@@ -1382,7 +1382,8 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
 
     # merge objective functions
     func <- lapply(func_obj, .subset2, "func")
-    deps <- unlist(lapply(func_obj, .subset2, "deps"), FALSE, FALSE)
+    deps <- unlist(lapply(unname(func_obj), .subset2, "deps"))
+    deps <- deps[!duplicated(deps)]
 
     private$m_log$objective$name <- object
     private$m_log$objective$func <- func
@@ -1711,7 +1712,7 @@ gaopt__optim_instance <- function(super, self, private) {
             inputs <- data.table::set(data.table::copy(xdt), NULL, ".__path_out__", path_outs)
             args <- list(
                 .x = inputs,
-                .f = function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj) {
+                .f = function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj, func_merge) {
                     eplusr::eplusr_option(verbose_info = FALSE)
                     idf <- eplusr::read_idf(path_idf)
                     idf <- do.call(measure, c(idf = idf, ...))
@@ -1723,14 +1724,15 @@ gaopt__optim_instance <- function(super, self, private) {
                     }
                     idf$save(.__path_out__, overwrite = TRUE)
                     job <- idf$run(path_epw, wait = TRUE, echo = FALSE, copy_external = TRUE, readvars = FALSE)
-                    gaopt__collect_objectives(job, objectives)
+                    func_merge(job, objectives)
                 },
                 .args = list(
                     path_idf = path_idf,
                     path_epw = path_epw,
                     measure = measure$func,
                     objectives = objectives,
-                    names_obj = codomain$ids()
+                    names_obj = codomain$ids(),
+                    func_merge = gaopt__collect_objectives
                 )
             )
             if (length(measure$deps)) {
@@ -1739,7 +1741,6 @@ gaopt__optim_instance <- function(super, self, private) {
             if (length(objectives$deps)) {
                 args <- c(args, objectives$deps)
             }
-            args$gaopt__collect_objectives <- gaopt__collect_objectives
             mirais <- do.call(mirai::mirai_map, args = args)
             fitness <- mirais[mirai::.stop]
             data.table::rbindlist(fitness)
