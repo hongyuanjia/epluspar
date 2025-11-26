@@ -1,6 +1,5 @@
 #' @include utils.R
 #' @importFrom data.table data.table set setorder setattr ":="
-#' @importFrom sensitivity morris tell
 NULL
 
 #' Conduct Sensitivity Analysis for An EnergyPlus Model
@@ -34,6 +33,46 @@ SensitivityJob <- R6::R6Class(classname = "SensitivityJob",
     inherit = eplusr::ParametricJob, cloneable = FALSE, lock_class = FALSE,
     public = list(
         # PUBLIC FUNCTIONS {{{
+        # initialize {{{
+        #' @description
+        #' Create a `SensitivityJob` object
+        #'
+        #' @param idf A path to an local EnergyPlus IDF file or an [eplusr::Idf] object.
+        #' @param epw A path to an local EnergyPlus EPW file or an [eplusr::Epw] object.
+        #'
+        #' @return A `SensitivityJob` object.
+        #'
+        #' @examples
+        #' \dontrun{
+        #' if (eplusr::is_avail_eplus(8.8)) {
+        #'     idf_name <- "1ZoneUncontrolled.idf"
+        #'     epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+        #'
+        #'     idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+        #'     epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+        #'
+        #'     # create from local files
+        #'     SensitivityJob$new(idf_path, epw_path)
+        #'
+        #'     # create from an Idf and an Epw object
+        #'     opt <- SensitivityJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+        #' }
+        #' }
+        #'
+        initialize = function(idf, epw) {
+            if (!requireNamespace("sensitivity", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'sensitivity' is required for sensitivity analysis.\n",
+                        "Please install it via 'install.packages(\"sensitivity\")'."
+                    )
+                ))
+            }
+            eplusr::with_silent(super$initialize(idf, epw))
+            self
+        },
+        # }}}
+
         # param {{{
         #' @description
         #' Set parameters for sensitivity analysis
@@ -508,7 +547,7 @@ morris_data <- function(morris) {
     stopifnot(inherits(morris, "morris"))
 
     mu <- apply(morris$ee, 2, mean)
-    mu.star <- apply(morris$ee, 2, function(x)mean(abs(x)))
+    mu.star <- apply(morris$ee, 2, function(x) mean(abs(x)))
     sigma <- apply(morris$ee, 2, stats::sd)
 
     data.table::data.table(

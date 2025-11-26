@@ -1,6 +1,4 @@
 #' @include utils.R
-#' @importFrom paradox p_dbl p_int p_fct p_lgl p_uty ps
-#' @importFrom globals globalsOf
 NULL
 
 #' Conduct Multi-Objective Optimization on An EnergyPlus Model
@@ -100,6 +98,30 @@ GAOptimJob <- R6::R6Class(
         #' }
         #'
         initialize = function(idf, epw) {
+            if (!requireNamespace("miesmuschel", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'miesmuschel' is required for genetic algorithm optimization.\n",
+                        "Please install it via 'install.packages(\"miesmuschel\")'."
+                    )
+                ))
+            }
+            if (!requireNamespace("bbotk", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'bbotk' is required for genetic algorithm optimization.\n",
+                        "Please install it via 'install.packages(\"bbotk\")'."
+                    )
+                ))
+            }
+            if (!requireNamespace("paradox", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'paradox' is required for genetic algorithm optimization.\n",
+                        "Please install it via 'install.packages(\"paradox\")'."
+                    )
+                ))
+            }
             eplusr::with_silent(super$initialize(idf, epw))
             self
         },

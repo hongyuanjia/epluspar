@@ -1,7 +1,5 @@
-#' @importFrom lhs randomLHS
 #' @importFrom data.table copy rbindlist setcolorder as.data.table dcast.data.table
 #' @importFrom data.table setnames setorderv melt.data.table rleidv setattr
-#' @importFrom cmdstanr cmdstan_model
 NULL
 
 #' Conduct Bayesian Calibration on An EnergyPlus Model
@@ -84,6 +82,24 @@ BayesCalibJob <- R6::R6Class(
         #' }
         #'
         initialize = function(idf, epw) {
+            if (!requireNamespace("cmdstanr", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'cmdstanr' is required for Bayesian calibration.\n",
+                        "Please install it via",
+                        "'install.packages(\"cmdstanr\", repos = c(\"https://stan-dev.r-universe.dev\", getOption(\"repos\")))'."
+                    )
+                ))
+            }
+            if (!requireNamespace("lhs", quietly = TRUE)) {
+                stop(sprintf(
+                    paste(
+                        "Package 'lhs' is required for Bayesian calibration.\n",
+                        "Please install it via 'install.packages(\"lhs\")'."
+                    )
+                ))
+            }
+
             # do not allow NULL for epw
             if (is.null(epw)) {
                 abort("'epw' must be specified.")

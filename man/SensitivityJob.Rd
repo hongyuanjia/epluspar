@@ -29,6 +29,27 @@ The basic workflow is basically:
 \examples{
 
 ## ------------------------------------------------
+## Method `SensitivityJob$new`
+## ------------------------------------------------
+
+\dontrun{
+if (eplusr::is_avail_eplus(8.8)) {
+    idf_name <- "1ZoneUncontrolled.idf"
+    epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+
+    # create from local files
+    SensitivityJob$new(idf_path, epw_path)
+
+    # create from an Idf and an Epw object
+    opt <- SensitivityJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
+}
+
+
+## ------------------------------------------------
 ## Method `SensitivityJob$param`
 ## ------------------------------------------------
 
@@ -119,6 +140,7 @@ Hongyuan Jia
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-SensitivityJob-new}{\code{SensitivityJob$new()}}
 \item \href{#method-SensitivityJob-param}{\code{SensitivityJob$param()}}
 \item \href{#method-SensitivityJob-apply_measure}{\code{SensitivityJob$apply_measure()}}
 \item \href{#method-SensitivityJob-samples}{\code{SensitivityJob$samples()}}
@@ -143,7 +165,6 @@ Hongyuan Jia
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="status"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-status'><code>eplusr::EplusGroupJob$status()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="EplusGroupJob" data-id="tabular_data"><a href='../../eplusr/html/EplusGroupJob.html#method-EplusGroupJob-tabular_data'><code>eplusr::EplusGroupJob$tabular_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="cases"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-cases'><code>eplusr::ParametricJob$cases()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="initialize"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-initialize'><code>eplusr::ParametricJob$initialize()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="models"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-models'><code>eplusr::ParametricJob$models()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="run"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-run'><code>eplusr::ParametricJob$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="eplusr" data-topic="ParametricJob" data-id="save"><a href='../../eplusr/html/ParametricJob.html#method-ParametricJob-save'><code>eplusr::ParametricJob$save()</code></a></span></li>
@@ -153,6 +174,51 @@ Hongyuan Jia
 </ul>
 </details>
 }}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SensitivityJob-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SensitivityJob-new}{}}}
+\subsection{Method \code{new()}}{
+Create a \code{SensitivityJob} object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SensitivityJob$new(idf, epw)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{idf}}{A path to an local EnergyPlus IDF file or an \link[eplusr:Idf]{eplusr::Idf} object.}
+
+\item{\code{epw}}{A path to an local EnergyPlus EPW file or an \link[eplusr:Epw]{eplusr::Epw} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{SensitivityJob} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+if (eplusr::is_avail_eplus(8.8)) {
+    idf_name <- "1ZoneUncontrolled.idf"
+    epw_name <-  "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+
+    idf_path <- file.path(eplusr::eplus_config(8.8)$dir, "ExampleFiles", idf_name)
+    epw_path <- file.path(eplusr::eplus_config(8.8)$dir, "WeatherData", epw_name)
+
+    # create from local files
+    SensitivityJob$new(idf_path, epw_path)
+
+    # create from an Idf and an Epw object
+    opt <- SensitivityJob$new(eplusr::read_idf(idf_path), eplusr::read_epw(epw_path))
+}
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SensitivityJob-param"></a>}}
 \if{latex}{\out{\hypertarget{method-SensitivityJob-param}{}}}
