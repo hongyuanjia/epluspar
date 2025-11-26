@@ -1134,8 +1134,10 @@ gaoptim_job <- function(idf, epw) {
 
 # gaopt_apply_measure {{{
 gaopt__apply_measure <- function(super, self, private, measure, ..., .names = NULL, .env = parent.frame()) {
-    # clean parameters created using $param() if any
-    private$m_log$matched <- NULL
+    # clean up previous optimization
+    private$m_opt <- NULL
+    # clean up previous measure
+    private$m_log$measure <- NULL
 
     checkmate::assert_function(measure)
     fmls <- formals(measure)
@@ -1217,6 +1219,11 @@ gaopt__apply_measure <- function(super, self, private, measure, ..., .names = NU
 # gaopt_param {{{
 gaopt__param <- function(super, self, private, ..., .names = NULL, .env = parent.frame()) {
     stop("'$param()' is not implemented for 'GAOptimJob'. Please use '$apply_measure()' instead.")
+    # clean up previous optimization
+    private$m_opt <- NULL
+    # clean up previous measure
+    private$m_log$measure <- NULL
+
     # clean measure created using $apply_measure() if any
     private$m_log$measure$name <- NULL
     private$m_log$measure$fun <- NULL
@@ -1254,6 +1261,10 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
     if (...length() == 0L) {
         stop("No objective function has been provided.")
     }
+    # clean up previous optimization
+    private$m_opt <- NULL
+    # clean up previous objectives
+    private$m_log$objective <- NULL
 
     elems <- substitute(list(...))[-1L]
     nms <- names(elems)
@@ -1434,6 +1445,8 @@ gaopt__recombinator <- function(
     .logical = miesmuschel::rec("xounif", p = 0.7),
     .untyped = miesmuschel::rec("xounif", p = 0.7)
 ) {
+    # clean up previous optimization
+    private$m_opt <- NULL
     gaopt__register_operator(super, self, private, "rec", "specific", ...)
     gaopt__register_operator(
         super,
@@ -1464,6 +1477,8 @@ gaopt__mutator <- function(
     .logical = miesmuschel::mut("unif"),
     .untyped = miesmuschel::mut("unif")
 ) {
+    # clean up previous optimization
+    private$m_opt <- NULL
     gaopt__register_operator(super, self, private, "mut", "specific", ...)
     gaopt__register_operator(
         super,
@@ -1490,6 +1505,8 @@ gaopt__selector <- function(
     survival = miesmuschel::sel("best", miesmuschel::scl("nondom", tiebreak = "crowdingdist")),
     strategy = "plus"
 ) {
+    # clean up previous optimization
+    private$m_opt <- NULL
     gaopt__register_operator(super, self, private, "sel", "parent", parent)
     gaopt__register_operator(super, self, private, "sel", "survival", survival)
     private$m_ctrl$survival_strategy <- match.arg(strategy, c("plus", "comma"))
@@ -1499,6 +1516,8 @@ gaopt__selector <- function(
 
 # gaopt_terminator {{{
 gaopt__terminator <- function(super, self, private, ..., max_eval = NULL, max_gen = NULL, max_time = NULL) {
+    # clean up previous optimization
+    private$m_opt <- NULL
     if (!is.null(max_eval)) {
         gaopt__register_operator(super, self, private, "trm", "evals", bbotk::trm("evals", n_evals = max_eval))
     }
@@ -1633,6 +1652,8 @@ gaopt__collect_objectives <- function(job, objectives) {
 
 # gaopt__optim_instance {{{
 gaopt__optim_instance <- function(super, self, private) {
+    # clean up previous optimization
+    private$m_opt <- NULL
     assert_ready_optim(super, self, private)
 
     domain <- private$m_log$parameter
