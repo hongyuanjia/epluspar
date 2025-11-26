@@ -60,6 +60,7 @@ get_priv_env <- function(x) {
 }
 # }}}
 
+# as_function {{{
 as_function <- function(x, env = parent.frame()) {
     if (is.function(x)) {
         return(x)
@@ -89,6 +90,15 @@ as_function <- function(x, env = parent.frame()) {
 
     stop("Can't convert an object of class ", class(x), " to a function.")
 }
+# }}}
+
+# find_dependencies {{{
+find_dependencies <- function(func, env = parent.frame(), ...) {
+    deps <- globals::cleanup(globals::globalsOf(func, envir = env, ...))
+    attr(deps, "where") <- NULL
+    deps
+}
+# }}}
 
 # init var{{{
 `.` <- `..` <- `.GRP` <- `.I` <- `.N` <- `.SD` <- `.BY` <- `.EACHI` <- J <- N <- NULL

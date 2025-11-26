@@ -30,6 +30,7 @@ Imports:
     cmdstanr,
     data.table,
     eplusr (>= 0.12.0),
+    globals,
     lhs,
     lubridate,
     miesmuschel,
@@ -49,3 +50,4 @@ Collate:
     'utils.R'
     'gaoptim.R'
     'sensitivity.R'
+    'zzz.R'

@@ -1,5 +1,6 @@
 #' @include utils.R
 #' @importFrom paradox p_dbl p_int p_fct p_lgl p_uty ps
+#' @importFrom globals globalsOf
 NULL
 
 #' Conduct Multi-Objective Optimization on An EnergyPlus Model
@@ -1184,6 +1185,7 @@ gaopt__apply_measure <- function(super, self, private, measure, ..., .names = NU
     private$m_log$simple <- FALSE
     private$m_log$measure$name <- mea_nm
     private$m_log$measure$func <- measure
+    private$m_log$measure$deps <- find_dependencies(measure, env = .env)
     private$m_log$measure$naming <- .names
     private$m_log$parameter <- do.call(paradox::ps, dots)
 
@@ -1262,6 +1264,7 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
         }
 
         func <- eval(sym_obj, .env)
+        deps <- find_dependencies(func, env = .env)
         func_fmls <- formals(func)
         if (is.null(func_fmls)) {
             stop(sprintf(
@@ -1296,7 +1299,7 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
         if (is.symbol(sym_obj)) {
             names(func_obj)[[i]] <- as.character(sym_obj)
         }
-        func_obj[[i]] <- list(func = func, param = func_fmls_nms[-1L])
+        func_obj[[i]] <- list(func = func, deps = deps, param = func_fmls_nms[-1L])
     }
 
     # check for duplicated names
@@ -1333,6 +1336,7 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
     object <- data.table::data.table(
         index = seq_len(num_obj),
         name = unlist(nm_obj, FALSE, FALSE),
+        measure = rep(names(func_obj), lengths(nm_obj)),
         direction = dir_obj
     )
 
@@ -1346,9 +1350,11 @@ gaopt__objective <- function(super, self, private, ..., .dir = NULL, .env = pare
 
     # merge objective functions
     func <- lapply(func_obj, .subset2, "func")
+    deps <- unlist(lapply(func_obj, .subset2, "deps"), FALSE, FALSE)
 
     private$m_log$objective$name <- object
     private$m_log$objective$func <- func
+    private$m_log$objective$deps <- deps
     private$m_log$objective$param <- param
 
     self
@@ -1503,7 +1509,7 @@ gaopt__terminator <- function(super, self, private, ..., max_eval = NULL, max_ge
 
 # gaopt__collect_objectives {{{
 gaopt__collect_objectives <- function(job, objectives) {
-    name_split <- split(objectives$name, by = "index")
+    name_split <- split(objectives$name, by = "measure")
     out <- vector("list", length(objectives$func))
 
     for (i in seq_along(objectives$func)) {
@@ -1618,7 +1624,17 @@ gaopt__optim_instance <- function(super, self, private) {
 
     obj <- bbotk::ObjectiveRFunDt$new(
         # we only get a data.table as input
-        fun = function(xdt, path_idf, path_epw, path_dir = NULL, sep_dir = FALSE, measure, objectives, naming, index_gen) {
+        fun = function(
+            xdt,
+            path_idf,
+            path_epw,
+            path_dir = NULL,
+            sep_dir = FALSE,
+            measure,
+            objectives,
+            naming,
+            index_gen
+        ) {
             # generate names
             if (is.null(naming)) {
                 vec_names <- sprintf("Gen%s-Ind%s", index_gen, seq_len(nrow(xdt)))
@@ -1651,30 +1667,36 @@ gaopt__optim_instance <- function(super, self, private) {
             # mirai::mirai_map supports data.frame as input and will automatically
             # loop over rows
             inputs <- data.table::set(data.table::copy(xdt), NULL, ".__path_out__", path_outs)
-            mirais <- mirai::mirai_map(
-                inputs,
-                function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj) {
-                    eplusr::eplusr_option(verbose_info = FALSE)
-                    idf <- eplusr::read_idf(path_idf)
-                    idf <- do.call(measure, c(idf = idf, ...))
-                    if (!eplusr::is_idf(idf)) {
-                        stop(sprintf(
-                            "Measure function should return an 'Idf' object, not '%s'.",
-                            class(idf)[[1L]]
-                        ))
-                    }
-                    idf$save(.__path_out__, overwrite = TRUE)
-                    job <- idf$run(path_epw, wait = TRUE, echo = FALSE, copy_external = TRUE, readvars = FALSE)
-                    gaopt__collect_objectives(job, objectives)
-                },
-                .args = list(
-                    path_idf = path_idf,
-                    path_epw = path_epw,
-                    measure = measure,
-                    objectives = objectives,
-                    names_obj = codomain$ids()
-                ),
-                gaopt__collect_objectives = gaopt__collect_objectives
+            mirais <- do.call(
+                mirai::mirai_map,
+                args = c(
+                    list(
+                        .x = inputs,
+                        .f = function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj) {
+                            eplusr::eplusr_option(verbose_info = FALSE)
+                            idf <- eplusr::read_idf(path_idf)
+                            idf <- do.call(measure, c(idf = idf, ...))
+                            if (!eplusr::is_idf(idf)) {
+                                stop(sprintf(
+                                    "Measure function should return an 'Idf' object, not '%s'.",
+                                    class(idf)[[1L]]
+                                ))
+                            }
+                            idf$save(.__path_out__, overwrite = TRUE)
+                            job <- idf$run(path_epw, wait = TRUE, echo = FALSE, copy_external = TRUE, readvars = FALSE)
+                            gaopt__collect_objectives(job, objectives)
+                        },
+                        .args = list(
+                            path_idf = path_idf,
+                            path_epw = path_epw,
+                            measure = measure$func,
+                            objectives = objectives,
+                            names_obj = codomain$ids()
+                        )
+                    ),
+                    # pass all other function dependencies
+                    c(measure$deps, objectives$deps, gaopt__collect_objectives = gaopt__collect_objectives)
+                )
             )
             fitness <- mirais[mirai::.stop]
             data.table::rbindlist(fitness)
@@ -1696,7 +1718,7 @@ gaopt__optim_instance <- function(super, self, private) {
     obj$constants$values <- list(
         path_idf = private$m_seed$path(),
         path_epw = private$m_epws_path,
-        measure = private$m_log$measure$func,
+        measure = private$m_log$measure,
         objectives = private$m_log$objective,
         naming = private$m_log$measure$naming
     )
@@ -2067,6 +2089,18 @@ gaopt__print <- function(super, self, private) {
 }
 # }}}
 
+# str.GAOptimJob {{{
+# Provide a lightweight str() method for GAOptimJob that does not call
+# object$print(). This prevents IDE workspace inspectors (such as the VSCode
+# R extension) from repeatedly triggering the full cli-based print output
+# whenever they call str() on objects in the global environment.
+#' @export
+str.GAOptimJob <- function(object, ...) {
+    cat("<GAOptimJob> Use print(gaopt) for a full summary.\n")
+    invisible(object)
+}
+# }}}
+
 # gaopt_print_header {{{
 gaopt__print_header <- function(super, self, private) {
     # Use a double-line rule for the main job header
@@ -2281,14 +2315,20 @@ gaopt__print_result <- function(super, self, private) {
         return(invisible())
     }
 
-    run_time <- format(round(difftime(
-        private$m_log$end_time, private$m_log$start_time), digits = 2L)
-    )
-    cli::cli_alert_success(paste(
-        " Simulation started at ",
-        format(private$m_log$start_time, "%Y-%m-%d %H:%M:%S"),
-        " and completed successfully after ", run_time, "."
+    run_time <- format(round(
+        difftime(
+            private$m_log$end_time,
+            private$m_log$start_time
+        ),
+        digits = 2L
     ))
+    cli::cli_alert_success(
+        sprintf(
+            "Simulation started at %s and completed successfully after %s.",
+            format(private$m_log$start_time, "%Y-%m-%d %H:%M:%S"),
+            run_time
+        )
+    )
 }
 # }}}
 
