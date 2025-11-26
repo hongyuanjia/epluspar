@@ -96,7 +96,7 @@ as_function <- function(x, env = parent.frame()) {
 find_dependencies <- function(func, env = parent.frame(), ...) {
     deps <- globals::cleanup(globals::globalsOf(func, envir = env, ...))
     attr(deps, "where") <- NULL
-    deps
+    unclass(deps)
 }
 # }}}
 
