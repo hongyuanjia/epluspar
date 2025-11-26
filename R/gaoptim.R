@@ -1709,37 +1709,38 @@ gaopt__optim_instance <- function(super, self, private) {
             # mirai::mirai_map supports data.frame as input and will automatically
             # loop over rows
             inputs <- data.table::set(data.table::copy(xdt), NULL, ".__path_out__", path_outs)
-            mirais <- do.call(
-                mirai::mirai_map,
-                args = c(
-                    list(
-                        .x = inputs,
-                        .f = function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj) {
-                            eplusr::eplusr_option(verbose_info = FALSE)
-                            idf <- eplusr::read_idf(path_idf)
-                            idf <- do.call(measure, c(idf = idf, ...))
-                            if (!eplusr::is_idf(idf)) {
-                                stop(sprintf(
-                                    "Measure function should return an 'Idf' object, not '%s'.",
-                                    class(idf)[[1L]]
-                                ))
-                            }
-                            idf$save(.__path_out__, overwrite = TRUE)
-                            job <- idf$run(path_epw, wait = TRUE, echo = FALSE, copy_external = TRUE, readvars = FALSE)
-                            gaopt__collect_objectives(job, objectives)
-                        },
-                        .args = list(
-                            path_idf = path_idf,
-                            path_epw = path_epw,
-                            measure = measure$func,
-                            objectives = objectives,
-                            names_obj = codomain$ids()
-                        )
-                    ),
-                    # pass all other function dependencies
-                    c(measure$deps, objectives$deps, gaopt__collect_objectives = gaopt__collect_objectives)
+            args <- list(
+                .x = inputs,
+                .f = function(..., .__path_out__, path_idf, path_epw, measure, objectives, names_obj) {
+                    eplusr::eplusr_option(verbose_info = FALSE)
+                    idf <- eplusr::read_idf(path_idf)
+                    idf <- do.call(measure, c(idf = idf, ...))
+                    if (!eplusr::is_idf(idf)) {
+                        stop(sprintf(
+                            "Measure function should return an 'Idf' object, not '%s'.",
+                            class(idf)[[1L]]
+                        ))
+                    }
+                    idf$save(.__path_out__, overwrite = TRUE)
+                    job <- idf$run(path_epw, wait = TRUE, echo = FALSE, copy_external = TRUE, readvars = FALSE)
+                    gaopt__collect_objectives(job, objectives)
+                },
+                .args = list(
+                    path_idf = path_idf,
+                    path_epw = path_epw,
+                    measure = measure$func,
+                    objectives = objectives,
+                    names_obj = codomain$ids()
                 )
             )
+            if (length(measure$deps)) {
+                args <- c(args, measure$deps)
+            }
+            if (length(objectives$deps)) {
+                args <- c(args, objectives$deps)
+            }
+            args$gaopt__collect_objectives <- gaopt__collect_objectives
+            mirais <- do.call(mirai::mirai_map, args = args)
             fitness <- mirais[mirai::.stop]
             data.table::rbindlist(fitness)
         },
